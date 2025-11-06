@@ -15,7 +15,7 @@ function App() {
   const [player1Time, setPlayer1Time] = useState(120);
   const [player2Time, setPlayer2Time] = useState(120);
   const [activePlayer, setActivePlayer] = useState<1 | 2>(1);
-  const [winner, setWinner] = useState("");
+  const [winner] = useState("");
 
   const [player1Ready, setPlayer1Ready] = useState(false);
   const [player2Ready, setPlayer2Ready] = useState(false);
@@ -95,7 +95,7 @@ function App() {
     if (!gameStarted || isGameOver) return;
     if (activePlayer !== player) return;
     const msValue = gameTime.ms % 100;
-    const { result, message, isGoal } = calculateShotResult(msValue);
+    const { message, isGoal } = calculateShotResult(msValue);
 
     setActionMessage(`${currentPlayer}: ${message} (${msValue}ms)`);
 
