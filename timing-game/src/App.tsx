@@ -8,7 +8,6 @@ import { calculateShotResult } from "./utils/calculateShotResult";
 
 
 function App() {
-  // 🕒 Zaman ve durumlar
   const [gameTime, setGameTime] = useState({ minutes: 0, seconds: 0, ms: 0 });
   const [turnTimeLeft, setTurnTimeLeft] = useState(10);
   const [currentPlayer, setCurrentPlayer] = useState("Oyuncu 1");
@@ -18,20 +17,17 @@ function App() {
   const [activePlayer, setActivePlayer] = useState<1 | 2>(1);
   const [winner, setWinner] = useState("");
 
-  // 🧍 Hazır durumları
   const [player1Ready, setPlayer1Ready] = useState(false);
   const [player2Ready, setPlayer2Ready] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [gameStarted, setGameStarted] = useState(false);
 
-  // 🏆 Skorlar
   const [player1Score, setPlayer1Score] = useState(0);
   const [player2Score, setPlayer2Score] = useState(0);
 
-  // 🎯 Eylem mesajı
   const [actionMessage, setActionMessage] = useState("");
 
-  // 🕒 Oyun genel sayacı
+  // Timer
   useEffect(() => {
     if (!gameStarted || isGameOver) return;
 
@@ -57,7 +53,7 @@ function App() {
     return () => clearInterval(interval);
   }, [gameStarted, isGameOver]);
 
-  // 🔁 Oyuncuların bireysel süreleri
+  // Oyuncuların süresi
   useEffect(() => {
     if (!gameStarted) return;
     const interval = setInterval(() => {
@@ -67,7 +63,7 @@ function App() {
     return () => clearInterval(interval);
   }, [activePlayer, gameStarted]);
 
-  // ⏳ Tur başına 10 saniye sayaç
+  // Tur süresi
   useEffect(() => {
     if (!gameStarted || isGameOver) return;
 
@@ -84,7 +80,7 @@ function App() {
     return () => clearInterval(interval);
   }, [gameStarted, currentPlayer]);
 
-  // 🎬 Yazı tura: oyuna kimin başlayacağı
+  // Yazı tura
   useEffect(() => {
     if (gameStarted) {
       const randomStart = Math.random() < 0.5 ? 1 : 2;
@@ -94,13 +90,11 @@ function App() {
     }
   }, [gameStarted]);
 
-  // 🎮 Oyuncuların eylemleri
+  // Eylem
   const handleButtonClick = (player: 1 | 2) => {
     if (!gameStarted || isGameOver) return;
     if (activePlayer !== player) return;
-
-    // Şu anki ms değerini al (oyunun genel sayacından)
-    const msValue = gameTime.ms % 100; // 0-99 arası değeri simüle ediyor
+    const msValue = gameTime.ms % 100;
     const { result, message, isGoal } = calculateShotResult(msValue);
 
     setActionMessage(`${currentPlayer}: ${message} (${msValue}ms)`);
@@ -142,7 +136,7 @@ function App() {
     setActionMessage("");
   };
 
-  // 🧍 Oyuncular hazır olunca geri sayım başlasın
+  // Hazır ve başlama
   useEffect(() => {
     if (player1Ready && player2Ready && !gameStarted) {
       let count = 3;
