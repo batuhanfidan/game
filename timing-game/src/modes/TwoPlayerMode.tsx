@@ -197,12 +197,12 @@ function App() {
       {/* Oyuncuların süreleri */}
       <div className="absolute top-12 sm:top-16 flex justify-between w-full px-4 sm:px-10 md:px-20 text-base sm:text-lg md:text-xl">
         <PlayerTimer
-          player="🧍‍♂️ Sol Oyuncu"
+          player="🧍‍♂️ Oyuncu 1"
           minutes={Math.floor(player1Time / 60)}
           seconds={player1Time % 60}
         />
         <PlayerTimer
-          player="🧍‍♂️ Sağ Oyuncu"
+          player="🧍‍♂️ Oyuncu 2"
           minutes={Math.floor(player2Time / 60)}
           seconds={player2Time % 60}
         />
