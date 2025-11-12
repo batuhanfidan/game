@@ -101,10 +101,6 @@ function App() {
       });
     }, 1000);
 
-
-  // Oyun bitir
-  
-
     return () => clearInterval(interval);
   }, [gameStarted, currentPlayer]);
 
@@ -212,8 +208,6 @@ function App() {
         />
       </div>
 
-      
-
       {/* Hazır ekranı */}
       {!gameStarted && (
         <div className="flex flex-col items-center justify-center gap-4 text-white text-lg sm:text-xl md:text-2xl px-4">
@@ -237,6 +231,15 @@ function App() {
               Oyuncu 2 Hazır
             </button>
           </div>
+
+          {/* 🔹 Menüye Dön butonu HAZIRLARIN ALTINA GETİRİLDİ */}
+          <button
+            onClick={() => window.dispatchEvent(new Event("back-to-menu"))}
+            className="mt-2 text-white text-sm hover:underline"
+          >
+            🔙 Menüye Dön
+          </button>
+
           {countdown !== null && (
             <div className="text-4xl sm:text-5xl md:text-6xl font-bold mt-4">{countdown}</div>
           )}
@@ -256,7 +259,6 @@ function App() {
           <div className="text-base sm:text-xl md:text-2xl mt-4 text-center text-green-400 font-semibold px-4">
             {actionMessage}
           </div>
-
 
           {/* Sıra Bilgisi */}
           <TurnInfo currentPlayer={currentPlayer} turnTimeLeft={turnTimeLeft} />
@@ -280,7 +282,6 @@ function App() {
 
       {/* Game Over ekranı */}
       {isGameOver && <GameOverModal winner={winner} finalScore={finalScore} onRestart={handleRestart} />}
-
     </div>
   );
 }

@@ -33,10 +33,29 @@ const BotMode = () => {
   const botAccuracy = 0.5;
   const botTimeoutRef = useRef<number | null>(null);
   
-  // Tur değişimini kontrol etmek için flag
   const turnSwitchInProgressRef = useRef(false);
 
-  //  Genel oyun süresi (30 sn) 
+  // 🔹 Oyuncu hazır sistemi
+  const [playerReady, setPlayerReady] = useState(false);
+
+  useEffect(() => {
+    if (playerReady && !gameStarted) {
+      let c = 3;
+      setCountdown(c);
+      const countdownInterval = setInterval(() => {
+        c--;
+        setCountdown(c);
+        if (c === 0) {
+          clearInterval(countdownInterval);
+          setCountdown(null);
+          setGameStarted(true);
+        }
+      }, 1000);
+      return () => clearInterval(countdownInterval);
+    }
+  }, [playerReady, gameStarted]);
+
+  //  Genel oyun süresi 
   useEffect(() => {
     if (!gameStarted || isGameOver) return;
     if (gameTime.minutes * 60 + gameTime.seconds >= 300) {
@@ -187,24 +206,36 @@ const BotMode = () => {
   //  Restart 
   const handleRestart = () => window.location.reload();
 
-  //  Geri sayım / başlat 
-  useEffect(() => {
-    let c = 3;
-    setCountdown(c);
-    const id = setInterval(() => {
-      c--;
-      setCountdown(c);
-      if (c === 0) {
-        clearInterval(id);
-        setCountdown(null);
-        setGameStarted(true);
-      }
-    }, 1000);
-    return () => clearInterval(id);
-  }, []);
-
   return (
     <div className="h-screen w-screen bg-black text-white flex flex-col justify-center items-center relative font-mono overflow-hidden">
+      {/* 🔹 Oyuncu Hazır ekranı */}
+      {!gameStarted && (
+        <div className="flex flex-col items-center justify-center gap-4 text-lg">
+          <button
+            onClick={() => setPlayerReady(true)}
+            disabled={playerReady}
+            className={`px-4 py-2 rounded text-base sm:text-lg ${
+              playerReady ? "bg-green-600" : "bg-gray-700 hover:bg-gray-600"
+            }`}
+          >
+            Oyuncu Hazır
+          </button>
+
+          {/* Menüye dön butonu */}
+          <button
+            onClick={() => window.dispatchEvent(new Event("back-to-menu"))}
+            className="text-white text-sm hover:underline"
+          >
+            🔙 Menüye Dön
+          </button>
+
+          {/* geri sayım sadece bir kere */}
+          {countdown !== null && (
+            <div className="text-5xl font-bold mt-4">{countdown}</div>
+          )}
+        </div>
+      )}
+
       {/* Skor */}
       <div className="absolute top-2 sm:top-4 text-lg sm:text-2xl md:text-3xl font-extrabold text-center text-yellow-400 drop-shadow-lg px-4">
         🏆 Skor: Oyuncu 1 [{player1Score}] - [{botScore}] Bot
@@ -223,11 +254,6 @@ const BotMode = () => {
           seconds={botTime % 60}
         />
       </div>
-
-      {/* Geri sayım */}
-      {!gameStarted && countdown !== null && (
-        <div className="text-6xl font-bold text-center">{countdown}</div>
-      )}
 
       {/* Oyun ekranı */}
       {gameStarted && !isGameOver && (
