@@ -15,7 +15,8 @@ function App() {
   const [player1Time, setPlayer1Time] = useState(120);
   const [player2Time, setPlayer2Time] = useState(120);
   const [activePlayer, setActivePlayer] = useState<1 | 2>(1);
-  const [winner] = useState("");
+  const [winner, setWinner] = useState("");
+  const [finalScore, setFinalScore] = useState("");
 
   const [player1Ready, setPlayer1Ready] = useState(false);
   const [player2Ready, setPlayer2Ready] = useState(false);
@@ -26,6 +27,43 @@ function App() {
   const [player2Score, setPlayer2Score] = useState(0);
 
   const [actionMessage, setActionMessage] = useState("");
+
+  useEffect(() => {
+    if (!gameStarted || isGameOver) return;
+
+    if (gameTime.minutes * 60 + gameTime.seconds >= 300) {
+      setIsGameOver(true);
+      return;
+    }
+
+    if (player1Time === 0 || player2Time === 0) {
+  
+      if (activePlayer === 1 && player1Time === 0) {
+        setActivePlayer(2);
+        setCurrentPlayer("Oyuncu 2");
+      } else if (activePlayer === 2 && player2Time === 0) {
+        setActivePlayer(1);
+        setCurrentPlayer("Oyuncu 1");
+      }
+
+      setTurnTimeLeft(0);
+    }
+
+    if ((player1Time === 0 && player2Time === 0) ||
+          (gameTime.minutes * 60 + gameTime.seconds >= 300)) {
+        setFinalScore(`Skor: Oyuncu 1 [${player1Score}] - [${player2Score}] Oyuncu 2`);
+        if (player1Score > player2Score) {
+          setWinner("🏆 Oyuncu 1 kazandı!");
+        } else if (player2Score > player1Score) {
+          setWinner("🏆 Oyuncu 2 kazandı!");
+        } else {
+          setWinner("🤝 Oyun berabere bitti!");
+        }
+
+        setIsGameOver(true);
+      } 
+  }, [gameTime, player1Time, player2Time, gameStarted, isGameOver]);
+
 
   // Timer
   useEffect(() => {
@@ -226,21 +264,25 @@ function App() {
           <TurnInfo currentPlayer={currentPlayer} turnTimeLeft={turnTimeLeft} />
 
           {/* Butonlar */}
-          <div className="flex justify-between w-full px-8 sm:px-16 md:px-32 mt-8">
-            <ActionButton
-              onClick={() => handleButtonClick(1)}
-              disabled={currentPlayer !== "Oyuncu 1"}
-            />
-            <ActionButton
-              onClick={() => handleButtonClick(2)}
-              disabled={currentPlayer !== "Oyuncu 2"}
-            />
+          <div className="flex justify-center w-full px-4 mt-8">
+            {currentPlayer === "Oyuncu 1" ? (
+              <ActionButton
+                onClick={() => handleButtonClick(1)}
+                disabled={false}
+              />
+            ) : (
+              <ActionButton
+                onClick={() => handleButtonClick(2)}
+                disabled={false}
+              />
+            )}
           </div>
         </>
       )}
 
       {/* Game Over ekranı */}
-      {isGameOver && <GameOverModal winner={winner} onRestart={handleRestart} />}
+      {isGameOver && <GameOverModal winner={winner} finalScore={finalScore} onRestart={handleRestart} />}
+
     </div>
   );
 }
