@@ -4,7 +4,7 @@ import BotMode from "./modes/BotMode";
 
 function App() {
   const [mode, setMode] = useState<null | "2p" | "bot">(null);
-  const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("easy");
+  // const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("easy");
   const [showRules, setShowRules] = useState(false);
 
   useEffect(() => {
@@ -19,8 +19,8 @@ function App() {
   return () => window.removeEventListener("back-to-menu", handler as EventListener);
   }, []);
 
-  if (mode === "2p") return <TwoPlayerMode onBackToMenu={() => setMode(null)} />;
-  if (mode === "bot") return <BotMode onBackToMenu={() => setMode(null)} />;
+  if (mode === "2p") return <TwoPlayerMode  />;
+  if (mode === "bot") return <BotMode/>;
 
   return (
     <div className="h-screen w-screen flex flex-col justify-center items-center bg-black text-white font-mono">
