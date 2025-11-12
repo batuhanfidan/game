@@ -157,15 +157,15 @@ function App() {
   }, [player1Ready, player2Ready, gameStarted]);
 
   return (
-    <div className="h-screen w-screen bg-black text-white flex flex-col justify-center items-center relative font-mono">
+    <div className="h-screen w-screen bg-black text-white flex flex-col justify-center items-center relative font-mono overflow-hidden">
       {/* 🏆 Skor Board */}
-      <div className="absolute top-4 text-3xl font-extrabold text-center text-yellow-400 drop-shadow-lg">
+      <div className="absolute top-2 sm:top-4 text-lg sm:text-2xl md:text-3xl font-extrabold text-center text-yellow-400 drop-shadow-lg px-4">
         🏆 Skor: Oyuncu 1 [{player1Score}] - [{player2Score}] Oyuncu 2
       </div>
 
 
       {/* Oyuncuların süreleri */}
-      <div className="absolute top-16 flex justify-between w-full px-20 text-xl">
+      <div className="absolute top-12 sm:top-16 flex justify-between w-full px-4 sm:px-10 md:px-20 text-base sm:text-lg md:text-xl">
         <PlayerTimer
           player="🧍‍♂️ Sol Oyuncu"
           minutes={Math.floor(player1Time / 60)}
@@ -180,12 +180,12 @@ function App() {
 
       {/* Hazır ekranı */}
       {!gameStarted && (
-        <div className="flex flex-col items-center justify-center gap-4 text-white text-2xl">
-          <div className="flex gap-10">
+        <div className="flex flex-col items-center justify-center gap-4 text-white text-lg sm:text-xl md:text-2xl px-4">
+          <div className="flex flex-col sm:flex-row gap-4 sm:gap-10">
             <button
               onClick={() => setPlayer1Ready(true)}
               disabled={player1Ready}
-              className={`px-4 py-2 rounded ${
+              className={`px-4 py-2 rounded text-base sm:text-lg ${
                 player1Ready ? "bg-green-600" : "bg-gray-700 hover:bg-gray-600"
               }`}
             >
@@ -194,7 +194,7 @@ function App() {
             <button
               onClick={() => setPlayer2Ready(true)}
               disabled={player2Ready}
-              className={`px-4 py-2 rounded ${
+              className={`px-4 py-2 rounded text-base sm:text-lg ${
                 player2Ready ? "bg-green-600" : "bg-gray-700 hover:bg-gray-600"
               }`}
             >
@@ -202,7 +202,7 @@ function App() {
             </button>
           </div>
           {countdown !== null && (
-            <div className="text-6xl font-bold mt-4">{countdown}</div>
+            <div className="text-4xl sm:text-5xl md:text-6xl font-bold mt-4">{countdown}</div>
           )}
         </div>
       )}
@@ -217,7 +217,7 @@ function App() {
           />
 
           {/* Aksiyon mesajı */}
-          <div className="text-2xl mt-4 text-center text-green-400 font-semibold">
+          <div className="text-base sm:text-xl md:text-2xl mt-4 text-center text-green-400 font-semibold px-4">
             {actionMessage}
           </div>
 
@@ -226,7 +226,7 @@ function App() {
           <TurnInfo currentPlayer={currentPlayer} turnTimeLeft={turnTimeLeft} />
 
           {/* Butonlar */}
-          <div className="flex justify-between w-full px-32 mt-8">
+          <div className="flex justify-between w-full px-8 sm:px-16 md:px-32 mt-8">
             <ActionButton
               onClick={() => handleButtonClick(1)}
               disabled={currentPlayer !== "Oyuncu 1"}
