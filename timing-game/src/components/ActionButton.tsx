@@ -8,7 +8,7 @@ const ActionButton: React.FC<ActionButtonProps> = ({ onClick, disabled = false }
     <button
       onClick={onClick}
       disabled={disabled}
-      className={`px-4 py-3 sm:px-6 sm:py-4 md:px-8 md:py-4 text-base sm:text-lg md:text-xl rounded-xl font-bold text-white transition ${
+      className={`px-8 py-6 sm:px-12 sm:py-8 md:px-12 md:py-6 text-base sm:text-lg md:text-xl rounded-xl font-bold text-white transition ${
         disabled ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'
       }`}
     >
