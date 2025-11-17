@@ -5,7 +5,7 @@ import ActionButton from "../components/ActionButton";
 import TurnInfo from "../components/TurnInfo";
 import GameOverModal from "../components/GameOverModal";
 import { calculateShotResult } from "../utils/calculateShotResult";
-
+import RulesModal from "../components/RulesModel";
 
 function App() {
   const [gameTime, setGameTime] = useState({ minutes: 0, seconds: 0, ms: 0 });
@@ -17,6 +17,7 @@ function App() {
   const [activePlayer, setActivePlayer] = useState<1 | 2>(1);
   const [winner, setWinner] = useState("");
   const [finalScore, setFinalScore] = useState("");
+  const [showRules, setShowRules] = useState(false);
 
   const [player1Ready, setPlayer1Ready] = useState(false);
   const [player2Ready, setPlayer2Ready] = useState(false);
@@ -29,27 +30,26 @@ function App() {
   const [actionMessage, setActionMessage] = useState("");
 
   const finishGame = () => {
-      setIsGameOver(true);
-      setFinalScore(`Skor: Oyuncu 1 [${player1Score}] - [${player2Score}] Oyuncu 2`);
-      if (player1Score > player2Score) setWinner("🏆 Oyuncu 1 kazandı!");
-      else if (player2Score > player1Score) setWinner("🏆 Oyuncu 2 kazandı!");
-      else setWinner("🤝 Oyun berabere bitti!");
-    };
-  
+    setIsGameOver(true);
+    setFinalScore(
+      `Skor: Oyuncu 1 [${player1Score}] - [${player2Score}] Oyuncu 2`
+    );
+    if (player1Score > player2Score) setWinner("🏆 Oyuncu 1 kazandı!");
+    else if (player2Score > player1Score) setWinner("🏆 Oyuncu 2 kazandı!");
+    else setWinner("🤝 Oyun berabere bitti!");
+  };
 
   useEffect(() => {
-      if (!gameStarted || isGameOver) return;
+    if (!gameStarted || isGameOver) return;
 
-      if (player1Time === 0 && player2Time === 0) {
-        finishGame();
-      }
+    if (player1Time === 0 && player2Time === 0) {
+      finishGame();
+    }
 
-      if (gameTime.minutes * 60 + gameTime.seconds >= 300) {
-        finishGame();
-      }
-    }, [gameTime, player1Time, player2Time, gameStarted, isGameOver]);
-
-
+    if (gameTime.minutes * 60 + gameTime.seconds >= 300) {
+      finishGame();
+    }
+  }, [gameTime, player1Time, player2Time, gameStarted, isGameOver]);
 
   // Timer
   useEffect(() => {
@@ -104,11 +104,10 @@ function App() {
     return () => clearInterval(interval);
   }, [gameStarted, currentPlayer]);
 
-      // 🔹 Sıra değişince sayaç sıfırla
-      useEffect(() => {
-        setTurnTimeLeft(10);
-      }, [currentPlayer]);
-
+  // 🔹 Sıra değişince sayaç sıfırla
+  useEffect(() => {
+    setTurnTimeLeft(10);
+  }, [currentPlayer]);
 
   // Yazı tura
   useEffect(() => {
@@ -116,7 +115,11 @@ function App() {
       const randomStart = Math.random() < 0.5 ? 1 : 2;
       setActivePlayer(randomStart);
       setCurrentPlayer(randomStart === 1 ? "Oyuncu 1" : "Oyuncu 2");
-      setActionMessage(`🎲 Yazı tura sonucu: ${randomStart === 1 ? "Oyuncu 1" : "Oyuncu 2"} başlıyor!`);
+      setActionMessage(
+        `🎲 Yazı tura sonucu: ${
+          randomStart === 1 ? "Oyuncu 1" : "Oyuncu 2"
+        } başlıyor!`
+      );
     }
   }, [gameStarted]);
 
@@ -136,7 +139,6 @@ function App() {
 
     handleTurnSwitch();
   };
-
 
   const handleTurnSwitch = () => {
     const nextPlayer = activePlayer === 1 ? 2 : 1;
@@ -188,11 +190,22 @@ function App() {
 
   return (
     <div className="h-screen w-screen bg-black text-white flex flex-col justify-center items-center relative font-mono overflow-hidden">
+      <button
+        onClick={() => setShowRules(true)}
+        className="absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 
+             text-white rounded-full w-8 h-8 flex items-center 
+             justify-center text-lg font-bold z-[60]
+             sm:top-4 sm:right-4 sm:w-10 sm:h-10 sm:text-xl"
+        title="Oyun Kuralları"
+      >
+        ?
+      </button>
+      <RulesModal showRules={showRules} onClose={() => setShowRules(false)} />
+
       {/* 🏆 Skor Board */}
-      <div className="absolute top-2 sm:top-4 text-lg sm:text-2xl md:text-3xl font-extrabold text-center text-yellow-400 drop-shadow-lg px-4">
+      <div className="absolute top-2 sm:top-4 text-lg sm:text-2xl md:text-3xl font-extrabold text-center text-yellow-400 drop-shadow-lg px-4 max-sm:mt-6">
         🏆 Skor: Oyuncu 1 [{player1Score}] - [{player2Score}] Oyuncu 2
       </div>
-
 
       {/* Oyuncuların süreleri */}
       <div className="absolute top-12 sm:top-16 flex justify-between w-full px-4 sm:px-10 md:px-20 text-base sm:text-lg md:text-xl">
@@ -241,7 +254,9 @@ function App() {
           </button>
 
           {countdown !== null && (
-            <div className="text-4xl sm:text-5xl md:text-6xl font-bold mt-4">{countdown}</div>
+            <div className="text-4xl sm:text-5xl md:text-6xl font-bold mt-4">
+              {countdown}
+            </div>
           )}
         </div>
       )}
@@ -264,7 +279,7 @@ function App() {
           <TurnInfo currentPlayer={currentPlayer} turnTimeLeft={turnTimeLeft} />
 
           {/* Butonlar */}
-          <div className="flex justify-center w-full px-4 mt-8">
+          <div className="flex justify-center w-full px-4 mt-8 transition-all duration-200">
             {currentPlayer === "Oyuncu 1" ? (
               <ActionButton
                 onClick={() => handleButtonClick(1)}
@@ -281,7 +296,17 @@ function App() {
       )}
 
       {/* Game Over ekranı */}
-      {isGameOver && <GameOverModal winner={winner} finalScore={finalScore} onRestart={handleRestart} />}
+      {isGameOver && (
+        <GameOverModal
+          winner={winner}
+          finalScore={finalScore}
+          onRestart={handleRestart}
+        />
+      )}
+
+      <div className="absolute bottom-2 text-xs sm:text-xl ">
+        🎯 Amaç: Doğru zamanlama ile gol atmaya çalış!
+      </div>
     </div>
   );
 }
