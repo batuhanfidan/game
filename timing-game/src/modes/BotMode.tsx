@@ -143,9 +143,10 @@ const BotMode = () => {
     if (currentPlayer !== "Oyuncu 1") return;
     if (turnSwitchInProgressRef.current) return;
 
-    const msValue = gameTime.ms % 100;
+    const msValue = gameTime.ms % 1000;
     const { message, isGoal } = calculateShotResult(msValue);
-    setActionMessage(`⚽ Oyuncu 1: ${message} (${msValue}ms)`);
+    const displayMs = String(Math.floor(msValue / 10)).padStart(2, "0");
+    setActionMessage(`⚽ Oyuncu 1: ${message} (${displayMs}ms)`);
 
     if (isGoal) {
       setPlayer1Score((s) => s + 1);
@@ -170,12 +171,11 @@ const BotMode = () => {
     botTimeoutRef.current = window.setTimeout(() => {
       if (turnSwitchInProgressRef.current) return;
 
-      const msValue = gameTime.ms % 100;
+      const msValue = gameTime.ms % 1000;
       const { message, isGoal } = calculateShotResult(msValue);
       const success = Math.random() < botAccuracy;
-      const botMessage = success ? message : "Kötü atış! Top dışarıda.";
-
-      setActionMessage(`🤖 Bot: ${botMessage} (${msValue}ms)`);
+      const displayMs = String(Math.floor(msValue / 10)).padStart(2, "0");
+      setActionMessage(`🤖 Bot: ${message} (${displayMs}ms)`);
 
       if (success && isGoal) {
         setBotScore((s) => s + 1);

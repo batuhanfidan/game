@@ -127,10 +127,10 @@ function App() {
   const handleButtonClick = (player: 1 | 2) => {
     if (!gameStarted || isGameOver) return;
     if (activePlayer !== player) return;
-    const msValue = gameTime.ms % 100;
+    const msValue = gameTime.ms % 1000;
     const { message, isGoal } = calculateShotResult(msValue);
-
-    setActionMessage(`${currentPlayer}: ${message} (${msValue}ms)`);
+    const displayMs = String(Math.floor(msValue / 10)).padStart(2, "0");
+    setActionMessage(`${currentPlayer}: ${message} (${displayMs}ms)`);
 
     if (isGoal) {
       if (player === 1) setPlayer1Score((s) => s + 1);

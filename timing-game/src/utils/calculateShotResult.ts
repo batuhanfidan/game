@@ -24,7 +24,7 @@ export function calculateShotResult(ms: number): ShotOutcome {
     result = "GOL";
     message = "MÜKEMMEL! Sıfırı tutturdun, gol!";
     isGoal = true;
-  } else if (ms <= 10) {
+  } else if (ms <= 100) {
     result = "PENALTI";
     const random = Math.random() * 100;
     if (random <= 75) {
@@ -37,7 +37,7 @@ export function calculateShotResult(ms: number): ShotOutcome {
       message = "Kaleci kurtardı! 🧤";
       result = "KURTARDI";
     }
-  } else if (ms <= 30) {
+  } else if (ms <= 300) {
     result = "ŞUT";
     const zone = Math.random() * 100;
     if (zone <= 30) {
@@ -51,7 +51,7 @@ export function calculateShotResult(ms: number): ShotOutcome {
     } else {
       message = "Uzak mesafeden şut, kaleci kontrol etti.";
     }
-  } else if (ms <= 50) {
+  } else if (ms <= 500) {
     result = "ORTA";
     const zone = Math.floor(Math.random() * 6) + 1;
     const success = Math.random() * 100;
@@ -66,7 +66,7 @@ export function calculateShotResult(ms: number): ShotOutcome {
     } else {
       message = `Bölge ${zone}'den orta başarısız.`;
     }
-  } else if (ms <= 70) {
+  } else if (ms <= 700) {
     result = "FRİKİK";
     const chance = Math.random() * 100;
     if (chance <= 20) {
