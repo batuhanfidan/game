@@ -1,314 +1,192 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import TimerDisplay from "../components/TimerDisplay";
 import PlayerTimer from "../components/PlayerTimer";
 import ActionButton from "../components/ActionButton";
 import TurnInfo from "../components/TurnInfo";
 import GameOverModal from "../components/GameOverModal";
-import { calculateShotResult } from "../utils/calculateShotResult";
 import RulesModal from "../components/RulesModel";
+import { useGameLogic } from "../hooks/useGameLogic";
 
-function App() {
-  const [gameTime, setGameTime] = useState({ minutes: 0, seconds: 0, ms: 0 });
-  const [turnTimeLeft, setTurnTimeLeft] = useState(10);
-  const [currentPlayer, setCurrentPlayer] = useState("Oyuncu 1");
-  const [isGameOver, setIsGameOver] = useState(false);
-  const [player1Time, setPlayer1Time] = useState(120);
-  const [player2Time, setPlayer2Time] = useState(120);
-  const [activePlayer, setActivePlayer] = useState<1 | 2>(1);
-  const [winner, setWinner] = useState("");
-  const [finalScore, setFinalScore] = useState("");
+interface TwoPlayerModeProps {
+  onBack: () => void;
+}
+
+const TwoPlayerMode: React.FC<TwoPlayerModeProps> = ({ onBack }) => {
+  const {
+    gameState,
+    gameTimeMs,
+    turnTimeLeft,
+    currentPlayer,
+    playerTimes,
+    scores,
+    actionMessage,
+    winner,
+    finalScore,
+    countdown,
+    startGame,
+    handleAction,
+    restartGame,
+    getCurrentPlayerName,
+  } = useGameLogic(); // Varsayılan (Bot yok, 2 kişilik)
+
   const [showRules, setShowRules] = useState(false);
+  const [p1Ready, setP1Ready] = useState(false);
+  const [p2Ready, setP2Ready] = useState(false);
 
-  const [player1Ready, setPlayer1Ready] = useState(false);
-  const [player2Ready, setPlayer2Ready] = useState(false);
-  const [countdown, setCountdown] = useState<number | null>(null);
-  const [gameStarted, setGameStarted] = useState(false);
-
-  const [player1Score, setPlayer1Score] = useState(0);
-  const [player2Score, setPlayer2Score] = useState(0);
-
-  const [actionMessage, setActionMessage] = useState("");
-
-  const finishGame = () => {
-    setIsGameOver(true);
-    setFinalScore(
-      `Skor: Oyuncu 1 [${player1Score}] - [${player2Score}] Oyuncu 2`
-    );
-    if (player1Score > player2Score) setWinner("🏆 Oyuncu 1 kazandı!");
-    else if (player2Score > player1Score) setWinner("🏆 Oyuncu 2 kazandı!");
-    else setWinner("🤝 Oyun berabere bitti!");
-  };
-
+  // Her iki oyuncu da hazırsa oyunu başlat
   useEffect(() => {
-    if (!gameStarted || isGameOver) return;
-
-    if (player1Time === 0 && player2Time === 0) {
-      finishGame();
+    if (p1Ready && p2Ready && gameState === "idle") {
+      startGame();
     }
+  }, [p1Ready, p2Ready, gameState, startGame]);
 
-    if (gameTime.minutes * 60 + gameTime.seconds >= 300) {
-      finishGame();
+  // Oyun bittiyse veya yeniden başlatıldıysa hazır durumlarını sıfırla
+  useEffect(() => {
+    if (gameState === "idle") {
+      setP1Ready(false);
+      setP2Ready(false);
     }
-  }, [gameTime, player1Time, player2Time, gameStarted, isGameOver]);
-
-  // Timer
-  useEffect(() => {
-    if (!gameStarted || isGameOver) return;
-
-    const interval = setInterval(() => {
-      setGameTime((prev) => {
-        let ms = prev.ms + 10;
-        let seconds = prev.seconds;
-        let minutes = prev.minutes;
-
-        if (ms >= 1000) {
-          ms = 0;
-          seconds++;
-        }
-        if (seconds >= 60) {
-          seconds = 0;
-          minutes++;
-        }
-
-        return { minutes, seconds, ms };
-      });
-    }, 10);
-
-    return () => clearInterval(interval);
-  }, [gameStarted, isGameOver]);
-
-  // Oyuncuların süresi
-  useEffect(() => {
-    if (!gameStarted) return;
-    const interval = setInterval(() => {
-      if (activePlayer === 1) setPlayer1Time((t) => Math.max(t - 1, 0));
-      else setPlayer2Time((t) => Math.max(t - 1, 0));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [activePlayer, gameStarted]);
-
-  // Tur süresi
-  useEffect(() => {
-    if (!gameStarted || isGameOver) return;
-
-    const interval = setInterval(() => {
-      setTurnTimeLeft((prev) => {
-        if (prev <= 1) {
-          handleAutoSwitch();
-          return 10;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [gameStarted, currentPlayer]);
-
-  // 🔹 Sıra değişince sayaç sıfırla
-  useEffect(() => {
-    setTurnTimeLeft(10);
-  }, [currentPlayer]);
-
-  // Yazı tura
-  useEffect(() => {
-    if (gameStarted) {
-      const randomStart = Math.random() < 0.5 ? 1 : 2;
-      setActivePlayer(randomStart);
-      setCurrentPlayer(randomStart === 1 ? "Oyuncu 1" : "Oyuncu 2");
-      setActionMessage(
-        `🎲 Yazı tura sonucu: ${
-          randomStart === 1 ? "Oyuncu 1" : "Oyuncu 2"
-        } başlıyor!`
-      );
-    }
-  }, [gameStarted]);
-
-  // Eylem
-  const handleButtonClick = (player: 1 | 2) => {
-    if (!gameStarted || isGameOver) return;
-    if (activePlayer !== player) return;
-    const msValue = gameTime.ms % 1000;
-    const { message, isGoal } = calculateShotResult(msValue);
-    const displayMs = String(Math.floor(msValue / 10)).padStart(2, "0");
-    setActionMessage(`${currentPlayer}: ${message} (${displayMs}ms)`);
-
-    if (isGoal) {
-      if (player === 1) setPlayer1Score((s) => s + 1);
-      else setPlayer2Score((s) => s + 1);
-    }
-
-    handleTurnSwitch();
-  };
-
-  const handleTurnSwitch = () => {
-    const nextPlayer = activePlayer === 1 ? 2 : 1;
-    setActivePlayer(nextPlayer);
-    setCurrentPlayer(nextPlayer === 1 ? "Oyuncu 1" : "Oyuncu 2");
-    setTurnTimeLeft(10);
-  };
-
-  const handleAutoSwitch = () => {
-    setActionMessage(`⏰ ${currentPlayer} süresini doldurdu, sıra değişti.`);
-    handleTurnSwitch();
-  };
-
-  const handleRestart = () => {
-    setGameTime({ minutes: 0, seconds: 0, ms: 0 });
-    setTurnTimeLeft(10);
-    setCurrentPlayer("Oyuncu 1");
-    setIsGameOver(false);
-    setPlayer1Time(120);
-    setPlayer2Time(120);
-    setPlayer1Score(0);
-    setPlayer2Score(0);
-    setPlayer1Ready(false);
-    setPlayer2Ready(false);
-    setCountdown(null);
-    setGameStarted(false);
-    setActionMessage("");
-  };
-
-  // Hazır ve başlama
-  useEffect(() => {
-    if (player1Ready && player2Ready && !gameStarted) {
-      let count = 3;
-      setCountdown(count);
-
-      const countdownInterval = setInterval(() => {
-        count--;
-        setCountdown(count);
-        if (count === 0) {
-          clearInterval(countdownInterval);
-          setCountdown(null);
-          setGameStarted(true);
-        }
-      }, 1000);
-
-      return () => clearInterval(countdownInterval);
-    }
-  }, [player1Ready, player2Ready, gameStarted]);
+  }, [gameState]);
 
   return (
     <div className="h-screen w-screen bg-black text-white flex flex-col justify-center items-center relative font-mono overflow-hidden">
+      {/* Yardım Butonu */}
       <button
         onClick={() => setShowRules(true)}
-        className="absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 
-             text-white rounded-full w-8 h-8 flex items-center 
-             justify-center text-lg font-bold z-[60]
-             sm:top-4 sm:right-4 sm:w-10 sm:h-10 sm:text-xl"
+        className="absolute top-4 right-4 bg-gray-700 hover:bg-gray-600 
+             text-white rounded-full w-10 h-10 flex items-center 
+             justify-center text-xl font-bold z-[60] cursor-pointer"
         title="Oyun Kuralları"
       >
         ?
       </button>
       <RulesModal showRules={showRules} onClose={() => setShowRules(false)} />
 
-      {/* 🏆 Skor Board */}
-      <div className="absolute top-2 sm:top-4 text-lg sm:text-2xl md:text-3xl font-extrabold text-center text-yellow-400 drop-shadow-lg px-4 max-sm:mt-6">
-        🏆 Skor: Oyuncu 1 [{player1Score}] - [{player2Score}] Oyuncu 2
+      {/* Skor Board */}
+      <div className="absolute top-4 text-2xl md:text-3xl font-extrabold text-center text-yellow-400 drop-shadow-lg px-4">
+        🏆 Skor: Oyuncu 1 [{scores.p1}] - [{scores.p2}] Oyuncu 2
       </div>
 
-      {/* Oyuncuların süreleri */}
-      <div className="absolute top-12 sm:top-16 flex justify-between w-full px-4 sm:px-10 md:px-20 text-base sm:text-lg md:text-xl">
+      {/* Oyuncu Süreleri */}
+      <div className="absolute top-20 flex justify-between w-full px-4 md:px-20 text-xl">
         <PlayerTimer
           player="🧍‍♂️ Oyuncu 1"
-          minutes={Math.floor(player1Time / 60)}
-          seconds={player1Time % 60}
+          minutes={Math.floor(playerTimes.p1 / 60)}
+          seconds={playerTimes.p1 % 60}
         />
         <PlayerTimer
           player="🧍‍♂️ Oyuncu 2"
-          minutes={Math.floor(player2Time / 60)}
-          seconds={player2Time % 60}
+          minutes={Math.floor(playerTimes.p2 / 60)}
+          seconds={playerTimes.p2 % 60}
         />
       </div>
 
-      {/* Hazır ekranı */}
-      {!gameStarted && (
-        <div className="flex flex-col items-center justify-center gap-4 text-white text-lg sm:text-xl md:text-2xl px-4">
-          <div className="flex flex-col sm:flex-row gap-4 sm:gap-10">
+      {/* Hazırlık Ekranı */}
+      {gameState === "idle" && !countdown && (
+        <div className="flex flex-col items-center gap-6 z-10 bg-gray-900/80 p-8 rounded-2xl border border-gray-700">
+          <div className="flex gap-8">
             <button
-              onClick={() => setPlayer1Ready(true)}
-              disabled={player1Ready}
-              className={`px-4 py-2 rounded text-base sm:text-lg ${
-                player1Ready ? "bg-green-600" : "bg-gray-700 hover:bg-gray-600"
+              onClick={() => setP1Ready(true)}
+              disabled={p1Ready}
+              className={`px-6 py-3 rounded-lg text-xl font-bold transition ${
+                p1Ready
+                  ? "bg-green-600 cursor-default"
+                  : "bg-gray-700 hover:bg-gray-600 cursor-pointer"
               }`}
             >
-              Oyuncu 1 Hazır
+              {p1Ready ? "Oyuncu 1 Hazır ✓" : "Oyuncu 1 Hazır"}
             </button>
+
             <button
-              onClick={() => setPlayer2Ready(true)}
-              disabled={player2Ready}
-              className={`px-4 py-2 rounded text-base sm:text-lg ${
-                player2Ready ? "bg-green-600" : "bg-gray-700 hover:bg-gray-600"
+              onClick={() => setP2Ready(true)}
+              disabled={p2Ready}
+              className={`px-6 py-3 rounded-lg text-xl font-bold transition ${
+                p2Ready
+                  ? "bg-green-600 cursor-default"
+                  : "bg-gray-700 hover:bg-gray-600 cursor-pointer"
               }`}
             >
-              Oyuncu 2 Hazır
+              {p2Ready ? "Oyuncu 2 Hazır ✓" : "Oyuncu 2 Hazır"}
             </button>
           </div>
 
-          {/* 🔹 Menüye Dön butonu HAZIRLARIN ALTINA GETİRİLDİ */}
           <button
-            onClick={() => window.dispatchEvent(new Event("back-to-menu"))}
-            className="mt-2 text-white text-sm hover:underline"
+            onClick={onBack}
+            className="mt-4 text-gray-400 hover:text-white underline cursor-pointer text-sm"
           >
             🔙 Menüye Dön
           </button>
-
-          {countdown !== null && (
-            <div className="text-4xl sm:text-5xl md:text-6xl font-bold mt-4">
-              {countdown}
-            </div>
-          )}
         </div>
       )}
 
-      {/* Orta Sayaç */}
-      {gameStarted && (
-        <>
-          <TimerDisplay
-            minutes={gameTime.minutes}
-            seconds={gameTime.seconds}
-            milliseconds={gameTime.ms}
-          />
+      {/* Geri Sayım */}
+      {countdown !== null && (
+        <div className="text-7xl font-bold text-yellow-400 animate-pulse z-10">
+          {countdown}
+        </div>
+      )}
 
-          {/* Aksiyon mesajı */}
-          <div className="text-base sm:text-xl md:text-2xl mt-4 text-center text-green-400 font-semibold px-4">
+      {/* Oyun Alanı */}
+      {gameState === "playing" && (
+        <>
+          <TimerDisplay totalMs={gameTimeMs} />
+
+          <div className="text-xl md:text-2xl mt-4 text-center text-green-400 font-semibold px-4 h-8">
             {actionMessage}
           </div>
 
-          {/* Sıra Bilgisi */}
-          <TurnInfo currentPlayer={currentPlayer} turnTimeLeft={turnTimeLeft} />
+          <TurnInfo
+            currentPlayer={getCurrentPlayerName()}
+            turnTimeLeft={turnTimeLeft}
+          />
 
-          {/* Butonlar */}
-          <div className="flex justify-center w-full px-4 mt-8 transition-all duration-200">
-            {currentPlayer === "Oyuncu 1" ? (
+          {/* Butonlar - Sıra kimdeyse o buton aktif görünür */}
+          <div className="flex justify-center w-full gap-10 px-4 mt-8">
+            <div
+              className={`flex flex-col items-center transition-opacity duration-200 ${
+                currentPlayer !== "p1" ? "opacity-30 pointer-events-none" : ""
+              }`}
+            >
               <ActionButton
-                onClick={() => handleButtonClick(1)}
-                disabled={false}
+                onClick={handleAction}
+                disabled={currentPlayer !== "p1"}
               />
-            ) : (
+              <p className="mt-2 text-sm text-gray-400">Oyuncu 1 (Sol)</p>
+            </div>
+
+            <div
+              className={`flex flex-col items-center transition-opacity duration-200 ${
+                currentPlayer !== "p2" ? "opacity-30 pointer-events-none" : ""
+              }`}
+            >
               <ActionButton
-                onClick={() => handleButtonClick(2)}
-                disabled={false}
+                onClick={handleAction}
+                disabled={currentPlayer !== "p2"}
               />
-            )}
+              <p className="mt-2 text-sm text-gray-400">Oyuncu 2 (Sağ)</p>
+            </div>
+          </div>
+
+          <div className="mt-4 text-gray-500 text-sm animate-pulse">
+            (İpucu: Sırası gelen SPACE tuşunu kullanabilir)
           </div>
         </>
       )}
 
-      {/* Game Over ekranı */}
-      {isGameOver && (
+      {/* Oyun Sonu */}
+      {gameState === "finished" && (
         <GameOverModal
           winner={winner}
           finalScore={finalScore}
-          onRestart={handleRestart}
+          onRestart={restartGame}
         />
       )}
 
-      <div className="absolute bottom-2 text-xs sm:text-xl ">
+      <div className="absolute bottom-4 text-sm md:text-lg text-gray-400">
         🎯 Amaç: Doğru zamanlama ile gol atmaya çalış!
       </div>
     </div>
   );
-}
+};
 
-export default App;
+export default TwoPlayerMode;

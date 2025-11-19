@@ -1,15 +1,13 @@
-import { formatTime } from '../utils/formatTime';
+import { formatTime } from "../utils/formatTime";
 
 interface TimerDisplayProps {
-  minutes: number;
-  seconds: number;
-  milliseconds: number;
+  totalMs: number;
 }
 
-const TimerDisplay: React.FC<TimerDisplayProps> = ({ minutes, seconds, milliseconds }) => {
+const TimerDisplay: React.FC<TimerDisplayProps> = ({ totalMs }) => {
   return (
-    <div className="text-3xl font-bold text-center my-4">
-      {formatTime(minutes, seconds, milliseconds)}
+    <div className="text-4xl sm:text-6xl font-bold text-center my-4 font-mono tracking-wider text-white drop-shadow-md">
+      {formatTime(totalMs)}
     </div>
   );
 };
