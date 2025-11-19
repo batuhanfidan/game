@@ -41,16 +41,16 @@ const RulesModal: React.FC<RulesModalProps> = ({ showRules, onClose }) => {
                 • <strong>00 ms</strong> → GOL! (Tam isabet) ⚽
               </li>
               <li>
-                • <strong>01-10 ms</strong> → Penaltı (%75 Gol)
+                • <strong>01-10 ms</strong> → Penaltı
               </li>
               <li>
-                • <strong>11-30 ms</strong> → Şut (%25 Gol)
+                • <strong>11-30 ms</strong> → Şut
               </li>
               <li>
-                • <strong>31-50 ms</strong> → Orta (%20 Gol)
+                • <strong>31-50 ms</strong> → Orta
               </li>
               <li>
-                • <strong>51-70 ms</strong> → Frikik (%20 Gol)
+                • <strong>51-70 ms</strong> → Frikik
               </li>
               <li>
                 • <strong>70+ ms</strong> → Ofsayt ❌
