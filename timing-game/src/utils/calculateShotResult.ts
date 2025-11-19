@@ -20,13 +20,14 @@ export function calculateShotResult(ms: number): ShotOutcome {
   let message = "";
   let isGoal = false;
 
-  if (ms === 0) {
+  if (ms < 10) {
     result = "GOL";
     message = "MÜKEMMEL! Sıfırı tutturdun, gol!";
     isGoal = true;
-  } else if (ms <= 100) {
+  } else if (ms < 110) {
     result = "PENALTI";
     const random = Math.random() * 100;
+
     if (random <= 75) {
       message = "Penaltıdan gol! ⚽";
       isGoal = true;
