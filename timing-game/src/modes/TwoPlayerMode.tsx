@@ -1,16 +1,15 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import TimerDisplay from "../components/TimerDisplay";
 import PlayerTimer from "../components/PlayerTimer";
 import ActionButton from "../components/ActionButton";
 import TurnInfo from "../components/TurnInfo";
 import GameOverModal from "../components/GameOverModal";
 import RulesModal from "../components/RulesModel";
+import VisualEffectOverlay from "../components/VisualEffectOverlay";
+import PauseMenu from "../components/PauseMenu";
 import { useGameLogic } from "../hooks/useGameLogic";
 import { toggleMute, getMuteStatus } from "../utils/sound";
-
-interface TwoPlayerModeProps {
-  onBack: () => void;
-}
 
 const THEMES = [
   { name: "Klasik", class: "bg-black" },
@@ -19,7 +18,8 @@ const THEMES = [
   { name: "Neon", class: "bg-purple-900" },
 ];
 
-const TwoPlayerMode: React.FC<TwoPlayerModeProps> = ({ onBack }) => {
+const TwoPlayerMode = () => {
+  const navigate = useNavigate();
   const {
     gameState,
     gameTimeMs,
@@ -37,26 +37,24 @@ const TwoPlayerMode: React.FC<TwoPlayerModeProps> = ({ onBack }) => {
     getCurrentPlayerName,
     setPlayerNames,
     playerNames,
+    visualEffect,
+    isPaused,
+    togglePause,
   } = useGameLogic();
 
   const [showRules, setShowRules] = useState(false);
   const [p1Ready, setP1Ready] = useState(false);
   const [p2Ready, setP2Ready] = useState(false);
-
   const [currentTheme, setCurrentTheme] = useState(0);
   const [isMuted, setIsMuted] = useState(getMuteStatus());
-
-  // YENİ: Hamburger Menü State'i
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const handleThemeChange = () => {
+  const handleThemeChange = () =>
     setCurrentTheme((prev) => (prev + 1) % THEMES.length);
-  };
+  const handleMuteToggle = () => setIsMuted(toggleMute());
 
-  const handleMuteToggle = () => {
-    const muted = toggleMute();
-    setIsMuted(muted);
-  };
+  // Geçmişi temizleyerek ana menüye dön
+  const handleBackToMenu = () => navigate("/", { replace: true });
 
   useEffect(() => {
     if (p1Ready && p2Ready && gameState === "idle") startGame();
@@ -70,10 +68,40 @@ const TwoPlayerMode: React.FC<TwoPlayerModeProps> = ({ onBack }) => {
   }, [gameState]);
 
   return (
+    // Ekran sarsıntısı sadece gol olduğunda tetiklenir
     <div
-      className={`h-screen w-screen text-white flex flex-col justify-center items-center relative font-mono overflow-hidden transition-colors duration-500 ${THEMES[currentTheme].class}`}
+      className={`h-screen w-screen text-white flex flex-col justify-center items-center relative font-mono overflow-hidden transition-colors duration-500 ${
+        THEMES[currentTheme].class
+      } ${visualEffect === "goal" ? "animate-shake" : ""}`}
     >
-      {/* --- YENİ ÜST MENÜ (Hamburger Yapısı) --- */}
+      {/* Görsel Efekt Katmanı (Oyunculara göre konumlanır) */}
+      <VisualEffectOverlay
+        effect={visualEffect}
+        currentPlayer={currentPlayer}
+        isTwoPlayerMode={true}
+      />
+
+      {/* Sol Üst Pause Butonu */}
+      {gameState === "playing" && (
+        <button
+          onClick={togglePause}
+          className="absolute top-4 left-4 z-[60] bg-gray-700/80 hover:bg-gray-600 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl font-bold shadow-lg transition-transform hover:scale-110"
+          title="Duraklat"
+        >
+          ⏸
+        </button>
+      )}
+
+      {/* Pause Menüsü */}
+      {isPaused && (
+        <PauseMenu
+          onResume={togglePause}
+          onRestart={restartGame}
+          onQuit={handleBackToMenu}
+        />
+      )}
+
+      {/* Sağ Üst Hamburger Menü */}
       <div className="absolute top-4 right-4 z-[60] flex flex-col items-end">
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -81,13 +109,10 @@ const TwoPlayerMode: React.FC<TwoPlayerModeProps> = ({ onBack }) => {
         >
           {isMenuOpen ? "✕" : "☰"}
         </button>
-
         <div
-          className={`
-          flex-col md:flex-row gap-2 mt-2 md:mt-0 
-          ${isMenuOpen ? "flex" : "hidden"} md:flex
-          transition-all duration-300 ease-in-out
-        `}
+          className={`flex-col md:flex-row gap-2 mt-2 md:mt-0 ${
+            isMenuOpen ? "flex" : "hidden"
+          } md:flex transition-all duration-300 ease-in-out`}
         >
           <button
             onClick={handleMuteToggle}
@@ -98,14 +123,12 @@ const TwoPlayerMode: React.FC<TwoPlayerModeProps> = ({ onBack }) => {
           <button
             onClick={handleThemeChange}
             className="bg-gray-700 hover:bg-gray-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-xl font-bold shadow-md"
-            title="Tema Değiştir"
           >
             🎨
           </button>
           <button
             onClick={() => setShowRules(true)}
             className="bg-gray-700 hover:bg-gray-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-xl font-bold shadow-md"
-            title="Oyun Kuralları"
           >
             ?
           </button>
@@ -114,10 +137,12 @@ const TwoPlayerMode: React.FC<TwoPlayerModeProps> = ({ onBack }) => {
 
       <RulesModal showRules={showRules} onClose={() => setShowRules(false)} />
 
-      <div className="absolute top-4 text-2xl md:text-3xl font-extrabold text-center text-yellow-400 drop-shadow-lg px-4">
+      {/* Skor Tablosu */}
+      <div className="absolute top-4 text-2xl md:text-3xl font-extrabold text-center text-yellow-400 drop-shadow-lg px-4 pointer-events-none">
         🏆 Skor: {scores.p1} - {scores.p2}
       </div>
 
+      {/* Oyuncu Süreleri */}
       <div className="absolute top-28 flex justify-between w-full px-4 md:px-20 text-xl">
         <PlayerTimer
           player={`🧍 ${playerNames.p1}`}
@@ -131,7 +156,7 @@ const TwoPlayerMode: React.FC<TwoPlayerModeProps> = ({ onBack }) => {
         />
       </div>
 
-      {/* Hazırlık ve İsim Girişi */}
+      {/* Hazırlık Ekranı */}
       {gameState === "idle" && !countdown && (
         <div className="flex flex-col items-center gap-6 z-10 bg-gray-900/80 p-8 rounded-2xl border border-gray-700 backdrop-blur-sm w-11/12 max-w-md mx-auto">
           <h2 className="text-xl font-bold mb-2">Oyuncu İsimleri</h2>
@@ -155,7 +180,6 @@ const TwoPlayerMode: React.FC<TwoPlayerModeProps> = ({ onBack }) => {
               placeholder="Oyuncu 2"
             />
           </div>
-
           <div className="flex gap-4 mt-4 w-full justify-center">
             <button
               onClick={() => setP1Ready(true)}
@@ -181,7 +205,7 @@ const TwoPlayerMode: React.FC<TwoPlayerModeProps> = ({ onBack }) => {
             </button>
           </div>
           <button
-            onClick={onBack}
+            onClick={handleBackToMenu}
             className="mt-2 text-gray-400 hover:text-white underline text-sm"
           >
             🔙 Menüye Dön
@@ -189,12 +213,14 @@ const TwoPlayerMode: React.FC<TwoPlayerModeProps> = ({ onBack }) => {
         </div>
       )}
 
+      {/* Geri Sayım */}
       {countdown !== null && (
         <div className="text-7xl font-bold text-yellow-400 animate-pulse z-10 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
           {countdown}
         </div>
       )}
 
+      {/* Oyun Alanı */}
       {gameState === "playing" && (
         <>
           <TimerDisplay totalMs={gameTimeMs} />
@@ -213,13 +239,12 @@ const TwoPlayerMode: React.FC<TwoPlayerModeProps> = ({ onBack }) => {
             >
               <ActionButton
                 onClick={handleAction}
-                disabled={currentPlayer !== "p1"}
+                disabled={currentPlayer !== "p1" || isPaused}
               />
               <p className="mt-2 text-sm text-gray-400 text-center w-full truncate px-2">
                 {playerNames.p1}
               </p>
             </div>
-
             <div
               className={`flex flex-col items-center transition-opacity duration-200 ${
                 currentPlayer !== "p2" ? "opacity-30 pointer-events-none" : ""
@@ -227,7 +252,7 @@ const TwoPlayerMode: React.FC<TwoPlayerModeProps> = ({ onBack }) => {
             >
               <ActionButton
                 onClick={handleAction}
-                disabled={currentPlayer !== "p2"}
+                disabled={currentPlayer !== "p2" || isPaused}
               />
               <p className="mt-2 text-sm text-gray-400 text-center w-full truncate px-2">
                 {playerNames.p2}
@@ -253,5 +278,4 @@ const TwoPlayerMode: React.FC<TwoPlayerModeProps> = ({ onBack }) => {
     </div>
   );
 };
-
 export default TwoPlayerMode;
