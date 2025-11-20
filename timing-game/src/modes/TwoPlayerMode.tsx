@@ -53,7 +53,6 @@ const TwoPlayerMode = () => {
     setCurrentTheme((prev) => (prev + 1) % THEMES.length);
   const handleMuteToggle = () => setIsMuted(toggleMute());
 
-  // Geçmişi temizleyerek ana menüye dön
   const handleBackToMenu = () => navigate("/", { replace: true });
 
   useEffect(() => {
@@ -68,20 +67,14 @@ const TwoPlayerMode = () => {
   }, [gameState]);
 
   return (
-    // Ekran sarsıntısı sadece gol olduğunda tetiklenir
+    // DÜZELTME BURADA: visualEffect?.type === 'goal'
     <div
       className={`h-screen w-screen text-white flex flex-col justify-center items-center relative font-mono overflow-hidden transition-colors duration-500 ${
         THEMES[currentTheme].class
-      } ${visualEffect === "goal" ? "animate-shake" : ""}`}
+      } ${visualEffect?.type === "goal" ? "animate-shake" : ""}`}
     >
-      {/* Görsel Efekt Katmanı (Oyunculara göre konumlanır) */}
-      <VisualEffectOverlay
-        effect={visualEffect}
-        currentPlayer={currentPlayer}
-        isTwoPlayerMode={true}
-      />
+      <VisualEffectOverlay effect={visualEffect} isTwoPlayerMode={true} />
 
-      {/* Sol Üst Pause Butonu */}
       {gameState === "playing" && (
         <button
           onClick={togglePause}
@@ -92,7 +85,6 @@ const TwoPlayerMode = () => {
         </button>
       )}
 
-      {/* Pause Menüsü */}
       {isPaused && (
         <PauseMenu
           onResume={togglePause}
@@ -101,7 +93,6 @@ const TwoPlayerMode = () => {
         />
       )}
 
-      {/* Sağ Üst Hamburger Menü */}
       <div className="absolute top-4 right-4 z-[60] flex flex-col items-end">
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -137,12 +128,10 @@ const TwoPlayerMode = () => {
 
       <RulesModal showRules={showRules} onClose={() => setShowRules(false)} />
 
-      {/* Skor Tablosu */}
       <div className="absolute top-4 text-2xl md:text-3xl font-extrabold text-center text-yellow-400 drop-shadow-lg px-4 pointer-events-none">
         🏆 Skor: {scores.p1} - {scores.p2}
       </div>
 
-      {/* Oyuncu Süreleri */}
       <div className="absolute top-28 flex justify-between w-full px-4 md:px-20 text-xl">
         <PlayerTimer
           player={`🧍 ${playerNames.p1}`}
@@ -156,7 +145,6 @@ const TwoPlayerMode = () => {
         />
       </div>
 
-      {/* Hazırlık Ekranı */}
       {gameState === "idle" && !countdown && (
         <div className="flex flex-col items-center gap-6 z-10 bg-gray-900/80 p-8 rounded-2xl border border-gray-700 backdrop-blur-sm w-11/12 max-w-md mx-auto">
           <h2 className="text-xl font-bold mb-2">Oyuncu İsimleri</h2>
@@ -213,14 +201,12 @@ const TwoPlayerMode = () => {
         </div>
       )}
 
-      {/* Geri Sayım */}
       {countdown !== null && (
         <div className="text-7xl font-bold text-yellow-400 animate-pulse z-10 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
           {countdown}
         </div>
       )}
 
-      {/* Oyun Alanı */}
       {gameState === "playing" && (
         <>
           <TimerDisplay totalMs={gameTimeMs} />

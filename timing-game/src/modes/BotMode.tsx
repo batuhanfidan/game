@@ -78,16 +78,13 @@ const BotMode = () => {
   }, [gameState]);
 
   return (
+    // DÜZELTME BURADA: visualEffect?.type === 'goal'
     <div
       className={`h-screen w-screen text-white flex flex-col justify-center items-center relative font-mono overflow-hidden transition-colors duration-500 ${
         THEMES[currentTheme].class
-      } ${visualEffect === "goal" ? "animate-shake" : ""}`}
+      } ${visualEffect?.type === "goal" ? "animate-shake" : ""}`}
     >
-      <VisualEffectOverlay
-        effect={visualEffect}
-        currentPlayer={currentPlayer}
-        isTwoPlayerMode={false}
-      />
+      <VisualEffectOverlay effect={visualEffect} isTwoPlayerMode={false} />
 
       {gameState === "playing" && (
         <button

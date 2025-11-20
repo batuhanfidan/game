@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+// 'import type' kullanarak import ediyoruz
 import { calculateShotResult } from "../utils/calculateShotResult";
 import { triggerWinConfetti } from "../utils/confetti";
 import { playSound } from "../utils/sound";
@@ -6,8 +7,9 @@ import { playSound } from "../utils/sound";
 type Player = "p1" | "p2";
 type GameState = "idle" | "countdown" | "playing" | "finished";
 
+// Bu tipi dışarı aktarıyoruz (export)
 export interface VisualEffectData {
-  type: "goal" | "post" | "miss";
+  type: "goal" | "post" | "miss" | "save";
   player: Player;
 }
 
@@ -24,7 +26,6 @@ export const useGameLogic = ({
   botReactionTime = 2000,
   botAccuracy = 0.5,
 }: UseGameLogicProps = {}) => {
-  // --- OYUN DURUMLARI ---
   const [gameState, setGameState] = useState<GameState>("idle");
   const [isPaused, setIsPaused] = useState(false);
 
@@ -32,7 +33,6 @@ export const useGameLogic = ({
   const [turnTimeLeft, setTurnTimeLeft] = useState(10);
   const [currentPlayer, setCurrentPlayer] = useState<Player>("p1");
 
-  // İsimler, Süreler ve Skorlar
   const [playerNames, setPlayerNames] = useState({
     p1: "Oyuncu 1",
     p2: isBotMode ? "Bot" : "Oyuncu 2",
@@ -43,23 +43,22 @@ export const useGameLogic = ({
   });
   const [scores, setScores] = useState({ p1: 0, p2: 0 });
 
-  // Bot Modu için High Score
   const [highScore, setHighScore] = useState(() => {
     if (!isBotMode) return 0;
     const saved = localStorage.getItem("timing-game-highscore");
     return saved ? parseInt(saved, 10) : 0;
   });
 
-  // UI Mesajları ve Efektler
   const [actionMessage, setActionMessage] = useState("");
   const [winner, setWinner] = useState("");
   const [finalScore, setFinalScore] = useState("");
   const [countdown, setCountdown] = useState<number | null>(null);
-  const [visualEffect, setVisualEffect] = useState<
-    "goal" | "post" | "miss" | null
-  >(null);
 
-  // Zamanlama Referansları
+  // DÜZELTME: State artık nesne (VisualEffectData) tutuyor
+  const [visualEffect, setVisualEffect] = useState<VisualEffectData | null>(
+    null
+  );
+
   const startTimeRef = useRef<number>(0);
   const pauseStartTimeRef = useRef<number>(0);
 
@@ -67,13 +66,11 @@ export const useGameLogic = ({
     return playerNames[currentPlayer];
   }, [currentPlayer, playerNames]);
 
-  // PAUSE FONKSİYONU
   const togglePause = useCallback(() => {
     if (gameState !== "playing") return;
     setIsPaused((prev) => !prev);
   }, [gameState]);
 
-  // Pause Süresini Hesapla
   useEffect(() => {
     if (isPaused) {
       pauseStartTimeRef.current = Date.now();
@@ -86,15 +83,12 @@ export const useGameLogic = ({
     }
   }, [isPaused]);
 
-  // Görsel efekti temizle
   useEffect(() => {
     if (visualEffect) {
       const timer = setTimeout(() => setVisualEffect(null), 1000);
       return () => clearTimeout(timer);
     }
   }, [visualEffect]);
-
-  // --- OYUN AKIŞI ---
 
   const finishGame = useCallback(() => {
     setGameState("finished");
@@ -108,7 +102,6 @@ export const useGameLogic = ({
     if (scores.p1 > scores.p2) {
       setWinner(`🏆 ${playerNames.p1} kazandı!`);
       triggerWinConfetti();
-
       if (isBotMode && scores.p1 > highScore) {
         setHighScore(scores.p1);
         localStorage.setItem("timing-game-highscore", scores.p1.toString());
@@ -148,9 +141,6 @@ export const useGameLogic = ({
     }, 1000);
   }, [playerNames]);
 
-  // --- ZAMANLAYICILAR ---
-
-  // 1. Ana Zamanlayıcı
   useEffect(() => {
     if (gameState !== "playing" || isPaused) return;
 
@@ -169,7 +159,6 @@ export const useGameLogic = ({
     return () => clearInterval(interval);
   }, [gameState, finishGame, isPaused]);
 
-  // 2. Saniye Bazlı Sayaçlar
   useEffect(() => {
     if (gameState !== "playing" || isPaused) return;
 
@@ -187,14 +176,14 @@ export const useGameLogic = ({
     return () => clearInterval(interval);
   }, [gameState, currentPlayer, isPaused]);
 
-  // 3. Süre Kontrolleri
   useEffect(() => {
     if (gameState !== "playing" || isPaused) return;
 
     if (turnTimeLeft === 0) {
       setActionMessage(`⏰ ${getCurrentPlayerName()} süresini doldurdu!`);
       playSound("miss");
-      setVisualEffect("miss");
+      // DÜZELTME: Nesne olarak set ediliyor
+      setVisualEffect({ type: "miss", player: currentPlayer });
       handleTurnSwitch();
     }
 
@@ -212,8 +201,6 @@ export const useGameLogic = ({
     isPaused,
   ]);
 
-  // --- AKSİYONLAR ---
-
   const handleAction = useCallback(() => {
     if (gameState !== "playing" || isPaused) return;
     if (isBotMode && currentPlayer === "p2") return;
@@ -227,16 +214,17 @@ export const useGameLogic = ({
     const playerName = getCurrentPlayerName();
     setActionMessage(`${playerName}: ${message} (${displayMs}ms)`);
 
+    // DÜZELTME: Nesne olarak set ediliyor
     if (isGoal || result === "GOL") {
       playSound("goal");
-      setVisualEffect("goal");
+      setVisualEffect({ type: "goal", player: currentPlayer });
       setScores((s) => ({ ...s, [currentPlayer]: s[currentPlayer] + 1 }));
     } else if (result === "DİREK") {
       playSound("miss");
-      setVisualEffect("post");
+      setVisualEffect({ type: "post", player: currentPlayer });
     } else {
       playSound("miss");
-      setVisualEffect("miss");
+      setVisualEffect({ type: "miss", player: currentPlayer });
     }
 
     handleTurnSwitch();
@@ -250,7 +238,6 @@ export const useGameLogic = ({
     isPaused,
   ]);
 
-  // Klavye Kontrolü
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.code === "Space") {
@@ -268,7 +255,6 @@ export const useGameLogic = ({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleAction, gameState, isPaused, togglePause]);
 
-  // --- BOT ZEKASI ---
   useEffect(() => {
     if (
       !isBotMode ||
@@ -281,8 +267,6 @@ export const useGameLogic = ({
     const timer = setTimeout(() => {
       const now = Date.now();
       const elapsed = now - startTimeRef.current;
-
-      // AKILLI BOT
       let currentMs = elapsed % 1000;
       if (botAccuracy >= 0.9) currentMs = Math.floor(Math.random() * 40);
       else if (botAccuracy >= 0.7) currentMs = Math.floor(Math.random() * 150);
@@ -294,15 +278,16 @@ export const useGameLogic = ({
         result === "GOL" || (isGoal && Math.random() < botAccuracy);
       const displayMs = String(Math.floor(currentMs / 10)).padStart(2, "0");
 
+      // DÜZELTME: Nesne olarak set ediliyor
       if (isSuccess) {
         playSound("goal");
-        setVisualEffect("goal");
+        setVisualEffect({ type: "goal", player: "p2" });
         setActionMessage(`🤖 ${playerNames.p2}: ${message} (${displayMs}ms)`);
         setScores((s) => ({ ...s, p2: s.p2 + 1 }));
       } else {
         playSound("miss");
-        if (result === "DİREK") setVisualEffect("post");
-        else setVisualEffect("miss");
+        if (result === "DİREK") setVisualEffect({ type: "post", player: "p2" });
+        else setVisualEffect({ type: "miss", player: "p2" });
 
         if (isGoal) {
           setActionMessage(

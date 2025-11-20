@@ -1,15 +1,11 @@
 import React, { useEffect, useState } from "react";
-
-// Gelen efekt verisinin tipini tanımlıyoruz
-interface VisualEffectData {
-  type: "goal" | "post" | "miss" | "save";
-  player: "p1" | "p2";
-}
+// DÜZELTME: Tip useGameLogic'ten çekiliyor
+import type { VisualEffectData } from "../hooks/useGameLogic";
 
 interface VisualEffectOverlayProps {
-  effect: VisualEffectData | null; // Artık nesne bekliyor
+  effect: VisualEffectData | null;
   isTwoPlayerMode?: boolean;
-  currentPlayer?: "p1" | "p2"; // Geriye dönük uyumluluk için
+  currentPlayer?: "p1" | "p2";
 }
 
 const VisualEffectOverlay: React.FC<VisualEffectOverlayProps> = ({
@@ -29,13 +25,12 @@ const VisualEffectOverlay: React.FC<VisualEffectOverlayProps> = ({
 
   useEffect(() => {
     if (effect) {
-      setKey((prev) => prev + 1); // Her yeni efektte animasyonu sıfırla
+      setKey((prev) => prev + 1);
 
       const isMobile = window.innerWidth < 768;
 
       if (isTwoPlayerMode) {
-        // --- 2 KİŞİLİK MOD ---
-        // Efektin sahibi kimse (effect.player) onun tarafında göster
+        // Artık effect.player var
         if (effect.player === "p1") {
           setPosition({
             top: isMobile ? "85%" : "70%",
@@ -51,7 +46,7 @@ const VisualEffectOverlay: React.FC<VisualEffectOverlayProps> = ({
           });
         }
       } else {
-        // --- BOT MODU (TEK KİŞİLİK) ---
+        // BOT MODE
         setPosition({
           top: isMobile ? "72%" : "50%",
           left: "50%",
@@ -80,7 +75,6 @@ const VisualEffectOverlay: React.FC<VisualEffectOverlayProps> = ({
           ❌
         </div>
       )}
-      {/* 'save' tipi henüz kullanılmıyor olabilir ama hata vermemesi için ekledik */}
       {effect.type === "save" && (
         <div className="animate-goal text-7xl sm:text-9xl drop-shadow-[0_0_30px_rgba(59,130,246,0.8)]">
           🧤
