@@ -55,7 +55,7 @@ const BotMode = () => {
     isPaused,
     togglePause,
   } = useGameLogic({
-    isBotMode: true,
+    gameMode: "bot", // DÜZELTME: isBotMode yerine gameMode kullanılıyor
     botReactionTime: DIFFICULTIES[difficulty].reaction,
     botAccuracy: DIFFICULTIES[difficulty].accuracy,
   });
@@ -78,14 +78,15 @@ const BotMode = () => {
   }, [gameState]);
 
   return (
-    // DÜZELTME BURADA: visualEffect?.type === 'goal'
     <div
       className={`h-screen w-screen text-white flex flex-col justify-center items-center relative font-mono overflow-hidden transition-colors duration-500 ${
         THEMES[currentTheme].class
       } ${visualEffect?.type === "goal" ? "animate-shake" : ""}`}
     >
+      {/* Görsel Efekt Katmanı */}
       <VisualEffectOverlay effect={visualEffect} isTwoPlayerMode={false} />
 
+      {/* Pause Butonu */}
       {gameState === "playing" && (
         <button
           onClick={togglePause}
@@ -96,6 +97,7 @@ const BotMode = () => {
         </button>
       )}
 
+      {/* Pause Menüsü */}
       {isPaused && (
         <PauseMenu
           onResume={togglePause}
@@ -104,6 +106,7 @@ const BotMode = () => {
         />
       )}
 
+      {/* Sağ Üst Menü (Hamburger) */}
       <div className="absolute top-4 right-4 z-[60] flex flex-col items-end">
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -139,6 +142,7 @@ const BotMode = () => {
 
       <RulesModal showRules={showRules} onClose={() => setShowRules(false)} />
 
+      {/* Skor Tablosu */}
       <div className="absolute top-4 w-full flex flex-col items-center z-10 pointer-events-none">
         <div className="text-3xl font-extrabold text-yellow-400 drop-shadow-lg">
           🏆 Skor: {scores.p1} - {scores.p2}
@@ -149,6 +153,7 @@ const BotMode = () => {
         </div>
       </div>
 
+      {/* Oyuncu Süreleri */}
       <div className="absolute top-32 flex justify-between w-full px-4 md:px-20 text-xl">
         <PlayerTimer
           player={`🧍 ${playerNames.p1}`}
@@ -162,6 +167,7 @@ const BotMode = () => {
         />
       </div>
 
+      {/* Hazırlık Ekranı */}
       {gameState === "idle" && !countdown && (
         <div className="flex flex-col items-center gap-6 z-20 bg-neutral-900 p-8 rounded-2xl border border-gray-700 shadow-2xl max-w-sm w-full mx-4">
           <h2 className="text-2xl font-bold text-blue-400">Zorluk Seviyesi</h2>
@@ -202,6 +208,7 @@ const BotMode = () => {
         </div>
       )}
 
+      {/* Oyun Alanı */}
       {gameState === "playing" && (
         <>
           <TimerDisplay totalMs={gameTimeMs} />
