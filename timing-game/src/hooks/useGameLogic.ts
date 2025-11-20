@@ -1,13 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-// 'import type' kullanarak import ediyoruz
 import { calculateShotResult } from "../utils/calculateShotResult";
 import { triggerWinConfetti } from "../utils/confetti";
 import { playSound } from "../utils/sound";
 
 type Player = "p1" | "p2";
 type GameState = "idle" | "countdown" | "playing" | "finished";
+export type GameMode = "classic" | "bot" | "survival" | "time_attack";
 
-// Bu tipi dışarı aktarıyoruz (export)
 export interface VisualEffectData {
   type: "goal" | "post" | "miss" | "save";
   player: Player;
@@ -15,14 +14,14 @@ export interface VisualEffectData {
 
 interface UseGameLogicProps {
   initialTime?: number;
-  isBotMode?: boolean;
+  gameMode?: GameMode; // YENİ: Oyun Modu Seçimi
   botReactionTime?: number;
   botAccuracy?: number;
 }
 
 export const useGameLogic = ({
   initialTime = 120,
-  isBotMode = false,
+  gameMode = "classic",
   botReactionTime = 2000,
   botAccuracy = 0.5,
 }: UseGameLogicProps = {}) => {
@@ -35,7 +34,7 @@ export const useGameLogic = ({
 
   const [playerNames, setPlayerNames] = useState({
     p1: "Oyuncu 1",
-    p2: isBotMode ? "Bot" : "Oyuncu 2",
+    p2: gameMode === "bot" ? "Bot" : "Oyuncu 2",
   });
   const [playerTimes, setPlayerTimes] = useState({
     p1: initialTime,
@@ -43,9 +42,11 @@ export const useGameLogic = ({
   });
   const [scores, setScores] = useState({ p1: 0, p2: 0 });
 
+  // High Score Yönetimi (Her mod için ayrı key)
+  const getHighScoreKey = () => `timing-game-highscore-${gameMode}`;
   const [highScore, setHighScore] = useState(() => {
-    if (!isBotMode) return 0;
-    const saved = localStorage.getItem("timing-game-highscore");
+    if (gameMode === "classic") return 0;
+    const saved = localStorage.getItem(getHighScoreKey());
     return saved ? parseInt(saved, 10) : 0;
   });
 
@@ -53,11 +54,12 @@ export const useGameLogic = ({
   const [winner, setWinner] = useState("");
   const [finalScore, setFinalScore] = useState("");
   const [countdown, setCountdown] = useState<number | null>(null);
-
-  // DÜZELTME: State artık nesne (VisualEffectData) tutuyor
   const [visualEffect, setVisualEffect] = useState<VisualEffectData | null>(
     null
   );
+
+  // Survival Modu için Seri (Streak)
+  const [streak, setStreak] = useState(0);
 
   const startTimeRef = useRef<number>(0);
   const pauseStartTimeRef = useRef<number>(0);
@@ -90,33 +92,58 @@ export const useGameLogic = ({
     }
   }, [visualEffect]);
 
+  const updateHighScore = useCallback(
+    (score: number) => {
+      if (score > highScore) {
+        setHighScore(score);
+        localStorage.setItem(getHighScoreKey(), score.toString());
+      }
+    },
+    [highScore, gameMode]
+  );
+
   const finishGame = useCallback(() => {
     setGameState("finished");
     setIsPaused(false);
     playSound("whistle");
 
-    setFinalScore(
-      `Skor: ${playerNames.p1} [${scores.p1}] - [${scores.p2}] ${playerNames.p2}`
-    );
-
-    if (scores.p1 > scores.p2) {
-      setWinner(`🏆 ${playerNames.p1} kazandı!`);
+    // Modlara göre bitiş mesajları
+    if (gameMode === "survival") {
+      setFinalScore(`Seri: ${streak} | En İyi: ${Math.max(streak, highScore)}`);
+      setWinner("💀 OYUN BİTTİ");
+      updateHighScore(streak);
+    } else if (gameMode === "time_attack") {
+      setFinalScore(`Toplam Gol: ${scores.p1}`);
+      setWinner("⏱️ SÜRE DOLDU!");
       triggerWinConfetti();
-      if (isBotMode && scores.p1 > highScore) {
-        setHighScore(scores.p1);
-        localStorage.setItem("timing-game-highscore", scores.p1.toString());
-      }
-    } else if (scores.p2 > scores.p1) {
-      setWinner(`🏆 ${playerNames.p2} kazandı!`);
+      updateHighScore(scores.p1);
     } else {
-      setWinner("🤝 Berabere!");
+      // Klasik ve Bot Modu
+      setFinalScore(
+        `Skor: ${playerNames.p1} [${scores.p1}] - [${scores.p2}] ${playerNames.p2}`
+      );
+      if (scores.p1 > scores.p2) {
+        setWinner(`🏆 ${playerNames.p1} kazandı!`);
+        triggerWinConfetti();
+        if (gameMode === "bot") updateHighScore(scores.p1);
+      } else if (scores.p2 > scores.p1) {
+        setWinner(`🏆 ${playerNames.p2} kazandı!`);
+      } else {
+        setWinner("🤝 Berabere!");
+      }
     }
-  }, [scores, isBotMode, highScore, playerNames]);
+  }, [scores, gameMode, highScore, playerNames, streak, updateHighScore]);
 
   const handleTurnSwitch = useCallback(() => {
-    setCurrentPlayer((prev) => (prev === "p1" ? "p2" : "p1"));
-    setTurnTimeLeft(10);
-  }, []);
+    // Tek kişilik modlarda sıra değişmez, sadece sayaç sıfırlanır
+    if (gameMode === "survival" || gameMode === "time_attack") {
+      setTurnTimeLeft(10);
+      // Belki ileride buraya rüzgar/hedef değişimi eklenebilir
+    } else {
+      setCurrentPlayer((prev) => (prev === "p1" ? "p2" : "p1"));
+      setTurnTimeLeft(10);
+    }
+  }, [gameMode]);
 
   const startGame = useCallback(() => {
     playSound("whistle");
@@ -133,13 +160,21 @@ export const useGameLogic = ({
         setCountdown(null);
         setGameState("playing");
 
-        const startPlayer = Math.random() < 0.5 ? "p1" : "p2";
-        setCurrentPlayer(startPlayer);
-        const startName = playerNames[startPlayer];
-        setActionMessage(`🎲 Yazı tura sonucu: ${startName} başlıyor!`);
+        // Başlangıç ayarları
+        if (gameMode === "survival" || gameMode === "time_attack") {
+          setCurrentPlayer("p1");
+          setActionMessage("Başarılar!");
+        } else {
+          const startPlayer = Math.random() < 0.5 ? "p1" : "p2";
+          setCurrentPlayer(startPlayer);
+          const startName = playerNames[startPlayer];
+          setActionMessage(`🎲 Yazı tura sonucu: ${startName} başlıyor!`);
+        }
       }
     }, 1000);
-  }, [playerNames]);
+  }, [playerNames, gameMode]);
+
+  // --- ZAMANLAYICILAR ---
 
   useEffect(() => {
     if (gameState !== "playing" || isPaused) return;
@@ -153,41 +188,76 @@ export const useGameLogic = ({
       const elapsed = now - startTimeRef.current;
       setGameTimeMs(elapsed);
 
-      if (elapsed >= 300000) finishGame();
+      // Süre limiti kontrolleri
+      if (gameMode === "time_attack") {
+        // Time Attack: 60 saniye (60000ms) dolunca biter
+        // Ancak burada elapsed artan bir değer.
+        // PlayerTimer component'i geri sayım için playerTimes state'ini kullanıyor.
+        // Buradaki kontrol sadece güvenlik için.
+      } else if (elapsed >= 300000) {
+        // Diğer modlar 5 dk sınırı
+        finishGame();
+      }
     }, 10);
 
     return () => clearInterval(interval);
-  }, [gameState, finishGame, isPaused]);
+  }, [gameState, finishGame, isPaused, gameMode]);
 
   useEffect(() => {
     if (gameState !== "playing" || isPaused) return;
 
     const interval = setInterval(() => {
+      // Tur süresi
       setTurnTimeLeft((prev) => Math.max(0, prev - 1));
 
+      // Oyun süresi (Time Attack için kritik)
       setPlayerTimes((prev) => {
         const newTimes = { ...prev };
-        if (newTimes[currentPlayer] <= 0) return prev;
-        newTimes[currentPlayer] -= 1;
+
+        if (gameMode === "time_attack" || gameMode === "survival") {
+          // Tek kişilik modlarda sadece P1 süresi düşer
+          if (newTimes.p1 <= 0) return prev;
+          newTimes.p1 -= 1;
+        } else {
+          // Çift kişilik modlarda aktif oyuncu
+          if (newTimes[currentPlayer] <= 0) return prev;
+          newTimes[currentPlayer] -= 1;
+        }
+
         return newTimes;
       });
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [gameState, currentPlayer, isPaused]);
+  }, [gameState, currentPlayer, isPaused, gameMode]);
 
+  // Süre Kontrolleri
   useEffect(() => {
     if (gameState !== "playing" || isPaused) return;
 
+    // Tur Süresi Doldu
     if (turnTimeLeft === 0) {
-      setActionMessage(`⏰ ${getCurrentPlayerName()} süresini doldurdu!`);
-      playSound("miss");
-      // DÜZELTME: Nesne olarak set ediliyor
-      setVisualEffect({ type: "miss", player: currentPlayer });
-      handleTurnSwitch();
+      if (gameMode === "survival") {
+        // Survival: Süre dolarsa oyun biter
+        setActionMessage("⏰ Süre doldu! Elendin.");
+        finishGame();
+      } else {
+        setActionMessage(`⏰ ${getCurrentPlayerName()} süresini doldurdu!`);
+        playSound("miss");
+        setVisualEffect({ type: "miss", player: currentPlayer });
+        handleTurnSwitch();
+      }
     }
 
-    if (playerTimes[currentPlayer] === 0) {
+    // Ana Süre Doldu (Time Attack)
+    if (gameMode === "time_attack" && playerTimes.p1 === 0) {
+      finishGame();
+    }
+    // Klasik/Bot modunda süre doldu
+    else if (
+      (gameMode === "classic" || gameMode === "bot") &&
+      playerTimes[currentPlayer] === 0
+    ) {
       finishGame();
     }
   }, [
@@ -199,11 +269,14 @@ export const useGameLogic = ({
     finishGame,
     getCurrentPlayerName,
     isPaused,
+    gameMode,
   ]);
+
+  // --- AKSİYON ---
 
   const handleAction = useCallback(() => {
     if (gameState !== "playing" || isPaused) return;
-    if (isBotMode && currentPlayer === "p2") return;
+    if (gameMode === "bot" && currentPlayer === "p2") return;
 
     playSound("kick");
 
@@ -212,9 +285,29 @@ export const useGameLogic = ({
     const displayMs = String(Math.floor(currentMs / 10)).padStart(2, "0");
 
     const playerName = getCurrentPlayerName();
+
+    // SURVIVAL MODU MANTIĞI
+    if (gameMode === "survival") {
+      if (isGoal) {
+        // Gol, Penaltı, Şut, Frikik (Başarılı vuruşlar)
+        playSound("goal");
+        setVisualEffect({ type: "goal", player: currentPlayer });
+        setStreak((s) => s + 1);
+        setActionMessage(`🔥 SERİ: ${streak + 1} | ${message}`);
+        handleTurnSwitch(); // Süreyi sıfırla, devam et
+      } else {
+        // Hata yapıldığı an oyun biter
+        playSound("miss");
+        setVisualEffect({ type: "miss", player: currentPlayer });
+        setActionMessage(`❌ HATA! (${displayMs}ms) - ${message}`);
+        finishGame(); // Oyun Biter
+      }
+      return;
+    }
+
+    // TIME ATTACK & KLASİK MOD MANTIĞI
     setActionMessage(`${playerName}: ${message} (${displayMs}ms)`);
 
-    // DÜZELTME: Nesne olarak set ediliyor
     if (isGoal || result === "GOL") {
       playSound("goal");
       setVisualEffect({ type: "goal", player: currentPlayer });
@@ -230,12 +323,14 @@ export const useGameLogic = ({
     handleTurnSwitch();
   }, [
     gameState,
-    isBotMode,
+    gameMode,
     currentPlayer,
     gameTimeMs,
     handleTurnSwitch,
     getCurrentPlayerName,
     isPaused,
+    streak,
+    finishGame,
   ]);
 
   useEffect(() => {
@@ -250,14 +345,14 @@ export const useGameLogic = ({
         togglePause();
       }
     };
-
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleAction, gameState, isPaused, togglePause]);
 
+  // Bot Zekası (Sadece Bot Modunda Çalışır)
   useEffect(() => {
     if (
-      !isBotMode ||
+      gameMode !== "bot" ||
       gameState !== "playing" ||
       currentPlayer !== "p2" ||
       isPaused
@@ -272,32 +367,27 @@ export const useGameLogic = ({
       else if (botAccuracy >= 0.7) currentMs = Math.floor(Math.random() * 150);
 
       playSound("kick");
-
       const { result, message, isGoal } = calculateShotResult(currentMs);
       const isSuccess =
         result === "GOL" || (isGoal && Math.random() < botAccuracy);
       const displayMs = String(Math.floor(currentMs / 10)).padStart(2, "0");
 
-      // DÜZELTME: Nesne olarak set ediliyor
       if (isSuccess) {
         playSound("goal");
         setVisualEffect({ type: "goal", player: "p2" });
-        setActionMessage(`🤖 ${playerNames.p2}: ${message} (${displayMs}ms)`);
+        setActionMessage(`🤖 Bot: ${message} (${displayMs}ms)`);
         setScores((s) => ({ ...s, p2: s.p2 + 1 }));
       } else {
         playSound("miss");
         if (result === "DİREK") setVisualEffect({ type: "post", player: "p2" });
         else setVisualEffect({ type: "miss", player: "p2" });
 
-        if (isGoal) {
+        if (isGoal)
           setActionMessage(
-            `🤖 ${playerNames.p2}: İnanılmaz! Net golü kaçırdı! (${displayMs}ms)`
+            `🤖 Bot: İnanılmaz! Net golü kaçırdı! (${displayMs}ms)`
           );
-        } else {
-          setActionMessage(`🤖 ${playerNames.p2}: ${message} (${displayMs}ms)`);
-        }
+        else setActionMessage(`🤖 Bot: ${message} (${displayMs}ms)`);
       }
-
       handleTurnSwitch();
     }, botReactionTime);
 
@@ -305,11 +395,10 @@ export const useGameLogic = ({
   }, [
     gameState,
     currentPlayer,
-    isBotMode,
+    gameMode,
     botReactionTime,
     handleTurnSwitch,
     botAccuracy,
-    playerNames,
     isPaused,
   ]);
 
@@ -323,6 +412,7 @@ export const useGameLogic = ({
     setTurnTimeLeft(10);
     setActionMessage("");
     setVisualEffect(null);
+    setStreak(0);
   }, [initialTime]);
 
   return {
@@ -333,6 +423,7 @@ export const useGameLogic = ({
     playerTimes,
     scores,
     highScore,
+    streak,
     actionMessage,
     winner,
     finalScore,
