@@ -6,6 +6,11 @@ import { playSound } from "../utils/sound";
 type Player = "p1" | "p2";
 type GameState = "idle" | "countdown" | "playing" | "finished";
 
+export interface VisualEffectData {
+  type: "goal" | "post" | "miss";
+  player: Player;
+}
+
 interface UseGameLogicProps {
   initialTime?: number;
   isBotMode?: boolean;
