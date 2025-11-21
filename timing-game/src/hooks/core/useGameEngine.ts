@@ -32,6 +32,7 @@ export const useGameEngine = ({
   initialTime = 60,
 }: UseGameEngineProps) => {
   const [gameState, setGameState] = useState<GameState>("setup");
+  const [isPaused, setIsPaused] = useState(false); // YENİ: Pause state eklendi
   const [currentPlayer, setCurrentPlayer] = useState<Player>("p1");
   const [targetOffset, setTargetOffset] = useState(0);
   const [actionMessage, setActionMessage] = useState("");
@@ -49,14 +50,14 @@ export const useGameEngine = ({
   // Time Attack için sayaç
   const [matchTimeLeft, setMatchTimeLeft] = useState(initialTime);
 
-  // Core Hook'lar (Mevcut dosyalarından)
   const sound = useSoundEffects();
   const score = useScoreSystem();
 
-  const stateRef = useRef({ gameState, currentPlayer });
+  const stateRef = useRef({ gameState, currentPlayer, isPaused });
+
   useEffect(() => {
-    stateRef.current = { gameState, currentPlayer };
-  }, [gameState, currentPlayer]);
+    stateRef.current = { gameState, currentPlayer, isPaused };
+  }, [gameState, currentPlayer, isPaused]);
 
   // --- OYUN MANTIĞI ---
 
@@ -70,7 +71,7 @@ export const useGameEngine = ({
       setVisualEffect({ type: "miss", player: currentPlayer });
       switchTurn();
     }
-  }, [currentPlayer, gameMode]);
+  }, [currentPlayer, gameMode]); // Dependency eklendi
 
   const timer = useGameTimer({ variant, onTimeLimitReached: handleTimeLimit });
 
@@ -102,7 +103,7 @@ export const useGameEngine = ({
       }
 
       timer.resetTimer();
-      setTurnTimeLeft(10);
+      setTurnTimeLeft(10); // Süreyi sıfırla
 
       if (variant === "moving_target") {
         setTargetOffset(Math.floor(Math.random() * 700) + 100);
@@ -117,6 +118,7 @@ export const useGameEngine = ({
     score.resetStreak();
     setMatchTimeLeft(initialTime);
     setGameState("countdown");
+    setIsPaused(false);
 
     setTimeout(() => {
       setGameState("playing");
@@ -127,11 +129,25 @@ export const useGameEngine = ({
     }, 3000);
   };
 
+  const togglePause = () => {
+    if (gameState !== "playing") return;
+
+    if (isPaused) {
+      setIsPaused(false);
+      timer.startTimer(); // Timer'ı devam ettir
+    } else {
+      setIsPaused(true);
+      timer.stopTimer(); // Timer'ı durdur
+    }
+  };
+
   const handleAction = useCallback(() => {
-    if (gameState !== "playing") {
+    if (stateRef.current.gameState !== "playing" || stateRef.current.isPaused) {
+      // Oyun başlamamışsa veya duraklatılmışsa işlem yapma
+      // Ancak setup/idle durumunda başlatmak için timer kontrolü:
       if (
         gameState === "idle" ||
-        (!timer.isRunning && gameState !== "finished")
+        (!timer.isRunning && gameState !== "finished" && !isPaused)
       )
         timer.startTimer();
       return;
@@ -149,7 +165,6 @@ export const useGameEngine = ({
     );
     const displayMs = String(Math.floor(currentMs / 10)).padStart(2, "0");
 
-    // Survival Modu Kontrolü
     if (gameMode === "survival") {
       if (isGoal) {
         sound.play("goal");
@@ -165,7 +180,6 @@ export const useGameEngine = ({
       return;
     }
 
-    // Diğer Modlar (Klasik, Bot, Time Attack)
     setActionMessage(
       `${playerNames[currentPlayer]}: ${message} (${displayMs}ms)`
     );
@@ -182,7 +196,6 @@ export const useGameEngine = ({
       setVisualEffect({ type: "miss", player: currentPlayer });
     }
 
-    // Kazanma Koşulu (Klasik/Bot)
     if (
       (gameMode === "classic" || gameMode === "bot") &&
       score.scores[currentPlayer] + (isGoal ? 1 : 0) >= 5
@@ -193,6 +206,7 @@ export const useGameEngine = ({
     }
   }, [
     gameState,
+    isPaused, // Dependency eklendi
     timer,
     currentPlayer,
     playerNames,
@@ -204,12 +218,59 @@ export const useGameEngine = ({
     finishGame,
   ]);
 
+  // --- YENİ EKLENENLER ---
+
+  // 1. KLAVYE KONTROLLERİ (Space ve Escape)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.code === "Space") {
+        e.preventDefault(); // Sayfa kaymasını engelle
+        handleAction();
+      }
+      if (e.code === "Escape") {
+        togglePause();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleAction]); // handleAction değiştiğinde listener güncellenir
+
+  // 2. TUR SÜRESİ SAYACI (Turn Timer)
+  useEffect(() => {
+    if (gameState !== "playing" || isPaused) return;
+
+    const interval = setInterval(() => {
+      setTurnTimeLeft((prev) => {
+        if (prev <= 1) {
+          // Süre bitti
+          if (gameMode === "survival") {
+            clearInterval(interval);
+            finishGame("⏰ Süre doldu! Elendin.", "💀 OYUN BİTTİ");
+            return 0;
+          } else {
+            // Sıra diğer oyuncuya
+            sound.play("miss");
+            switchTurn();
+            return 10;
+          }
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [gameState, isPaused, gameMode, finishGame, switchTurn, sound]);
+
+  // -----------------------
+
   // BOT YAPAY ZEKASI
   useEffect(() => {
     if (
       gameMode !== "bot" ||
       currentPlayer !== "p2" ||
       gameState !== "playing" ||
+      isPaused || // Pause kontrolü eklendi
       !botDifficulty
     )
       return;
@@ -218,18 +279,27 @@ export const useGameEngine = ({
     const timeout = setTimeout(() => {
       if (
         stateRef.current.gameState === "playing" &&
-        stateRef.current.currentPlayer === "p2"
+        stateRef.current.currentPlayer === "p2" &&
+        !stateRef.current.isPaused
       ) {
         handleAction();
       }
     }, Math.max(500, reactionTime));
 
     return () => clearTimeout(timeout);
-  }, [currentPlayer, gameState, gameMode, botDifficulty, handleAction]);
+  }, [
+    currentPlayer,
+    gameState,
+    isPaused,
+    gameMode,
+    botDifficulty,
+    handleAction,
+  ]);
 
   // Time Attack Geri Sayımı
   useEffect(() => {
-    if (gameMode !== "time_attack" || gameState !== "playing") return;
+    if (gameMode !== "time_attack" || gameState !== "playing" || isPaused)
+      return;
 
     const interval = setInterval(() => {
       setMatchTimeLeft((prev) => {
@@ -243,7 +313,7 @@ export const useGameEngine = ({
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [gameMode, gameState, finishGame]);
+  }, [gameMode, gameState, isPaused, finishGame]);
 
   const restartGame = () => {
     setGameState("setup");
@@ -252,11 +322,14 @@ export const useGameEngine = ({
     timer.resetTimer();
     setVisualEffect(null);
     setActionMessage("");
+    setIsPaused(false);
   };
 
   return {
     gameState,
     setGameState,
+    isPaused, // DIŞARI AKTARILDI
+    togglePause, // DIŞARI AKTARILDI
     currentPlayer,
     playerNames,
     setPlayerNames,

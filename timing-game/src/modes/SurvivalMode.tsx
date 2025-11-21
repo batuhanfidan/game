@@ -18,6 +18,8 @@ const SurvivalMode = () => {
     streak,
     actionMessage,
     winner,
+    isPaused,
+    togglePause,
     startGame,
     handleAction,
     restartGame,
@@ -41,8 +43,8 @@ const SurvivalMode = () => {
     <GameLayout
       gameState={gameState}
       visualEffect={visualEffect}
-      isPaused={false}
-      togglePause={() => {}}
+      isPaused={isPaused}
+      togglePause={togglePause}
       restartGame={restartGame}
       scoreDisplay={scoreDisplay}
       currentTheme={currentTheme}
