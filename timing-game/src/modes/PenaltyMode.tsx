@@ -8,8 +8,7 @@ import VisualEffectOverlay from "../components/layout/VisualEffectOverlay";
 import { calculateShotResult } from "../utils/calculateShotResult";
 import { playSound, toggleMute, getMuteStatus } from "../utils/sound";
 import { triggerWinConfetti } from "../utils/confetti";
-// DÜZELTME 2: Doğru isim 'VisualEffectData' olmalı
-import type { VisualEffectData } from "../hooks/useGameLogic";
+import type { VisualEffectData } from "../types";
 
 type Player = "p1" | "p2";
 
