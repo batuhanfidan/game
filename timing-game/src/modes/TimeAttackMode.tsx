@@ -10,6 +10,9 @@ import PauseMenu from "../components/PauseMenu";
 import { useGameLogic } from "../hooks/useGameLogic";
 import { toggleMute, getMuteStatus } from "../utils/sound";
 
+// Tema: Koyu Gece Mavisi (Slate)
+const THEMES = [{ name: "Zamana Karşı", class: "bg-slate-950" }];
+
 const TimeAttackMode = () => {
   const navigate = useNavigate();
   const [isMuted, setIsMuted] = useState(getMuteStatus());
@@ -35,7 +38,7 @@ const TimeAttackMode = () => {
     togglePause,
   } = useGameLogic({
     gameMode: "time_attack",
-    initialTime: 60, // 60 Saniye
+    initialTime: 60,
   });
 
   const handleMuteToggle = () => setIsMuted(toggleMute());
@@ -51,16 +54,16 @@ const TimeAttackMode = () => {
 
   return (
     <div
-      className={`h-screen w-screen text-white flex flex-col justify-center items-center relative font-mono overflow-hidden transition-colors duration-500 bg-cyan-950 ${
-        visualEffect?.type === "goal" ? "animate-shake" : ""
-      }`}
+      className={`h-screen w-screen text-gray-200 flex flex-col justify-center items-center relative font-mono overflow-hidden transition-colors duration-500 ${
+        THEMES[0].class
+      } ${visualEffect?.type === "goal" ? "animate-shake" : ""}`}
     >
       <VisualEffectOverlay effect={visualEffect} isTwoPlayerMode={false} />
 
       {gameState === "playing" && (
         <button
           onClick={togglePause}
-          className="absolute top-4 left-4 z-[60] bg-gray-700/80 hover:bg-gray-600 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl font-bold shadow-lg hover:scale-110"
+          className="absolute top-6 left-6 z-[60] bg-slate-800/50 hover:bg-slate-700 text-white border border-white/10 rounded-full w-12 h-12 flex items-center justify-center text-2xl shadow-lg backdrop-blur-sm transition-all hover:scale-105"
         >
           ⏸
         </button>
@@ -74,79 +77,83 @@ const TimeAttackMode = () => {
         />
       )}
 
-      <div className="absolute top-4 right-4 z-[60] flex flex-col items-end">
+      <div className="absolute top-6 right-6 z-[60] flex flex-col items-end">
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="md:hidden bg-gray-700 hover:bg-gray-600 text-white rounded-lg w-10 h-10 flex items-center justify-center text-2xl font-bold border border-gray-500 shadow-lg active:scale-95"
+          className="md:hidden bg-slate-800 text-white rounded-lg w-10 h-10 flex items-center justify-center text-xl border border-white/10 shadow-lg active:scale-95"
         >
           {isMenuOpen ? "✕" : "☰"}
         </button>
         <div
-          className={`flex-col md:flex-row gap-2 mt-2 md:mt-0 ${
+          className={`flex-col md:flex-row gap-3 mt-3 md:mt-0 ${
             isMenuOpen ? "flex" : "hidden"
           } md:flex transition-all duration-300 ease-in-out`}
         >
           <button
             onClick={handleMuteToggle}
-            className="bg-gray-700 hover:bg-gray-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-xl font-bold shadow-md"
+            className="bg-slate-900/80 border border-white/10 hover:bg-white/10 text-white rounded-full w-10 h-10 flex items-center justify-center text-lg shadow-md backdrop-blur-sm transition-colors"
           >
             {isMuted ? "🔇" : "🔊"}
           </button>
           <button
             onClick={() => setShowRules(true)}
-            className="bg-gray-700 hover:bg-gray-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-xl font-bold shadow-md"
+            className="bg-slate-900/80 border border-white/10 hover:bg-white/10 text-white rounded-full w-10 h-10 flex items-center justify-center text-lg shadow-md backdrop-blur-sm transition-colors"
           >
             ?
           </button>
         </div>
       </div>
+
       <RulesModal showRules={showRules} onClose={() => setShowRules(false)} />
 
-      <div className="absolute top-4 w-full flex flex-col items-center z-10 pointer-events-none">
-        <div className="text-4xl font-black text-cyan-400 drop-shadow-lg">
-          SKOR: {scores.p1}
+      {/* Skor Tablosu */}
+      <div className="absolute top-6 w-full flex flex-col items-center z-10 pointer-events-none">
+        <div className="text-5xl font-black text-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.4)] tracking-tighter">
+          {scores.p1}
         </div>
-        <div className="text-sm text-gray-400 mt-1 bg-gray-900/50 px-3 py-1 rounded-full border border-gray-700">
-          ⭐ En Yüksek:{" "}
-          <span className="text-white font-bold">{highScore}</span>
+        <div className="text-xs text-gray-500 mt-2 bg-black/40 px-4 py-1 rounded-full border border-white/5 backdrop-blur-md">
+          EN YÜKSEK:{" "}
+          <span className="text-gray-300 font-bold">{highScore}</span>
         </div>
       </div>
 
-      <div className="absolute top-32 w-full flex justify-center">
+      <div className="absolute top-36 w-full flex justify-center opacity-90">
         <PlayerTimer
-          player="⏱️ SÜRE"
+          player="⏱️ KALAN SÜRE"
           minutes={Math.floor(playerTimes.p1 / 60)}
           seconds={playerTimes.p1 % 60}
         />
       </div>
 
       {gameState === "idle" && !countdown && (
-        <div className="flex flex-col items-center gap-6 z-20 bg-neutral-900 p-8 rounded-2xl border border-cyan-700 shadow-2xl max-w-sm w-full mx-4">
-          <h2 className="text-3xl font-black text-cyan-400 tracking-tighter">
+        <div className="flex flex-col items-center gap-6 z-20 bg-black/60 p-10 rounded-3xl border border-cyan-900/30 shadow-2xl max-w-sm w-full mx-4 backdrop-blur-xl">
+          <h2 className="text-2xl font-black text-cyan-400 tracking-widest uppercase drop-shadow-md">
             ZAMANA KARŞI
           </h2>
-          <p className="text-center text-gray-400 text-sm">
-            60 Saniye içinde atabildiğin kadar at!
+          <p className="text-center text-gray-400 text-sm leading-relaxed">
+            60 Saniye içinde
+            <br />
+            atabildiğin kadar gol at!
           </p>
 
           <button
             onClick={() => setPlayerReady(true)}
             disabled={playerReady}
-            className="px-10 py-4 rounded-xl text-xl font-bold transition w-full bg-cyan-600 hover:bg-cyan-500 cursor-pointer hover:scale-105 shadow-lg shadow-cyan-500/20"
+            className="w-full py-4 rounded-xl text-lg font-bold transition-all bg-cyan-900/20 border border-cyan-500/50 text-cyan-400 hover:bg-cyan-900/40 hover:text-cyan-200 hover:border-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.1)] hover:shadow-[0_0_30px_rgba(34,211,238,0.3)] cursor-pointer active:scale-95"
           >
-            {playerReady ? "Hazırlanıyor..." : "BAŞLA"}
+            {playerReady ? "HAZIRLANIYOR..." : "BAŞLA"}
           </button>
           <button
             onClick={handleBackToMenu}
-            className="text-gray-500 hover:text-white text-sm underline cursor-pointer mt-2"
+            className="text-gray-600 hover:text-gray-400 text-xs tracking-widest uppercase mt-2 transition-colors"
           >
-            🔙 Menüye Dön
+            ← Menüye Dön
           </button>
         </div>
       )}
 
       {countdown !== null && (
-        <div className="text-8xl font-black text-cyan-400 animate-ping z-30 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+        <div className="text-9xl font-black text-cyan-400 animate-ping z-30 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 mix-blend-overlay">
           {countdown}
         </div>
       )}
@@ -154,20 +161,21 @@ const TimeAttackMode = () => {
       {gameState === "playing" && (
         <>
           <TimerDisplay totalMs={gameTimeMs} />
-          <div className="text-xl md:text-2xl mt-6 text-center font-bold px-4 h-8 text-cyan-300 drop-shadow-sm">
+
+          <div className="text-lg md:text-2xl mt-8 text-center font-medium px-4 h-8 text-cyan-300 tracking-wide drop-shadow-sm">
             {actionMessage}
           </div>
 
-          <div className="flex justify-center w-full px-4 mt-10">
+          <div className="flex justify-center w-full px-4 mt-12">
             <ActionButton
               onClick={handleAction}
               disabled={isPaused}
-              customColor="bg-cyan-600 hover:bg-cyan-500"
+              customColor="bg-slate-800 border border-cyan-500/50 text-cyan-100 hover:bg-slate-700 hover:border-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.15)]"
             />
           </div>
 
-          <div className="mt-6 text-gray-500 text-sm animate-pulse font-semibold hidden md:block">
-            [SPACE] tuşu ile oyna
+          <div className="mt-8 text-gray-600 text-xs uppercase tracking-[0.2em] animate-pulse hidden md:block">
+            [SPACE] TUŞU İLE OYNA
           </div>
         </>
       )}
@@ -179,6 +187,9 @@ const TimeAttackMode = () => {
           onRestart={restartGame}
         />
       )}
+      <div className="absolute bottom-6 text-[10px] text-cyan-900/40 font-mono font-bold tracking-[0.3em]">
+        TIME ATTACK MODE
+      </div>
     </div>
   );
 };
