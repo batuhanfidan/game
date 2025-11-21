@@ -1,25 +1,25 @@
-import React, { useState } from "react";
+import React, { useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
+import { THEMES } from "../../utils/constants";
 import VisualEffectOverlay from "./VisualEffectOverlay";
 import PauseMenu from "./PauseMenu";
-import RulesModal from "./RulesModel"; // Dosya ismini RulesModal.tsx yapmanı öneririm
-import type { VisualEffectData } from "../../types";
+import RulesModal from "./RulesModel";
 import { toggleMute, getMuteStatus } from "../../utils/sound";
-import { THEMES } from "../../utils/constants";
+import type { GameState, VisualEffectData, Player } from "../../types";
 
 interface GameLayoutProps {
-  children: React.ReactNode;
-  gameState: string;
+  children: ReactNode;
+  gameState: GameState;
   visualEffect: VisualEffectData | null;
   isPaused: boolean;
   togglePause: () => void;
   restartGame: () => void;
-  scoreDisplay: React.ReactNode;
-  currentTheme?: number;
+  currentTheme: number;
   onThemeChange?: () => void;
+  isTwoPlayerMode: boolean;
+  currentPlayer?: Player;
   showThemeButton?: boolean;
-  isTwoPlayerMode?: boolean;
-  currentPlayer?: "p1" | "p2";
+  scoreDisplay?: ReactNode;
   bottomInfo?: string;
 }
 
@@ -30,48 +30,47 @@ const GameLayout: React.FC<GameLayoutProps> = ({
   isPaused,
   togglePause,
   restartGame,
-  scoreDisplay,
-  currentTheme = 0,
+  currentTheme,
   onThemeChange,
-  showThemeButton = true,
-  isTwoPlayerMode = false,
+  isTwoPlayerMode,
   currentPlayer,
+  showThemeButton = true,
+  scoreDisplay,
   bottomInfo,
 }) => {
   const navigate = useNavigate();
-  const [isMuted, setIsMuted] = useState(getMuteStatus());
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showRules, setShowRules] = useState(false);
+  const [isMuted, setIsMuted] = useState(getMuteStatus());
 
   const handleMuteToggle = () => setIsMuted(toggleMute());
   const handleBackToMenu = () => navigate("/", { replace: true });
 
-  const themeClass = THEMES[currentTheme]?.class || THEMES[0].class;
-  const themeName = THEMES[currentTheme]?.name || THEMES[0].name;
-
   return (
     <div
-      className={`h-screen w-screen text-white flex flex-col justify-center items-center relative font-mono overflow-hidden transition-colors duration-500 ${themeClass} ${
-        visualEffect?.type === "goal" ? "animate-shake" : ""
-      }`}
+      className={`h-screen w-screen text-white flex flex-col justify-center items-center relative font-mono overflow-hidden transition-colors duration-500 ${
+        THEMES[currentTheme].class
+      } ${visualEffect?.type === "goal" ? "animate-shake" : ""}`}
     >
+      {/* Görsel Efekt Katmanı */}
       <VisualEffectOverlay
         effect={visualEffect}
         isTwoPlayerMode={isTwoPlayerMode}
         currentPlayer={currentPlayer}
       />
 
-      {/* Pause Button */}
+      {/* Pause Butonu */}
       {gameState === "playing" && (
         <button
           onClick={togglePause}
-          className="absolute top-4 left-4 z-[60] bg-gray-700/80 hover:bg-gray-600 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl font-bold shadow-lg transition-transform hover:scale-110"
+          className="absolute top-4 left-4 z-60 bg-gray-700/80 hover:bg-gray-600 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl font-bold shadow-lg transition-transform hover:scale-110"
+          title="Duraklat"
         >
           ⏸
         </button>
       )}
 
-      {/* Pause Menu */}
+      {/* Pause Menüsü */}
       {isPaused && (
         <PauseMenu
           onResume={togglePause}
@@ -80,8 +79,8 @@ const GameLayout: React.FC<GameLayoutProps> = ({
         />
       )}
 
-      {/* Top Right Menu */}
-      <div className="absolute top-4 right-4 z-[60] flex flex-col items-end">
+      {/* Sağ Üst Menü (Hamburger) */}
+      <div className="absolute top-4 right-4 z-60 flex flex-col items-end">
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           className="md:hidden bg-gray-700 hover:bg-gray-600 text-white rounded-lg w-10 h-10 flex items-center justify-center text-2xl font-bold border border-gray-500 shadow-lg transition-transform active:scale-95"
@@ -118,18 +117,20 @@ const GameLayout: React.FC<GameLayoutProps> = ({
 
       <RulesModal showRules={showRules} onClose={() => setShowRules(false)} />
 
-      {/* Score Board */}
-      <div className="absolute top-4 w-full flex flex-col items-center z-10 pointer-events-none px-4 text-center">
+      {/* Skor Alanı (Dinamik) */}
+      <div className="absolute top-4 w-full flex flex-col items-center z-10 pointer-events-none">
         {scoreDisplay}
       </div>
 
-      {/* Main Game Area */}
+      {/* OYUN ALANI (Child Componentlar) */}
       {children}
 
-      {/* Footer Info */}
-      <div className="absolute bottom-4 text-sm text-gray-400 font-mono">
-        {bottomInfo || `🎯 Tema: ${themeName}`}
-      </div>
+      {/* Alt Bilgi */}
+      {bottomInfo && (
+        <div className="absolute bottom-4 text-xs md:text-base text-gray-500 font-mono font-bold uppercase tracking-widest opacity-50">
+          {bottomInfo}
+        </div>
+      )}
     </div>
   );
 };

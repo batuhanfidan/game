@@ -2,11 +2,18 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { calculateShotResult } from "../utils/calculateShotResult";
 import { triggerWinConfetti } from "../utils/confetti";
 import { playSound } from "../utils/sound";
-import type { GameMode, GameState, Player, VisualEffectData } from "../types";
+import type {
+  GameMode,
+  GameState,
+  Player,
+  VisualEffectData,
+  GameVariant,
+} from "../types";
 
 interface UseGameLogicProps {
   initialTime?: number;
   gameMode?: GameMode;
+  gameVariant?: GameVariant;
   botReactionTime?: number;
   botAccuracy?: number;
 }
@@ -14,6 +21,7 @@ interface UseGameLogicProps {
 export const useGameLogic = ({
   initialTime = 120,
   gameMode = "classic",
+  gameVariant = "classic",
   botReactionTime = 2000,
   botAccuracy = 0.5,
 }: UseGameLogicProps = {}) => {
@@ -22,6 +30,7 @@ export const useGameLogic = ({
   const [gameTimeMs, setGameTimeMs] = useState(0);
   const [turnTimeLeft, setTurnTimeLeft] = useState(10);
   const [currentPlayer, setCurrentPlayer] = useState<Player>("p1");
+  const [targetOffset, setTargetOffset] = useState(0);
 
   const [playerNames, setPlayerNames] = useState({
     p1: "Oyuncu 1",
@@ -34,11 +43,17 @@ export const useGameLogic = ({
   });
 
   const [scores, setScores] = useState({ p1: 0, p2: 0 });
+  const [streak, setStreak] = useState(0);
 
-  const getHighScoreKey = () => `timing-game-highscore-${gameMode}`;
+  const getHighScoreKey = useCallback(() => {
+    return `timing-game-highscore-${gameMode}-${gameVariant}`;
+  }, [gameMode, gameVariant]);
+
   const [highScore, setHighScore] = useState(() => {
-    if (gameMode === "classic") return 0;
-    const saved = localStorage.getItem(getHighScoreKey());
+    if (gameMode === "classic" && gameVariant === "classic") return 0;
+
+    const key = `timing-game-highscore-${gameMode}-${gameVariant}`;
+    const saved = localStorage.getItem(key);
     return saved ? parseInt(saved, 10) : 0;
   });
 
@@ -49,10 +64,27 @@ export const useGameLogic = ({
   const [visualEffect, setVisualEffect] = useState<VisualEffectData | null>(
     null
   );
-  const [streak, setStreak] = useState(0);
 
   const startTimeRef = useRef<number>(0);
   const pauseStartTimeRef = useRef<number>(0);
+
+  // --- YARDIMCI FONKSİYONLAR ---
+
+  const randomizeRound = useCallback(() => {
+    let startOffset = 0;
+    let newTarget = 0;
+
+    if (gameVariant === "random") {
+      startOffset = Math.floor(Math.random() * 800);
+    }
+
+    if (gameVariant === "moving") {
+      newTarget = Math.floor(Math.random() * 800);
+    }
+
+    startTimeRef.current = Date.now() - startOffset;
+    setTargetOffset(newTarget);
+  }, [gameVariant]);
 
   const getCurrentPlayerName = useCallback(
     () => playerNames[currentPlayer],
@@ -64,7 +96,6 @@ export const useGameLogic = ({
     setIsPaused((prev) => !prev);
   }, [gameState]);
 
-  // Pause logic
   useEffect(() => {
     if (isPaused) {
       pauseStartTimeRef.current = Date.now();
@@ -75,7 +106,6 @@ export const useGameLogic = ({
     }
   }, [isPaused]);
 
-  // Visual effect cleanup
   useEffect(() => {
     if (visualEffect) {
       const timer = setTimeout(() => setVisualEffect(null), 1000);
@@ -85,13 +115,18 @@ export const useGameLogic = ({
 
   const updateHighScore = useCallback(
     (score: number) => {
-      if (score > highScore) {
-        setHighScore(score);
-        localStorage.setItem(getHighScoreKey(), score.toString());
-      }
+      setHighScore((prevHighScore) => {
+        if (score > prevHighScore) {
+          localStorage.setItem(getHighScoreKey(), score.toString());
+          return score;
+        }
+        return prevHighScore;
+      });
     },
-    [highScore, gameMode]
+    [getHighScoreKey]
   );
+
+  // --- OYUN AKIŞI ---
 
   const finishGame = useCallback(() => {
     setGameState("finished");
@@ -130,7 +165,8 @@ export const useGameLogic = ({
       setCurrentPlayer((prev) => (prev === "p1" ? "p2" : "p1"));
       setTurnTimeLeft(10);
     }
-  }, [gameMode]);
+    randomizeRound();
+  }, [gameMode, randomizeRound]);
 
   const startGame = useCallback(() => {
     playSound("whistle");
@@ -146,6 +182,7 @@ export const useGameLogic = ({
         clearInterval(id);
         setCountdown(null);
         setGameState("playing");
+
         if (gameMode === "survival" || gameMode === "time_attack") {
           setCurrentPlayer("p1");
           setActionMessage("Başarılar!");
@@ -154,13 +191,16 @@ export const useGameLogic = ({
           setCurrentPlayer(startPlayer);
           setActionMessage(`🎲 ${playerNames[startPlayer]} başlıyor!`);
         }
+        randomizeRound();
       }
     }, 1000);
-  }, [playerNames, gameMode]);
+  }, [playerNames, gameMode, randomizeRound]);
 
-  // Timers
+  // --- ZAMANLAYICILAR ---
+
   useEffect(() => {
     if (gameState !== "playing" || isPaused) return;
+
     if (startTimeRef.current === 0 || gameTimeMs === 0) {
       startTimeRef.current = Date.now() - gameTimeMs;
     }
@@ -168,11 +208,28 @@ export const useGameLogic = ({
     const interval = setInterval(() => {
       const now = Date.now();
       const elapsed = now - startTimeRef.current;
-      setGameTimeMs(elapsed);
+
+      if (gameVariant === "unstable") {
+        const cycle = elapsed % 1000;
+        let distorted = 0;
+        if (cycle < 300) {
+          distorted = cycle * 0.8;
+        } else if (cycle < 700) {
+          distorted = 240 + (cycle - 300) * 1.5;
+        } else {
+          distorted = 840 + (cycle - 700) * 0.53;
+        }
+        const totalCycles = Math.floor(elapsed / 1000);
+        setGameTimeMs(totalCycles * 1000 + distorted);
+      } else {
+        setGameTimeMs(elapsed);
+      }
+
       if (gameMode !== "time_attack" && elapsed >= 300000) finishGame();
     }, 10);
+
     return () => clearInterval(interval);
-  }, [gameState, finishGame, isPaused, gameMode]);
+  }, [gameState, finishGame, isPaused, gameMode, gameVariant]);
 
   useEffect(() => {
     if (gameState !== "playing" || isPaused) return;
@@ -191,7 +248,7 @@ export const useGameLogic = ({
     return () => clearInterval(interval);
   }, [gameState, currentPlayer, isPaused, gameMode]);
 
-  // Time checks
+  // Süre Kontrolleri
   useEffect(() => {
     if (gameState !== "playing" || isPaused) return;
     if (turnTimeLeft === 0) {
@@ -223,14 +280,20 @@ export const useGameLogic = ({
     gameMode,
   ]);
 
+  // --- AKSİYON ---
+
   const handleAction = useCallback(() => {
     if (gameState !== "playing" || isPaused) return;
     if (gameMode === "bot" && currentPlayer === "p2") return;
 
     playSound("kick");
+
     const currentMs = gameTimeMs % 1000;
-    const { result, message, isGoal } = calculateShotResult(currentMs);
-    const displayMs = String(Math.floor(currentMs / 10)).padStart(2, "0");
+    let distance = Math.abs(currentMs - targetOffset);
+    if (distance > 500) distance = 1000 - distance;
+
+    const { result, message, isGoal } = calculateShotResult(distance);
+    const displayMs = String(Math.floor(distance / 10)).padStart(2, "0");
 
     if (gameMode === "survival") {
       if (isGoal) {
@@ -271,9 +334,10 @@ export const useGameLogic = ({
     isPaused,
     streak,
     finishGame,
+    targetOffset,
   ]);
 
-  // Keyboard listener
+  // Klavye Kontrolü
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.code === "Space") {
@@ -296,17 +360,16 @@ export const useGameLogic = ({
     )
       return;
     const timer = setTimeout(() => {
-      const now = Date.now();
-      const elapsed = now - startTimeRef.current;
-      let currentMs = elapsed % 1000;
-      if (botAccuracy >= 0.9) currentMs = Math.floor(Math.random() * 40);
-      else if (botAccuracy >= 0.7) currentMs = Math.floor(Math.random() * 150);
+      let error = 0;
+      if (botAccuracy >= 0.9) error = Math.floor(Math.random() * 10);
+      else if (botAccuracy >= 0.7) error = Math.floor(Math.random() * 50);
+      else error = Math.floor(Math.random() * 300);
 
       playSound("kick");
-      const { result, message, isGoal } = calculateShotResult(currentMs);
+      const { result, message, isGoal } = calculateShotResult(error);
       const isSuccess =
         result === "GOL" || (isGoal && Math.random() < botAccuracy);
-      const displayMs = String(Math.floor(currentMs / 10)).padStart(2, "0");
+      const displayMs = String(Math.floor(error / 10)).padStart(2, "0");
 
       if (isSuccess) {
         playSound("goal");
@@ -341,6 +404,7 @@ export const useGameLogic = ({
     setIsPaused(false);
     setGameTimeMs(0);
     startTimeRef.current = 0;
+    setTargetOffset(0);
     setScores({ p1: 0, p2: 0 });
     setPlayerTimes({ p1: initialTime, p2: initialTime });
     setTurnTimeLeft(10);
@@ -371,5 +435,7 @@ export const useGameLogic = ({
     setPlayerNames,
     playerNames,
     visualEffect,
+    targetOffset,
+    gameVariant,
   };
 };

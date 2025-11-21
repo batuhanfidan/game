@@ -6,6 +6,12 @@ export type GameMode =
   | "survival"
   | "time_attack"
   | "penalty";
+export type GameVariant =
+  | "classic"
+  | "ghost"
+  | "unstable"
+  | "random"
+  | "moving";
 
 export interface VisualEffectData {
   type: "goal" | "post" | "miss" | "save";

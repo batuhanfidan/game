@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-// DÜZELTME: Tip useGameLogic'ten çekiliyor
 import type { VisualEffectData } from "../../types";
 
 interface VisualEffectOverlayProps {
@@ -30,7 +29,6 @@ const VisualEffectOverlay: React.FC<VisualEffectOverlayProps> = ({
       const isMobile = window.innerWidth < 768;
 
       if (isTwoPlayerMode) {
-        // Artık effect.player var
         if (effect.player === "p1") {
           setPosition({
             top: isMobile ? "85%" : "70%",
@@ -38,7 +36,6 @@ const VisualEffectOverlay: React.FC<VisualEffectOverlayProps> = ({
             transform: "translate(-50%, -50%)",
           });
         } else {
-          // p2
           setPosition({
             top: isMobile ? "85%" : "70%",
             left: isMobile ? "75%" : "70%",
@@ -46,7 +43,6 @@ const VisualEffectOverlay: React.FC<VisualEffectOverlayProps> = ({
           });
         }
       } else {
-        // BOT MODE
         setPosition({
           top: isMobile ? "72%" : "50%",
           left: "50%",
@@ -59,7 +55,7 @@ const VisualEffectOverlay: React.FC<VisualEffectOverlayProps> = ({
   if (!effect) return null;
 
   return (
-    <div key={key} className="effect-item fixed z-[100]" style={position}>
+    <div key={key} className="effect-item fixed z-100" style={position}>
       {effect.type === "goal" && (
         <div className="animate-goal text-7xl sm:text-9xl drop-shadow-[0_0_30px_rgba(34,197,94,0.8)]">
           ⚽

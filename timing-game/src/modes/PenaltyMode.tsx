@@ -4,7 +4,7 @@ import TimerDisplay from "../components/game/TimerDisplay";
 import ActionButton from "../components/game/ActionButton";
 import GameOverModal from "../components/common/GameOverModal";
 import VisualEffectOverlay from "../components/layout/VisualEffectOverlay";
-// DÜZELTME 1: ShotResult kullanılmıyorsa silebiliriz veya tip tanımlamada kullanabiliriz
+
 import { calculateShotResult } from "../utils/calculateShotResult";
 import { playSound, toggleMute, getMuteStatus } from "../utils/sound";
 import { triggerWinConfetti } from "../utils/confetti";
@@ -17,7 +17,7 @@ const PenaltyMode = () => {
 
   // --- STATE ---
   const [currentPlayer, setCurrentPlayer] = useState<Player>("p1");
-  const [round, setRound] = useState(1); // 1'den 5'e kadar
+  const [round, setRound] = useState(1);
   const [scores, setScores] = useState({ p1: 0, p2: 0 });
   const [history, setHistory] = useState<{ p1: boolean[]; p2: boolean[] }>({
     p1: [],
@@ -30,7 +30,6 @@ const PenaltyMode = () => {
     "Penaltı Atışları Başlıyor!"
   );
 
-  // DÜZELTME 3: State tipi düzeltildi
   const [visualEffect, setVisualEffect] = useState<VisualEffectData | null>(
     null
   );
@@ -54,7 +53,7 @@ const PenaltyMode = () => {
     }
   }, [visualEffect]);
 
-  // Sayaç Mantığı (Sürekli akar)
+  // Sayaç Mantığı
   useEffect(() => {
     if (isGameOver || shotTaken) return;
 
@@ -91,7 +90,6 @@ const PenaltyMode = () => {
       setActionMessage(`⚽ GOL! (${displayMs}ms)`);
     } else {
       playSound("miss");
-      // Hata olmaması için type casting veya logic kontrolü
       const missType = result === "DİREK" ? "post" : "miss";
       setVisualEffect({ type: missType, player: currentPlayer });
       setActionMessage(`❌ KAÇTI! (${displayMs}ms) - ${message}`);
@@ -118,7 +116,7 @@ const PenaltyMode = () => {
           finishGame();
         }
       }
-    }, 2000); // 2 saniye sonucu göster sonra geç
+    }, 2000);
   }, [gameTimeMs, currentPlayer, round, shotTaken, isGameOver]);
 
   const finishGame = () => {
@@ -152,17 +150,13 @@ const PenaltyMode = () => {
     startTimeRef.current = 0;
   };
 
-  // --- RENDER YARDIMCILARI ---
-
   const renderScoreDots = (player: Player) => {
-    // 5 daire çiz, duruma göre boya
     return Array.from({ length: 5 }).map((_, i) => {
       const result = history[player][i];
-      let colorClass = "bg-gray-700"; // Bekleniyor
-      if (result === true) colorClass = "bg-green-500"; // Gol
-      if (result === false) colorClass = "bg-red-500"; // Kaçtı
+      let colorClass = "bg-gray-700";
+      if (result === true) colorClass = "bg-green-500";
+      if (result === false) colorClass = "bg-red-500";
 
-      // Aktif tur göstergesi
       const isActive =
         !isGameOver && player === currentPlayer && i === round - 1;
 
@@ -178,7 +172,7 @@ const PenaltyMode = () => {
   };
 
   return (
-    <div className="h-screen w-screen bg-gradient-to-b from-slate-900 to-black text-white flex flex-col items-center font-mono overflow-hidden relative">
+    <div className="h-screen w-screen bg-linear-to-b from-slate-900 to-black text-white flex flex-col items-center font-mono overflow-hidden relative">
       <VisualEffectOverlay
         effect={visualEffect}
         isTwoPlayerMode={true}
