@@ -1,16 +1,24 @@
 import type { ShotOutcome, ShotResult } from "../types";
 import { SHOT_ZONES } from "./constants";
 
-export function calculateShotResult(ms: number): ShotOutcome {
+// targetOffset: Hedefin (0 noktasının) ne kadar kaydığı. Varsayılan 0.
+export function calculateShotResult(
+  ms: number,
+  targetOffset: number = 0
+): ShotOutcome {
+  // Vuruş zamanını hedefe göre normalize et (Mutlak farkı al)
+  // Örn: Hedef 400ms, Vuruş 405ms -> Fark 5ms (GOL)
+  const diff = Math.abs(ms - targetOffset);
+
   let result: ShotResult = "OFSAYT";
   let message = "";
   let isGoal = false;
 
-  if (ms < SHOT_ZONES.GOAL) {
+  if (diff < SHOT_ZONES.GOAL) {
     result = "GOL";
-    message = "MÜKEMMEL! Sıfırı tutturdun, gol!";
+    message = "MÜKEMMEL! Hedefi tam on ikiden vurdun!";
     isGoal = true;
-  } else if (ms < SHOT_ZONES.PENALTY) {
+  } else if (diff < SHOT_ZONES.PENALTY) {
     result = "PENALTI";
     const random = Math.random() * 100;
     if (random <= 75) {
@@ -23,7 +31,7 @@ export function calculateShotResult(ms: number): ShotOutcome {
       message = "Kaleci kurtardı! 🧤";
       result = "KURTARDI";
     }
-  } else if (ms <= SHOT_ZONES.SHOT) {
+  } else if (diff <= SHOT_ZONES.SHOT) {
     result = "ŞUT";
     if (Math.random() * 100 <= 30 && Math.random() * 100 <= 25) {
       message = "Ceza sahasından gol! ⚽";
@@ -31,7 +39,7 @@ export function calculateShotResult(ms: number): ShotOutcome {
     } else {
       message = "Uzak mesafeden şut, kaleci kontrol etti.";
     }
-  } else if (ms <= SHOT_ZONES.CROSS) {
+  } else if (diff <= SHOT_ZONES.CROSS) {
     result = "ORTA";
     if (Math.random() * 100 <= 20) {
       message = "Başarılı orta ve GOOOL! ⚽";
@@ -39,7 +47,7 @@ export function calculateShotResult(ms: number): ShotOutcome {
     } else {
       message = "Orta başarısız.";
     }
-  } else if (ms <= SHOT_ZONES.FREEKICK) {
+  } else if (diff <= SHOT_ZONES.FREEKICK) {
     result = "FRİKİK";
     const chance = Math.random() * 100;
     if (chance <= 20) {
@@ -53,7 +61,7 @@ export function calculateShotResult(ms: number): ShotOutcome {
     }
   } else {
     result = "OFSAYT";
-    message = "Ofsayt bayrağı kalktı. ❌";
+    message = "Çok uzak! ❌";
   }
 
   return { result, message, isGoal };

@@ -1,3 +1,5 @@
+import type { GameVariant } from "../types";
+
 export const THEMES = [
   { name: "Klasik", class: "bg-black" },
   { name: "Çim Saha", class: "bg-green-900" },
@@ -14,11 +16,48 @@ export const DIFFICULTIES = {
   IMPOSSIBLE: { label: "İmkansız", reaction: 600, accuracy: 0.95 },
 };
 
-// Vuruş bölgeleri (milisaniye cinsinden)
+export const GAME_VARIANTS: {
+  id: GameVariant;
+  title: string;
+  desc: string;
+  icon: string;
+}[] = [
+  {
+    id: "classic",
+    title: "Klasik",
+    desc: "Standart kurallar. En iyi olan kazansın.",
+    icon: "🟢",
+  },
+  {
+    id: "ghost",
+    title: "Hayalet",
+    desc: "Sayaç 500ms'den sonra kaybolur. İçinden say!",
+    icon: "👻",
+  },
+  {
+    id: "unstable",
+    title: "Dengesiz",
+    desc: "Zaman akışı bozuk! Bazen hızlı, bazen yavaş.",
+    icon: "📉",
+  },
+  {
+    id: "random_start",
+    title: "Rastgele Başlangıç",
+    desc: "Her tur farklı bir süreden başlar.",
+    icon: "🔀",
+  },
+  {
+    id: "moving_target",
+    title: "Gezgin Hedef",
+    desc: "Hedef bölge her tur yer değiştirir.",
+    icon: "🎯",
+  },
+];
+
 export const SHOT_ZONES = {
-  GOAL: 10, // 0-9 ms -> Mükemmel Gol
-  PENALTY: 110, // 10-109 ms -> Penaltı şansı
-  SHOT: 310, // 110-309 ms -> Şut şansı
-  CROSS: 510, // 310-509 ms -> Orta şansı
-  FREEKICK: 710, // 510-709 ms -> Frikik şansı
+  GOAL: 10,
+  PENALTY: 110,
+  SHOT: 310,
+  CROSS: 510,
+  FREEKICK: 710,
 };
