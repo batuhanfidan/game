@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 // DÜZELTME: Tip useGameLogic'ten çekiliyor
-import type { VisualEffectData } from "../hooks/useGameLogic";
+import type { VisualEffectData } from "../../types";
 
 interface VisualEffectOverlayProps {
   effect: VisualEffectData | null;

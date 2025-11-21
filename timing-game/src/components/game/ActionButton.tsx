@@ -3,8 +3,8 @@ import React from "react";
 interface ActionButtonProps {
   onClick: () => void;
   disabled?: boolean;
-  customText?: string; // EKLENDİ: Penaltı modu için gerekli
-  customColor?: string; // EKLENDİ: Özelleştirme için gerekli
+  customText?: string;
+  customColor?: string;
 }
 
 const ActionButton: React.FC<ActionButtonProps> = ({
@@ -13,7 +13,6 @@ const ActionButton: React.FC<ActionButtonProps> = ({
   customText = "Bas!",
   customColor,
 }) => {
-  // Eğer özel renk gelirse onu kullan, yoksa varsayılanı kullan
   const baseColor = customColor || "bg-blue-600 hover:bg-blue-700";
 
   return (

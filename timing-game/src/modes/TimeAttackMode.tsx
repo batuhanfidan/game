@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import TimerDisplay from "../components/TimerDisplay";
-import PlayerTimer from "../components/PlayerTimer";
-import ActionButton from "../components/ActionButton";
-import GameOverModal from "../components/GameOverModal";
-import RulesModal from "../components/RulesModel";
-import VisualEffectOverlay from "../components/VisualEffectOverlay";
-import PauseMenu from "../components/PauseMenu";
+import TimerDisplay from "../components/game/TimerDisplay";
+import PlayerTimer from "../components/layout/PlayerTimer";
+import ActionButton from "../components/game/ActionButton";
+import GameOverModal from "../components/common/GameOverModal";
+import RulesModal from "../components/layout/RulesModel";
+import VisualEffectOverlay from "../components/layout/VisualEffectOverlay";
+import PauseMenu from "../components/layout/PauseMenu";
 import { useGameLogic } from "../hooks/useGameLogic";
 import { toggleMute, getMuteStatus } from "../utils/sound";
 

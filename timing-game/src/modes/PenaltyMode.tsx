@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import TimerDisplay from "../components/TimerDisplay";
-import ActionButton from "../components/ActionButton";
-import GameOverModal from "../components/GameOverModal";
-import VisualEffectOverlay from "../components/VisualEffectOverlay";
+import TimerDisplay from "../components/game/TimerDisplay";
+import ActionButton from "../components/game/ActionButton";
+import GameOverModal from "../components/common/GameOverModal";
+import VisualEffectOverlay from "../components/layout/VisualEffectOverlay";
 // DÜZELTME 1: ShotResult kullanılmıyorsa silebiliriz veya tip tanımlamada kullanabiliriz
 import { calculateShotResult } from "../utils/calculateShotResult";
 import { playSound, toggleMute, getMuteStatus } from "../utils/sound";

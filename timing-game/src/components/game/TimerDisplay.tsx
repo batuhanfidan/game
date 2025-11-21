@@ -1,4 +1,4 @@
-import { formatTime } from "../utils/formatTime";
+import { formatTime } from "../../utils/formatTime";
 
 interface TimerDisplayProps {
   totalMs: number;

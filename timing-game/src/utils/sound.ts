@@ -1,3 +1,15 @@
+const sounds = {
+  goal: new Audio("/sounds/goal.mp3"),
+  whistle: new Audio("/sounds/whistle.mp3"),
+  kick: new Audio("/sounds/kick.mp3"),
+  miss: new Audio("/sounds/miss.mp3"),
+};
+
+Object.values(sounds).forEach((sound) => {
+  sound.load();
+  sound.volume = 0.5;
+});
+
 let isMuted = false;
 
 export const toggleMute = (): boolean => {
@@ -7,17 +19,12 @@ export const toggleMute = (): boolean => {
 
 export const getMuteStatus = (): boolean => isMuted;
 
-export const playSound = (type: "goal" | "whistle" | "kick" | "miss") => {
+export const playSound = (type: keyof typeof sounds) => {
   if (isMuted) return;
 
-  const sounds = {
-    goal: "/sounds/goal.mp3",
-    whistle: "/sounds/whistle.mp3",
-    kick: "/sounds/kick.mp3",
-    miss: "/sounds/miss.mp3",
-  };
-
-  const audio = new Audio(sounds[type]);
-  audio.volume = 0.5;
-  audio.play().catch(() => {});
+  const sound = sounds[type];
+  if (sound) {
+    sound.currentTime = 0;
+    sound.play().catch(() => {});
+  }
 };
