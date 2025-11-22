@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { calculateShotResult } from "../utils/calculateShotResult";
+
 import { triggerWinConfetti } from "../utils/confetti";
 import { playSound } from "../utils/sound";
 import type {
@@ -27,10 +28,16 @@ export const useGameLogic = ({
 }: UseGameLogicProps = {}) => {
   const [gameState, setGameState] = useState<GameState>("idle");
   const [isPaused, setIsPaused] = useState(false);
+
+  // Ekranda görünen (veya hesaplanan) zaman
   const [gameTimeMs, setGameTimeMs] = useState(0);
+
   const [turnTimeLeft, setTurnTimeLeft] = useState(10);
   const [currentPlayer, setCurrentPlayer] = useState<Player>("p1");
+
+  // Varyasyon değişkenleri
   const [targetOffset, setTargetOffset] = useState(0);
+  const [roundOffset, setRoundOffset] = useState(0);
 
   const [playerNames, setPlayerNames] = useState({
     p1: "Oyuncu 1",
@@ -45,15 +52,14 @@ export const useGameLogic = ({
   const [scores, setScores] = useState({ p1: 0, p2: 0 });
   const [streak, setStreak] = useState(0);
 
-  const getHighScoreKey = useCallback(() => {
-    return `timing-game-highscore-${gameMode}-${gameVariant}`;
-  }, [gameMode, gameVariant]);
+  const getHighScoreKey = useCallback(
+    () => `timing-game-highscore-${gameMode}-${gameVariant}`,
+    [gameMode, gameVariant]
+  );
 
   const [highScore, setHighScore] = useState(() => {
     if (gameMode === "classic" && gameVariant === "classic") return 0;
-
-    const key = `timing-game-highscore-${gameMode}-${gameVariant}`;
-    const saved = localStorage.getItem(key);
+    const saved = localStorage.getItem(getHighScoreKey());
     return saved ? parseInt(saved, 10) : 0;
   });
 
@@ -71,19 +77,18 @@ export const useGameLogic = ({
   // --- YARDIMCI FONKSİYONLAR ---
 
   const randomizeRound = useCallback(() => {
-    let startOffset = 0;
-    let newTarget = 0;
-
     if (gameVariant === "random") {
-      startOffset = Math.floor(Math.random() * 800);
+      setRoundOffset(Math.floor(Math.random() * 800));
+    } else {
+      setRoundOffset(0);
     }
 
+    // 2. Gezgin Hedef
     if (gameVariant === "moving") {
-      newTarget = Math.floor(Math.random() * 800);
+      setTargetOffset(Math.floor(Math.random() * 800));
+    } else {
+      setTargetOffset(0);
     }
-
-    startTimeRef.current = Date.now() - startOffset;
-    setTargetOffset(newTarget);
   }, [gameVariant]);
 
   const getCurrentPlayerName = useCallback(
@@ -183,6 +188,9 @@ export const useGameLogic = ({
         setCountdown(null);
         setGameState("playing");
 
+        // Oyunu başlatırken ana zamanı sıfırla
+        startTimeRef.current = Date.now();
+
         if (gameMode === "survival" || gameMode === "time_attack") {
           setCurrentPlayer("p1");
           setActionMessage("Başarılar!");
@@ -198,19 +206,26 @@ export const useGameLogic = ({
 
   // --- ZAMANLAYICILAR ---
 
+  // 1. Ana Zamanlayıcı
   useEffect(() => {
     if (gameState !== "playing" || isPaused) return;
 
-    if (startTimeRef.current === 0 || gameTimeMs === 0) {
-      startTimeRef.current = Date.now() - gameTimeMs;
+    if (startTimeRef.current === 0) {
+      startTimeRef.current = Date.now();
     }
 
     const interval = setInterval(() => {
       const now = Date.now();
+
+      // Gerçek geçen süre
       const elapsed = now - startTimeRef.current;
 
+      // Ekranda görünen süre
+      let visualTime = elapsed + roundOffset;
+
+      // Dengesiz Sayaç Mantığı
       if (gameVariant === "unstable") {
-        const cycle = elapsed % 1000;
+        const cycle = visualTime % 1000;
         let distorted = 0;
         if (cycle < 300) {
           distorted = cycle * 0.8;
@@ -219,18 +234,20 @@ export const useGameLogic = ({
         } else {
           distorted = 840 + (cycle - 700) * 0.53;
         }
-        const totalCycles = Math.floor(elapsed / 1000);
-        setGameTimeMs(totalCycles * 1000 + distorted);
-      } else {
-        setGameTimeMs(elapsed);
+        const totalCycles = Math.floor(visualTime / 1000);
+        visualTime = totalCycles * 1000 + distorted;
       }
 
-      if (gameMode !== "time_attack" && elapsed >= 300000) finishGame();
+      setGameTimeMs(visualTime);
+
+      // Oyun bitiş kontrolü (Gerçek süreye göre yapılır)
+      if (gameMode !== "time_attack" && elapsed >= 10000) finishGame();
     }, 10);
 
     return () => clearInterval(interval);
-  }, [gameState, finishGame, isPaused, gameMode, gameVariant]);
+  }, [gameState, finishGame, isPaused, gameMode, gameVariant, roundOffset]);
 
+  // 2. Saniye Bazlı Sayaçlar
   useEffect(() => {
     if (gameState !== "playing" || isPaused) return;
     const interval = setInterval(() => {
@@ -289,8 +306,9 @@ export const useGameLogic = ({
     playSound("kick");
 
     const currentMs = gameTimeMs % 1000;
-    let distance = Math.abs(currentMs - targetOffset);
-    if (distance > 500) distance = 1000 - distance;
+
+    // Hedef Hesaplama (Gezgin Hedef)
+    const distance = Math.abs(currentMs - targetOffset);
 
     const { result, message, isGoal } = calculateShotResult(distance);
     const displayMs = String(Math.floor(distance / 10)).padStart(2, "0");
@@ -350,7 +368,7 @@ export const useGameLogic = ({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleAction, gameState, isPaused, togglePause]);
 
-  // Bot AI
+  // Bot Zekası
   useEffect(() => {
     if (
       gameMode !== "bot" ||
