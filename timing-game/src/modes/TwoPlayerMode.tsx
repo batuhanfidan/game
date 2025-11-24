@@ -39,7 +39,7 @@ const VARIANTS: { key: GameVariant; label: string; desc: string }[] = [
   {
     key: "moving",
     label: "🎯 Gezgin",
-    desc: "Hedef bölgesi her tur yer değiştirir.",
+    desc: "Hedef sürekli değişir. (Yardımcı bar zorunludur)",
   },
 ];
 
@@ -48,9 +48,16 @@ const TwoPlayerMode = () => {
   const [selectedVariant, setSelectedVariant] =
     useState<GameVariant>("classic");
 
-  // SÜRE AYARI (Varsayılan 1dk)
-  const [gameDuration, setGameDuration] = useState(60);
+  // SÜRE AYARI (Varsayılan 3dk - 180sn)
+  const [gameDuration, setGameDuration] = useState(180);
   const [showProgressBar, setShowProgressBar] = useState(true);
+
+  // Gezgin modu seçilirse barı zorunlu aç
+  useEffect(() => {
+    if (selectedVariant === "moving") {
+      setShowProgressBar(true);
+    }
+  }, [selectedVariant]);
 
   const {
     gameState,
@@ -164,9 +171,11 @@ const TwoPlayerMode = () => {
 
       <RulesModal showRules={showRules} onClose={() => setShowRules(false)} />
 
-      <div className="absolute top-4 text-2xl md:text-3xl font-extrabold text-center text-yellow-400 drop-shadow-lg px-4 pointer-events-none">
-        🏆 Skor: {scores.p1} - {scores.p2}
-      </div>
+      {gameState !== "idle" && (
+        <div className="absolute top-4 text-2xl md:text-3xl font-extrabold text-center text-yellow-400 drop-shadow-lg px-4 pointer-events-none">
+          🏆 Skor: {scores.p1} - {scores.p2}
+        </div>
+      )}
 
       <div className="absolute top-28 flex justify-between w-full px-4 md:px-20 text-xl">
         <PlayerTimer
@@ -182,13 +191,14 @@ const TwoPlayerMode = () => {
       </div>
 
       {gameState === "idle" && !countdown && (
-        <div className="flex flex-col items-center gap-6 z-10 bg-neutral-900 p-8 rounded-2xl border border-gray-700 shadow-2xl max-w-md w-full mx-4 overflow-y-auto max-h-[80vh]">
+        <div className="flex flex-col items-center gap-6 z-10 bg-neutral-900 p-8 rounded-2xl border border-gray-700 shadow-2xl max-w-2xl w-full mx-4 overflow-y-auto max-h-[95vh]">
           {/* OYUN TİPİ SEÇİMİ */}
           <div className="w-full">
             <h2 className="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">
               Oyun Tipi
             </h2>
-            <div className="grid grid-cols-1 gap-2">
+            {/* PC'de 2 sütun olacak şekilde güncellendi */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {VARIANTS.map((v) => (
                 <button
                   key={v.key}
@@ -215,17 +225,18 @@ const TwoPlayerMode = () => {
           </div>
 
           {/* SÜRE VE BAR AYARLARI */}
-          <div className="w-full grid grid-cols-2 gap-4">
+          <div className="w-full flex flex-col gap-4">
+            {/* SÜRE SEÇİMİ */}
             <div>
               <h2 className="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">
                 Süre
               </h2>
-              <div className="flex flex-col gap-1">
+              <div className="flex gap-2 w-full">
                 {[60, 180, 300].map((t) => (
                   <button
                     key={t}
                     onClick={() => setGameDuration(t)}
-                    className={`px-2 py-2 rounded text-xs font-bold transition-all ${
+                    className={`flex-1 px-2 py-3 rounded text-xs font-bold transition-all ${
                       gameDuration === t
                         ? "bg-blue-600 text-white"
                         : "bg-gray-800 text-gray-400 hover:bg-gray-700"
@@ -236,20 +247,38 @@ const TwoPlayerMode = () => {
                 ))}
               </div>
             </div>
+
+            {/* YARDIMCI BAR SEÇİMİ */}
             <div>
               <h2 className="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">
                 Yardımcı Bar
               </h2>
-              <button
-                onClick={() => setShowProgressBar(!showProgressBar)}
-                className={`w-full h-full rounded-lg border transition-all font-bold text-sm ${
-                  showProgressBar
-                    ? "bg-green-900/30 border-green-500 text-green-400"
-                    : "bg-gray-800 border-gray-600 text-gray-500"
-                }`}
-              >
-                {showProgressBar ? "AÇIK" : "KAPALI"}
-              </button>
+              <div className="flex gap-2 w-full">
+                <button
+                  onClick={() => setShowProgressBar(true)}
+                  className={`flex-1 py-3 rounded-lg border transition-all font-bold text-sm ${
+                    showProgressBar
+                      ? "bg-green-900/30 border-green-500 text-green-400 shadow-[0_0_10px_rgba(34,197,94,0.2)]"
+                      : "bg-gray-800 border-transparent text-gray-500 hover:bg-gray-700"
+                  }`}
+                >
+                  AÇIK
+                </button>
+
+                <button
+                  onClick={() => setShowProgressBar(false)}
+                  disabled={selectedVariant === "moving"}
+                  className={`flex-1 py-3 rounded-lg border transition-all font-bold text-sm ${
+                    selectedVariant === "moving"
+                      ? "bg-gray-900/50 border-gray-800 text-gray-700 opacity-50 cursor-not-allowed"
+                      : !showProgressBar
+                      ? "bg-red-900/30 border-red-500 text-red-400 shadow-[0_0_10px_rgba(239,68,68,0.2)]"
+                      : "bg-gray-800 border-transparent text-gray-500 hover:bg-gray-700"
+                  }`}
+                >
+                  KAPALI
+                </button>
+              </div>
             </div>
           </div>
 
@@ -260,6 +289,7 @@ const TwoPlayerMode = () => {
             <input
               type="text"
               value={playerNames.p1}
+              maxLength={20}
               onChange={(e) =>
                 setPlayerNames((prev) => ({ ...prev, p1: e.target.value }))
               }
@@ -269,6 +299,7 @@ const TwoPlayerMode = () => {
             <input
               type="text"
               value={playerNames.p2}
+              maxLength={20}
               onChange={(e) =>
                 setPlayerNames((prev) => ({ ...prev, p2: e.target.value }))
               }
@@ -280,10 +311,12 @@ const TwoPlayerMode = () => {
           <div className="flex gap-4 mt-4 w-full justify-center">
             <button
               onClick={() => setP1Ready(true)}
-              disabled={p1Ready}
+              disabled={p1Ready || playerNames.p1.trim().length === 0}
               className={`px-4 py-3 rounded-lg text-lg font-bold transition w-full ${
                 p1Ready
                   ? "bg-green-600 cursor-default"
+                  : playerNames.p1.trim().length === 0
+                  ? "bg-gray-700 text-gray-500 cursor-not-allowed"
                   : "bg-blue-600 hover:bg-blue-500"
               }`}
             >
@@ -291,10 +324,12 @@ const TwoPlayerMode = () => {
             </button>
             <button
               onClick={() => setP2Ready(true)}
-              disabled={p2Ready}
+              disabled={p2Ready || playerNames.p2.trim().length === 0}
               className={`px-4 py-3 rounded-lg text-lg font-bold transition w-full ${
                 p2Ready
                   ? "bg-green-600 cursor-default"
+                  : playerNames.p2.trim().length === 0
+                  ? "bg-gray-700 text-gray-500 cursor-not-allowed"
                   : "bg-red-600 hover:bg-red-500"
               }`}
             >

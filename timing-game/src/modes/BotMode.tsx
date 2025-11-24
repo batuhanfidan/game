@@ -39,7 +39,7 @@ const VARIANTS: { key: GameVariant; label: string; desc: string }[] = [
   {
     key: "moving",
     label: "🎯 Gezgin",
-    desc: "Hedef bölgesi her tur yer değiştirir.",
+    desc: "Hedef sürekli değişir. (Yardımcı bar zorunludur)",
   },
 ];
 
@@ -57,13 +57,20 @@ const BotMode = () => {
   const [selectedVariant, setSelectedVariant] =
     useState<GameVariant>("classic");
 
-  // SÜRE VE BAR AYARLARI (Varsayılan 1dk)
-  const [gameDuration, setGameDuration] = useState(60);
+  // SÜRE VE BAR AYARLARI (Varsayılan 3dk - 180sn)
+  const [gameDuration, setGameDuration] = useState(180);
   const [showProgressBar, setShowProgressBar] = useState(true);
 
   const [currentTheme, setCurrentTheme] = useState(0);
   const [isMuted, setIsMuted] = useState(getMuteStatus());
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  // Gezgin modu seçilirse barı zorunlu aç
+  useEffect(() => {
+    if (selectedVariant === "moving") {
+      setShowProgressBar(true);
+    }
+  }, [selectedVariant]);
 
   const {
     gameState,
@@ -91,7 +98,7 @@ const BotMode = () => {
     gameVariant: selectedVariant,
     botReactionTime: DIFFICULTIES[difficulty].reaction,
     botAccuracy: DIFFICULTIES[difficulty].accuracy,
-    initialTime: gameDuration, // Seçilen süre
+    initialTime: gameDuration,
   });
 
   const [showRules, setShowRules] = useState(false);
@@ -171,15 +178,17 @@ const BotMode = () => {
 
       <RulesModal showRules={showRules} onClose={() => setShowRules(false)} />
 
-      <div className="absolute top-4 w-full flex flex-col items-center z-10 pointer-events-none">
-        <div className="text-3xl font-extrabold text-yellow-400 drop-shadow-lg">
-          🏆 Skor: {scores.p1} - {scores.p2}
+      {gameState !== "idle" && (
+        <div className="absolute top-4 w-full flex flex-col items-center z-10 pointer-events-none">
+          <div className="text-3xl font-extrabold text-yellow-400 drop-shadow-lg">
+            🏆 Skor: {scores.p1} - {scores.p2}
+          </div>
+          <div className="text-sm text-gray-400 mt-1 bg-gray-900/50 px-3 py-1 rounded-full border border-gray-700">
+            ⭐ En Yüksek Skor:{" "}
+            <span className="text-white font-bold">{highScore}</span>
+          </div>
         </div>
-        <div className="text-sm text-gray-400 mt-1 bg-gray-900/50 px-3 py-1 rounded-full border border-gray-700">
-          ⭐ En Yüksek Skor:{" "}
-          <span className="text-white font-bold">{highScore}</span>
-        </div>
-      </div>
+      )}
 
       <div className="absolute top-32 flex justify-between w-full px-4 md:px-20 text-xl">
         <PlayerTimer
@@ -195,7 +204,7 @@ const BotMode = () => {
       </div>
 
       {gameState === "idle" && !countdown && (
-        <div className="flex flex-col items-center gap-4 z-20 bg-neutral-900 p-6 rounded-2xl border border-gray-700 shadow-2xl max-w-sm w-full mx-4 overflow-y-auto max-h-[80vh]">
+        <div className="flex flex-col items-center gap-4 z-20 bg-neutral-900 p-6 rounded-2xl border border-gray-700 shadow-2xl max-w-2xl w-full mx-4 overflow-y-auto max-h-[95vh]">
           {/* ZORLUK SEÇİMİ */}
           <div className="w-full">
             <h2 className="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">
@@ -223,7 +232,7 @@ const BotMode = () => {
             <h2 className="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">
               Oyun Tipi
             </h2>
-            <div className="grid grid-cols-1 gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {VARIANTS.map((v) => (
                 <button
                   key={v.key}
@@ -250,17 +259,18 @@ const BotMode = () => {
           </div>
 
           {/* SÜRE VE BAR AYARLARI */}
-          <div className="w-full grid grid-cols-2 gap-4">
+          <div className="w-full flex flex-col gap-4">
+            {/* SÜRE SEÇİMİ */}
             <div>
               <h2 className="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">
                 Süre
               </h2>
-              <div className="flex flex-col gap-1">
+              <div className="flex gap-2 w-full">
                 {[60, 180, 300].map((t) => (
                   <button
                     key={t}
                     onClick={() => setGameDuration(t)}
-                    className={`px-2 py-2 rounded text-xs font-bold transition-all ${
+                    className={`flex-1 px-2 py-3 rounded text-xs font-bold transition-all ${
                       gameDuration === t
                         ? "bg-blue-600 text-white"
                         : "bg-gray-800 text-gray-400 hover:bg-gray-700"
@@ -271,20 +281,40 @@ const BotMode = () => {
                 ))}
               </div>
             </div>
+
+            {/* YARDIMCI BAR SEÇİMİ */}
             <div>
               <h2 className="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">
                 Yardımcı Bar
               </h2>
-              <button
-                onClick={() => setShowProgressBar(!showProgressBar)}
-                className={`w-full h-full rounded-lg border transition-all font-bold text-sm ${
-                  showProgressBar
-                    ? "bg-green-900/30 border-green-500 text-green-400"
-                    : "bg-gray-800 border-gray-600 text-gray-500"
-                }`}
-              >
-                {showProgressBar ? "AÇIK" : "KAPALI"}
-              </button>
+              <div className="flex gap-2 w-full">
+                {/* AÇIK BUTONU */}
+                <button
+                  onClick={() => setShowProgressBar(true)}
+                  className={`flex-1 py-3 rounded-lg border transition-all font-bold text-sm ${
+                    showProgressBar
+                      ? "bg-green-900/30 border-green-500 text-green-400 shadow-[0_0_10px_rgba(34,197,94,0.2)]"
+                      : "bg-gray-800 border-transparent text-gray-500 hover:bg-gray-700"
+                  }`}
+                >
+                  AÇIK
+                </button>
+
+                {/* KAPALI BUTONU */}
+                <button
+                  onClick={() => setShowProgressBar(false)}
+                  disabled={selectedVariant === "moving"}
+                  className={`flex-1 py-3 rounded-lg border transition-all font-bold text-sm ${
+                    selectedVariant === "moving"
+                      ? "bg-gray-900/50 border-gray-800 text-gray-700 opacity-50 cursor-not-allowed"
+                      : !showProgressBar
+                      ? "bg-red-900/30 border-red-500 text-red-400 shadow-[0_0_10px_rgba(239,68,68,0.2)]"
+                      : "bg-gray-800 border-transparent text-gray-500 hover:bg-gray-700"
+                  }`}
+                >
+                  KAPALI
+                </button>
+              </div>
             </div>
           </div>
 
@@ -314,7 +344,7 @@ const BotMode = () => {
 
       {gameState === "playing" && (
         <>
-          {/* TimerDisplay Props Güncellendi */}
+          {/* TimerDisplay Props */}
           <TimerDisplay
             totalMs={gameTimeMs}
             targetOffset={targetOffset}
