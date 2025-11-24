@@ -57,6 +57,10 @@ const BotMode = () => {
   const [selectedVariant, setSelectedVariant] =
     useState<GameVariant>("classic");
 
+  // SÜRE VE BAR AYARLARI (Varsayılan 1dk)
+  const [gameDuration, setGameDuration] = useState(60);
+  const [showProgressBar, setShowProgressBar] = useState(true);
+
   const [currentTheme, setCurrentTheme] = useState(0);
   const [isMuted, setIsMuted] = useState(getMuteStatus());
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -87,6 +91,7 @@ const BotMode = () => {
     gameVariant: selectedVariant,
     botReactionTime: DIFFICULTIES[difficulty].reaction,
     botAccuracy: DIFFICULTIES[difficulty].accuracy,
+    initialTime: gameDuration, // Seçilen süre
   });
 
   const [showRules, setShowRules] = useState(false);
@@ -244,6 +249,45 @@ const BotMode = () => {
             </div>
           </div>
 
+          {/* SÜRE VE BAR AYARLARI */}
+          <div className="w-full grid grid-cols-2 gap-4">
+            <div>
+              <h2 className="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">
+                Süre
+              </h2>
+              <div className="flex flex-col gap-1">
+                {[60, 180, 300].map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => setGameDuration(t)}
+                    className={`px-2 py-2 rounded text-xs font-bold transition-all ${
+                      gameDuration === t
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                    }`}
+                  >
+                    {t / 60} Dakika
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">
+                Yardımcı Bar
+              </h2>
+              <button
+                onClick={() => setShowProgressBar(!showProgressBar)}
+                className={`w-full h-full rounded-lg border transition-all font-bold text-sm ${
+                  showProgressBar
+                    ? "bg-green-900/30 border-green-500 text-green-400"
+                    : "bg-gray-800 border-gray-600 text-gray-500"
+                }`}
+              >
+                {showProgressBar ? "AÇIK" : "KAPALI"}
+              </button>
+            </div>
+          </div>
+
           <div className="w-full h-px bg-gray-700 my-2"></div>
 
           <button
@@ -270,11 +314,12 @@ const BotMode = () => {
 
       {gameState === "playing" && (
         <>
-          {/* TimerDisplay'e yeni prop'ları gönderiyoruz */}
+          {/* TimerDisplay Props Güncellendi */}
           <TimerDisplay
             totalMs={gameTimeMs}
             targetOffset={targetOffset}
             variant={selectedVariant}
+            showProgressBar={showProgressBar}
           />
 
           <div className="text-xl md:text-2xl mt-6 text-center font-bold px-4 h-8 text-green-400 drop-shadow-sm">

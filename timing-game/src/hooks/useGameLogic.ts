@@ -20,7 +20,7 @@ interface UseGameLogicProps {
 }
 
 export const useGameLogic = ({
-  initialTime = 120,
+  initialTime = 60,
   gameMode = "classic",
   gameVariant = "classic",
   botReactionTime = 2000,
@@ -48,6 +48,12 @@ export const useGameLogic = ({
     p1: initialTime,
     p2: initialTime,
   });
+
+  useEffect(() => {
+    if (gameState === "idle") {
+      setPlayerTimes({ p1: initialTime, p2: initialTime });
+    }
+  }, [initialTime, gameState]);
 
   const [scores, setScores] = useState({ p1: 0, p2: 0 });
   const [streak, setStreak] = useState(0);
@@ -83,7 +89,6 @@ export const useGameLogic = ({
       setRoundOffset(0);
     }
 
-    // 2. Gezgin Hedef
     if (gameVariant === "moving") {
       setTargetOffset(Math.floor(Math.random() * 800));
     } else {
@@ -206,7 +211,7 @@ export const useGameLogic = ({
 
   // --- ZAMANLAYICILAR ---
 
-  // 1. Ana Zamanlayıcı
+  // 1. Ana Zamanlayıcı (Milisaniye sayacı)
   useEffect(() => {
     if (gameState !== "playing" || isPaused) return;
 
@@ -216,38 +221,26 @@ export const useGameLogic = ({
 
     const interval = setInterval(() => {
       const now = Date.now();
-
-      // Gerçek geçen süre
       const elapsed = now - startTimeRef.current;
-
-      // Ekranda görünen süre
       let visualTime = elapsed + roundOffset;
 
-      // Dengesiz Sayaç Mantığı
+      // Dengesiz Sayaç Mantığı (Kaotik)
       if (gameVariant === "unstable") {
-        const cycle = visualTime % 1000;
-        let distorted = 0;
-        if (cycle < 300) {
-          distorted = cycle * 0.8;
-        } else if (cycle < 700) {
-          distorted = 240 + (cycle - 300) * 1.5;
-        } else {
-          distorted = 840 + (cycle - 700) * 0.53;
-        }
-        const totalCycles = Math.floor(visualTime / 1000);
-        visualTime = totalCycles * 1000 + distorted;
+        const t = now / 1000;
+        const chaos =
+          Math.sin(t * 1.5) * 250 +
+          Math.cos(t * 4.2) * 120 +
+          Math.sin(t * 9.8) * 60;
+        visualTime = elapsed + roundOffset + chaos;
       }
 
       setGameTimeMs(visualTime);
-
-      // Oyun bitiş kontrolü (Gerçek süreye göre yapılır)
-      if (gameMode !== "time_attack" && elapsed >= 10000) finishGame();
     }, 10);
 
     return () => clearInterval(interval);
-  }, [gameState, finishGame, isPaused, gameMode, gameVariant, roundOffset]);
+  }, [gameState, isPaused, gameVariant, roundOffset]);
 
-  // 2. Saniye Bazlı Sayaçlar
+  // 2. Saniye Bazlı Sayaçlar (Geri sayım ve Tur süresi)
   useEffect(() => {
     if (gameState !== "playing" || isPaused) return;
     const interval = setInterval(() => {
@@ -268,6 +261,8 @@ export const useGameLogic = ({
   // Süre Kontrolleri
   useEffect(() => {
     if (gameState !== "playing" || isPaused) return;
+
+    // 1. Şut süresi (10sn) doldu mu?
     if (turnTimeLeft === 0) {
       if (gameMode === "survival") {
         setActionMessage("⏰ Süre doldu! Elendin.");
@@ -279,12 +274,16 @@ export const useGameLogic = ({
         handleTurnSwitch();
       }
     }
-    if (gameMode === "time_attack" && playerTimes.p1 === 0) finishGame();
-    else if (
+
+    // 2. Oyun süresi
+    if (gameMode === "time_attack" && playerTimes.p1 === 0) {
+      finishGame();
+    } else if (
       (gameMode === "classic" || gameMode === "bot") &&
       playerTimes[currentPlayer] === 0
-    )
+    ) {
       finishGame();
+    }
   }, [
     turnTimeLeft,
     playerTimes,
@@ -306,10 +305,7 @@ export const useGameLogic = ({
     playSound("kick");
 
     const currentMs = gameTimeMs % 1000;
-
-    // Hedef Hesaplama (Gezgin Hedef)
     const distance = Math.abs(currentMs - targetOffset);
-
     const { result, message, isGoal } = calculateShotResult(distance);
     const displayMs = String(Math.floor(distance / 10)).padStart(2, "0");
 

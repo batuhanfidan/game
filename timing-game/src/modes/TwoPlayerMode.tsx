@@ -48,6 +48,10 @@ const TwoPlayerMode = () => {
   const [selectedVariant, setSelectedVariant] =
     useState<GameVariant>("classic");
 
+  // SÜRE AYARI (Varsayılan 1dk)
+  const [gameDuration, setGameDuration] = useState(60);
+  const [showProgressBar, setShowProgressBar] = useState(true);
+
   const {
     gameState,
     gameTimeMs,
@@ -72,6 +76,7 @@ const TwoPlayerMode = () => {
   } = useGameLogic({
     gameMode: "classic",
     gameVariant: selectedVariant,
+    initialTime: gameDuration,
   });
 
   const [showRules, setShowRules] = useState(false);
@@ -178,7 +183,7 @@ const TwoPlayerMode = () => {
 
       {gameState === "idle" && !countdown && (
         <div className="flex flex-col items-center gap-6 z-10 bg-neutral-900 p-8 rounded-2xl border border-gray-700 shadow-2xl max-w-md w-full mx-4 overflow-y-auto max-h-[80vh]">
-          {/* OYUN TİPİ SEÇİMİ (En üstte) */}
+          {/* OYUN TİPİ SEÇİMİ */}
           <div className="w-full">
             <h2 className="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">
               Oyun Tipi
@@ -209,6 +214,45 @@ const TwoPlayerMode = () => {
             </div>
           </div>
 
+          {/* SÜRE VE BAR AYARLARI */}
+          <div className="w-full grid grid-cols-2 gap-4">
+            <div>
+              <h2 className="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">
+                Süre
+              </h2>
+              <div className="flex flex-col gap-1">
+                {[60, 180, 300].map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => setGameDuration(t)}
+                    className={`px-2 py-2 rounded text-xs font-bold transition-all ${
+                      gameDuration === t
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-800 text-gray-400 hover:bg-gray-700"
+                    }`}
+                  >
+                    {t / 60} Dakika
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <h2 className="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">
+                Yardımcı Bar
+              </h2>
+              <button
+                onClick={() => setShowProgressBar(!showProgressBar)}
+                className={`w-full h-full rounded-lg border transition-all font-bold text-sm ${
+                  showProgressBar
+                    ? "bg-green-900/30 border-green-500 text-green-400"
+                    : "bg-gray-800 border-gray-600 text-gray-500"
+                }`}
+              >
+                {showProgressBar ? "AÇIK" : "KAPALI"}
+              </button>
+            </div>
+          </div>
+
           <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider w-full mt-2">
             Oyuncular
           </h2>
@@ -219,7 +263,7 @@ const TwoPlayerMode = () => {
               onChange={(e) =>
                 setPlayerNames((prev) => ({ ...prev, p1: e.target.value }))
               }
-              className="bg-gray-800 border border-gray-600 rounded px-3 py-2 text-center w-full"
+              className="bg-gray-800 border border-gray-600 rounded px-3 py-2 text-center w-full text-white"
               placeholder="Oyuncu 1"
             />
             <input
@@ -228,7 +272,7 @@ const TwoPlayerMode = () => {
               onChange={(e) =>
                 setPlayerNames((prev) => ({ ...prev, p2: e.target.value }))
               }
-              className="bg-gray-800 border border-gray-600 rounded px-3 py-2 text-center w-full"
+              className="bg-gray-800 border border-gray-600 rounded px-3 py-2 text-center w-full text-white"
               placeholder="Oyuncu 2"
             />
           </div>
@@ -278,6 +322,7 @@ const TwoPlayerMode = () => {
             totalMs={gameTimeMs}
             targetOffset={targetOffset}
             variant={selectedVariant}
+            showProgressBar={showProgressBar}
           />
 
           <div className="text-xl md:text-2xl mt-4 text-center text-green-400 font-semibold px-4 h-8">
