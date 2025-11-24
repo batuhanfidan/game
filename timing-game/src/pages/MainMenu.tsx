@@ -107,12 +107,12 @@ const MainMenu = () => {
           </button>
 
           <button
-            onClick={() => navigate("/game/penalty")}
-            className="bg-purple-600 hover:bg-purple-500 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:scale-105 flex items-center justify-between group transition-all"
+            disabled // Buton devre dışı bırakıldı
+            className="bg-gray-700 text-gray-500 font-bold py-4 px-6 rounded-xl shadow-none flex items-center justify-between cursor-not-allowed opacity-70"
           >
             <span>🥅 Penaltı Atışları</span>{" "}
-            <span className="opacity-0 group-hover:opacity-100 transition-opacity">
-              →
+            <span className="text-xs bg-gray-800 px-2 py-1 rounded text-gray-400 border border-gray-600">
+              YAKINDA
             </span>
           </button>
 
@@ -126,7 +126,7 @@ const MainMenu = () => {
       )}
 
       <div className="absolute bottom-6 text-gray-600 text-xs font-mono">
-        v2.5 • Ultimate Edition
+        v0.3
       </div>
     </div>
   );
