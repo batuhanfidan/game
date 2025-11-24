@@ -44,16 +44,23 @@ export const useGameLogic = ({
     p2: gameMode === "bot" ? "Bot" : "Oyuncu 2",
   });
 
+  // --- SÜRE PAYLAŞIM MANTIĞI ---
+  // Classic ve Bot modlarında toplam süre oyunculara paylaştırılır.
+  const isSharedTimeMode = gameMode === "classic" || gameMode === "bot";
+  const startDuration = isSharedTimeMode
+    ? Math.ceil(initialTime / 2)
+    : initialTime;
+
   const [playerTimes, setPlayerTimes] = useState({
-    p1: initialTime,
-    p2: initialTime,
+    p1: startDuration,
+    p2: startDuration,
   });
 
   useEffect(() => {
     if (gameState === "idle") {
-      setPlayerTimes({ p1: initialTime, p2: initialTime });
+      setPlayerTimes({ p1: startDuration, p2: startDuration });
     }
-  }, [initialTime, gameState]);
+  }, [startDuration, gameState]);
 
   const [scores, setScores] = useState({ p1: 0, p2: 0 });
   const [streak, setStreak] = useState(0);
@@ -179,7 +186,6 @@ export const useGameLogic = ({
   }, [gameMode, randomizeRound]);
 
   const startGame = useCallback(() => {
-    playSound("whistle");
     let count = 3;
     setCountdown(count);
     setIsPaused(false);
@@ -192,6 +198,8 @@ export const useGameLogic = ({
         clearInterval(id);
         setCountdown(null);
         setGameState("playing");
+
+        playSound("whistle");
 
         // Oyunu başlatırken ana zamanı sıfırla
         startTimeRef.current = Date.now();
@@ -211,7 +219,7 @@ export const useGameLogic = ({
 
   // --- ZAMANLAYICILAR ---
 
-  // 1. Ana Zamanlayıcı (Milisaniye sayacı)
+  // 1. Ana Zamanlayıcı
   useEffect(() => {
     if (gameState !== "playing" || isPaused) return;
 
@@ -224,7 +232,6 @@ export const useGameLogic = ({
       const elapsed = now - startTimeRef.current;
       let visualTime = elapsed + roundOffset;
 
-      // Dengesiz Sayaç Mantığı (Kaotik)
       if (gameVariant === "unstable") {
         const t = now / 1000;
         const chaos =
@@ -240,7 +247,7 @@ export const useGameLogic = ({
     return () => clearInterval(interval);
   }, [gameState, isPaused, gameVariant, roundOffset]);
 
-  // 2. Saniye Bazlı Sayaçlar (Geri sayım ve Tur süresi)
+  // 2. Saniye Bazlı Sayaçlar
   useEffect(() => {
     if (gameState !== "playing" || isPaused) return;
     const interval = setInterval(() => {
@@ -258,11 +265,15 @@ export const useGameLogic = ({
     return () => clearInterval(interval);
   }, [gameState, currentPlayer, isPaused, gameMode]);
 
-  // Süre Kontrolleri
+  // --- OYUN BİTİRME KONTROLLERİ ---
   useEffect(() => {
     if (gameState !== "playing" || isPaused) return;
 
-    // 1. Şut süresi (10sn) doldu mu?
+    if (isSharedTimeMode && gameTimeMs >= initialTime * 1000) {
+      finishGame();
+      return;
+    }
+
     if (turnTimeLeft === 0) {
       if (gameMode === "survival") {
         setActionMessage("⏰ Süre doldu! Elendin.");
@@ -275,14 +286,13 @@ export const useGameLogic = ({
       }
     }
 
-    // 2. Oyun süresi
     if (gameMode === "time_attack" && playerTimes.p1 === 0) {
       finishGame();
     } else if (
       (gameMode === "classic" || gameMode === "bot") &&
       playerTimes[currentPlayer] === 0
     ) {
-      finishGame();
+      // Hamle yapamıyor ama oyun bitmiyor
     }
   }, [
     turnTimeLeft,
@@ -294,6 +304,9 @@ export const useGameLogic = ({
     getCurrentPlayerName,
     isPaused,
     gameMode,
+    gameTimeMs,
+    initialTime,
+    isSharedTimeMode,
   ]);
 
   // --- AKSİYON ---
@@ -301,6 +314,13 @@ export const useGameLogic = ({
   const handleAction = useCallback(() => {
     if (gameState !== "playing" || isPaused) return;
     if (gameMode === "bot" && currentPlayer === "p2") return;
+
+    if (
+      (gameMode === "classic" || gameMode === "bot") &&
+      playerTimes[currentPlayer] <= 0
+    ) {
+      return;
+    }
 
     playSound("kick");
 
@@ -349,6 +369,7 @@ export const useGameLogic = ({
     streak,
     finishGame,
     targetOffset,
+    playerTimes,
   ]);
 
   // Klavye Kontrolü
@@ -373,6 +394,9 @@ export const useGameLogic = ({
       isPaused
     )
       return;
+
+    if (playerTimes.p2 <= 0) return;
+
     const timer = setTimeout(() => {
       let error = 0;
       if (botAccuracy >= 0.9) error = Math.floor(Math.random() * 10);
@@ -403,6 +427,7 @@ export const useGameLogic = ({
       handleTurnSwitch();
     }, botReactionTime);
     return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     gameState,
     currentPlayer,
@@ -420,12 +445,12 @@ export const useGameLogic = ({
     startTimeRef.current = 0;
     setTargetOffset(0);
     setScores({ p1: 0, p2: 0 });
-    setPlayerTimes({ p1: initialTime, p2: initialTime });
+    setPlayerTimes({ p1: startDuration, p2: startDuration });
     setTurnTimeLeft(10);
     setActionMessage("");
     setVisualEffect(null);
     setStreak(0);
-  }, [initialTime]);
+  }, [startDuration]);
 
   return {
     gameState,
