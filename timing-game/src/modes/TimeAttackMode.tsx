@@ -99,11 +99,12 @@ const TimeAttackMode = () => {
 
       {/* Geri Sayım */}
       {countdown !== null && (
-        <div className="text-9xl font-black text-cyan-400 animate-ping z-30 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 mix-blend-overlay">
-          {countdown}
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/40 backdrop-blur-[2px]">
+          <div className="text-9xl font-black text-cyan-400 animate-ping drop-shadow-[0_0_30px_rgba(34,211,238,0.8)]">
+            {countdown}
+          </div>
         </div>
       )}
-
       {/* Oyun Alanı */}
       {gameState === "playing" && (
         <>

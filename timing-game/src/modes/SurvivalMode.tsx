@@ -98,10 +98,12 @@ const SurvivalMode = () => {
         </div>
       )}
 
-      {/* Geri Sayım */}
+      {/* Geri Sayım  */}
       {countdown !== null && (
-        <div className="text-9xl font-black text-red-600 animate-ping z-30 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 mix-blend-overlay">
-          {countdown}
+        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/40 backdrop-blur-[2px]">
+          <div className="text-9xl font-black text-red-500 animate-ping drop-shadow-[0_0_30px_rgba(239,68,68,0.8)]">
+            {countdown}
+          </div>
         </div>
       )}
 
