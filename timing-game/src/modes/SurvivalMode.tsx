@@ -23,7 +23,7 @@ const SurvivalMode = () => {
     gameState,
     gameTimeMs,
     turnTimeLeft,
-    highScore,
+
     streak,
     actionMessage,
     winner,
