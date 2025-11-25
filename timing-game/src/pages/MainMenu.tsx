@@ -126,7 +126,7 @@ const MainMenu = () => {
       )}
 
       <div className="absolute bottom-6 text-gray-600 text-xs font-mono">
-        v0.3
+        v0.2
       </div>
     </div>
   );

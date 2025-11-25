@@ -5,7 +5,7 @@ import ActionButton from "../components/game/ActionButton";
 import TurnInfo from "../components/layout/TurnInfo";
 import GameOverModal from "../components/common/GameOverModal";
 import GameLayout from "../components/layout/GameLayout";
-import { useGameLogic } from "../hooks/useGameLogic";
+import { useSurvivalLogic } from "../hooks/modes/useSurvivalLogic"; // DÜZELTME: Yeni hook import edildi
 import { THEMES } from "../utils/constants";
 
 const SurvivalMode = () => {
@@ -15,6 +15,7 @@ const SurvivalMode = () => {
   const themeIndex = THEMES.findIndex((t) => t.name === "Hayatta Kalma");
   const currentTheme = themeIndex !== -1 ? themeIndex : 0;
 
+  // DÜZELTME: useSurvivalLogic parametresiz çağrıldı
   const {
     gameState,
     gameTimeMs,
@@ -31,10 +32,7 @@ const SurvivalMode = () => {
     visualEffect,
     isPaused,
     togglePause,
-  } = useGameLogic({
-    gameMode: "survival",
-    initialTime: 9999,
-  });
+  } = useSurvivalLogic();
 
   const handleBackToMenu = () => navigate("/", { replace: true });
 
@@ -98,7 +96,7 @@ const SurvivalMode = () => {
         </div>
       )}
 
-      {/* Geri Sayım  */}
+      {/* Geri Sayım */}
       {countdown !== null && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/40 backdrop-blur-[2px]">
           <div className="text-9xl font-black text-red-500 animate-ping drop-shadow-[0_0_30px_rgba(239,68,68,0.8)]">
@@ -124,9 +122,7 @@ const SurvivalMode = () => {
               customColor="bg-red-950 border border-red-600/50 text-red-100 hover:bg-red-900 hover:border-red-500 shadow-[0_0_20px_rgba(220,38,38,0.15)]"
             />
           </div>
-          <div className="mt-8 text-gray-600 text-xs uppercase tracking-[0.2em] animate-pulse hidden md:block">
-            [SPACE] TUŞU İLE OYNA
-          </div>
+          <div className="mt-8 text-gray-600 text-xs uppercase tracking-[0.2em] animate-pulse hidden md:block"></div>
         </>
       )}
 

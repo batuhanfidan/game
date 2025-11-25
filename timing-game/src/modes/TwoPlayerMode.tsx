@@ -8,7 +8,7 @@ import GameOverModal from "../components/common/GameOverModal";
 import RulesModal from "../components/layout/RulesModel";
 import VisualEffectOverlay from "../components/layout/VisualEffectOverlay";
 import PauseMenu from "../components/layout/PauseMenu";
-import { useGameLogic } from "../hooks/useGameLogic";
+import { useClassicLogic } from "../hooks/modes/useClassicLogic";
 import { toggleMute, getMuteStatus } from "../utils/sound";
 import type { GameVariant } from "../types";
 
@@ -80,7 +80,7 @@ const TwoPlayerMode = () => {
     isPaused,
     togglePause,
     targetOffset,
-  } = useGameLogic({
+  } = useClassicLogic({
     gameMode: "classic",
     gameVariant: selectedVariant,
     initialTime: gameDuration,
@@ -395,9 +395,7 @@ const TwoPlayerMode = () => {
               </p>
             </div>
           </div>
-          <div className="mt-4 text-gray-500 text-sm animate-pulse hidden md:block">
-            (İpucu: Sırası gelen SPACE tuşunu kullanabilir)
-          </div>
+          <div className="mt-4 text-gray-500 text-sm animate-pulse hidden md:block"></div>
         </>
       )}
 

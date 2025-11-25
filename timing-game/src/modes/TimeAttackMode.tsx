@@ -5,7 +5,7 @@ import PlayerTimer from "../components/layout/PlayerTimer";
 import ActionButton from "../components/game/ActionButton";
 import GameOverModal from "../components/common/GameOverModal";
 import GameLayout from "../components/layout/GameLayout";
-import { useGameLogic } from "../hooks/useGameLogic";
+import { useTimeAttackLogic } from "../hooks/modes/useTimeAttackLogic";
 import { THEMES } from "../utils/constants";
 
 const TimeAttackMode = () => {
@@ -31,8 +31,7 @@ const TimeAttackMode = () => {
     visualEffect,
     isPaused,
     togglePause,
-  } = useGameLogic({
-    gameMode: "time_attack",
+  } = useTimeAttackLogic({
     initialTime: 60,
   });
 
@@ -132,9 +131,7 @@ const TimeAttackMode = () => {
             />
           </div>
 
-          <div className="mt-8 text-gray-600 text-xs uppercase tracking-[0.2em] animate-pulse hidden md:block">
-            [SPACE] TUŞU İLE OYNA
-          </div>
+          <div className="mt-8 text-gray-600 text-xs uppercase tracking-[0.2em] animate-pulse hidden md:block"></div>
         </>
       )}
 

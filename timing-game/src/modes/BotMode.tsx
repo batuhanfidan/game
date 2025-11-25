@@ -8,7 +8,7 @@ import GameOverModal from "../components/common/GameOverModal";
 import RulesModal from "../components/layout/RulesModel";
 import VisualEffectOverlay from "../components/layout/VisualEffectOverlay";
 import PauseMenu from "../components/layout/PauseMenu";
-import { useGameLogic } from "../hooks/useGameLogic";
+import { useClassicLogic } from "../hooks/modes/useClassicLogic";
 import { toggleMute, getMuteStatus } from "../utils/sound";
 import type { GameVariant } from "../types";
 
@@ -93,7 +93,7 @@ const BotMode = () => {
     isPaused,
     togglePause,
     targetOffset,
-  } = useGameLogic({
+  } = useClassicLogic({
     gameMode: "bot",
     gameVariant: selectedVariant,
     botReactionTime: DIFFICULTIES[difficulty].reaction,
@@ -371,9 +371,7 @@ const BotMode = () => {
               disabled={currentPlayer !== "p1" || isPaused}
             />
           </div>
-          <div className="mt-6 text-gray-500 text-sm animate-pulse font-semibold hidden md:block">
-            [SPACE] tuşuna basarak da oynayabilirsin
-          </div>
+          <div className="mt-6 text-gray-500 text-sm animate-pulse font-semibold hidden md:block"></div>
         </>
       )}
 
