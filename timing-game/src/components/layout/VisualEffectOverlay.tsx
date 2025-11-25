@@ -29,6 +29,7 @@ const VisualEffectOverlay: React.FC<VisualEffectOverlayProps> = ({
       const isMobile = window.innerWidth < 768;
 
       if (isTwoPlayerMode) {
+        // İki kişilik mod ayarları (AYNI KALIYOR)
         if (effect.player === "p1") {
           setPosition({
             top: isMobile ? "85%" : "70%",
@@ -43,8 +44,11 @@ const VisualEffectOverlay: React.FC<VisualEffectOverlayProps> = ({
           });
         }
       } else {
+        // --- TEK KİŞİLİK MOD (BURAYI GÜNCELLİYORUZ) ---
         setPosition({
-          top: isMobile ? "72%" : "50%",
+          // ESKİSİ: top: isMobile ? "72%" : "50%",
+          // YENİSİ: %25 yaparak yukarıdaki boşluğa alıyoruz.
+          top: "25%",
           left: "50%",
           transform: "translate(-50%, -50%)",
         });

@@ -7,6 +7,8 @@ interface TimerDisplayProps {
   targetOffset?: number;
   variant?: GameVariant;
   showProgressBar?: boolean;
+  threshold?: number;
+  goldenThreshold?: number;
 }
 
 const TimerDisplay: React.FC<TimerDisplayProps> = ({
@@ -14,23 +16,29 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({
   targetOffset = 0,
   variant = "classic",
   showProgressBar = true,
+  threshold = 100,
+  goldenThreshold = 0,
 }) => {
   const ms = totalMs % 1000;
   const percentage = (ms / 1000) * 100;
   const targetPos = (targetOffset / 1000) * 100;
 
-  // Hayalet Modu: 500ms'den sonra görünmez ol
   const isGhostHidden = variant === "ghost" && ms > 500;
 
-  // Gezgin Modu: Milisaniyeyi gizle
   let displayTime = formatTime(totalMs);
   if (variant === "moving") {
     displayTime = displayTime.slice(0, 6) + "??";
   }
 
+  // Yeşil alan genişliği
+  const thresholdWidthPercent = Math.max(2, (threshold / 1000) * 100);
+
+  // Altın alan genişliği
+  const goldenWidthPercent =
+    goldenThreshold > 0 ? (goldenThreshold / 1000) * 100 : 0;
+
   return (
     <div className="flex flex-col items-center w-full max-w-lg px-4">
-      {/* Dijital Sayaç */}
       <div
         className={`text-5xl sm:text-7xl font-black text-center my-6 font-mono tracking-widest text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.4)] transition-opacity duration-300 ${
           isGhostHidden ? "opacity-0" : "opacity-100"
@@ -39,7 +47,6 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({
         {displayTime}
       </div>
 
-      {/* Yardımcı Bar (İsteğe Bağlı) */}
       {showProgressBar && (
         <>
           <div
@@ -47,17 +54,31 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({
               isGhostHidden ? "opacity-0" : "opacity-100"
             }`}
           >
-            {/* HEDEF BÖLGE */}
+            {/* YEŞİL HEDEF BÖLGE */}
             <div
-              className="absolute top-0 h-full w-[5%] bg-green-500 z-30 border-x-2 border-white/50 shadow-[0_0_15px_rgba(34,197,94,0.8)] transition-all duration-500 ease-out"
-              style={{ left: `${targetPos}%` }}
+              className="absolute top-0 h-full bg-green-500 z-20 border-x-2 border-white/30 shadow-[0_0_15px_rgba(34,197,94,0.5)] transition-all duration-500 ease-out"
+              style={{
+                left: `${targetPos}%`,
+                width: `${thresholdWidthPercent}%`,
+                transform: "translateX(-50%)", // Hedefi ortala
+              }}
             >
-              {variant === "moving" && (
-                <div className="absolute -top-1 left-1/2 -translate-x-1/2 w-0 h-0 border-l-4 border-l-transparent border-r-4 border-r-transparent border-t-[6px] border-t-green-400"></div>
+              {/* SARI ALTIN BÖLGE (Kritik) */}
+              {goldenWidthPercent > 0 && (
+                <div
+                  className="absolute top-0 h-full bg-yellow-400 z-30 animate-pulse shadow-[0_0_10px_rgba(250,204,21,0.8)]"
+                  style={{
+                    left: "50%", // Yeşilin ortasında
+                    width: `${
+                      (goldenWidthPercent / thresholdWidthPercent) * 100
+                    }%`,
+                    transform: "translateX(-50%)",
+                  }}
+                />
               )}
             </div>
 
-            {/* İlerleme */}
+            {/* İlerleme Çubuğu */}
             <div
               className="absolute top-0 left-0 h-full bg-linear-to-r from-blue-900 via-blue-600 to-cyan-400 opacity-90 z-10"
               style={{ width: `${percentage}%` }}
@@ -69,7 +90,7 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({
               style={{ left: `${percentage}%` }}
             />
 
-            {/* Orta Çizgi (Referans) */}
+            {/* Orta Referans Çizgisi */}
             <div className="absolute top-0 left-1/2 w-0.5 h-full bg-gray-600/50 z-20"></div>
           </div>
 
