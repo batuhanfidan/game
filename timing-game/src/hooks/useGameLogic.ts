@@ -47,6 +47,7 @@ export const useGameLogic = ({
   const [adrenaline, setAdrenaline] = useState(0);
   const [isFeverActive, setIsFeverActive] = useState(false);
   const GOLDEN_THRESHOLD = 15; // 15ms kritik vuruş aralığı
+  const [hasShield, setHasShield] = useState(false);
 
   const isSharedTimeMode = gameMode === "classic" || gameMode === "bot";
   const startDuration = isSharedTimeMode
@@ -109,6 +110,7 @@ export const useGameLogic = ({
     setSurvivalThreshold(250);
     setAdrenaline(0);
     setIsFeverActive(false);
+    setHasShield(false);
   }, [startDuration]);
 
   const randomizeRound = useCallback(() => {
@@ -171,7 +173,9 @@ export const useGameLogic = ({
       const timer = setTimeout(() => {
         setIsFeverActive(false);
         setAdrenaline(0);
+        setHasShield(true);
         playSound("whistle");
+        setActionMessage("🛡️ KALKAN AKTİF! (Bir sonraki hatadan korur)");
       }, 5000);
       return () => clearTimeout(timer);
     }
@@ -391,7 +395,8 @@ export const useGameLogic = ({
         }
 
         setStreak((prevStreak) => {
-          const newStreak = prevStreak + 1;
+          const bonus = isFeverActive && isCritical ? 3 : 1;
+          const newStreak = prevStreak + bonus;
 
           // Her 5 golde zorluk artışı
           if (newStreak % 5 === 0) {
@@ -420,6 +425,15 @@ export const useGameLogic = ({
             setTargetOffset(Math.floor(Math.random() * 800) + 100);
           }
 
+          if (isFeverActive && isCritical) {
+            setActionMessage(`🔥🔥 MÜKEMMEL! (+3 SERİ)`);
+          } else if (hasShield) {
+            // Kalkan varsa oyuncuya hatırlat
+            setActionMessage(`GÜZEL! (Seri: ${newStreak})`);
+          } else {
+            setActionMessage(`GÜZEL! (Seri: ${newStreak})`);
+          }
+
           return newStreak;
         });
 
@@ -430,7 +444,15 @@ export const useGameLogic = ({
         // Fever koruması (Ölümsüzlük)
         if (isFeverActive) {
           playSound("miss");
-          setActionMessage("🛡️ FEVER KORUMASI! (Can Gitmedi)");
+          setActionMessage("FEVER KORUMASI!");
+          return;
+        }
+
+        if (hasShield) {
+          setHasShield(false); // Kalkanı kır
+          setVisualEffect({ type: "save", player: currentPlayer }); // Kurtarış efekti
+          setActionMessage("🛡️ KALKAN KIRILDI! (Hayattasın)");
+          // Can düşmez, oyun bitmez.
           return;
         }
 
@@ -487,6 +509,7 @@ export const useGameLogic = ({
     adrenaline,
     GOLDEN_THRESHOLD,
     speedMultiplier,
+    hasShield,
   ]);
 
   useEffect(() => {
@@ -583,5 +606,6 @@ export const useGameLogic = ({
     adrenaline,
     isFeverActive,
     goldenThreshold: GOLDEN_THRESHOLD,
+    hasShield,
   };
 };

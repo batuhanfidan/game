@@ -42,6 +42,7 @@ const SurvivalMode = () => {
     adrenaline,
     isFeverActive,
     goldenThreshold,
+    hasShield,
   } = useGameLogic({
     gameMode: "survival",
     initialTime: 9999,
@@ -63,6 +64,15 @@ const SurvivalMode = () => {
       <div className="text-4xl mb-2 drop-shadow-md animate-pulse">
         {renderHearts(lives)}
       </div>
+      {/* Kalkan Varsa Göster */}
+      {hasShield && (
+        <div
+          className="text-3xl animate-bounce drop-shadow-[0_0_15px_rgba(59,130,246,0.8)]"
+          title="Kalkan Aktif"
+        >
+          🛡️
+        </div>
+      )}
 
       {/* Seri Bilgisi */}
       <div className="text-3xl font-black text-red-500 drop-shadow-[0_0_15px_rgba(239,68,68,0.4)]">
