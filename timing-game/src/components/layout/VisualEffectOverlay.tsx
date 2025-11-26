@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import type { VisualEffectData } from "../../types";
+import { CircleCheck, ShieldX, Hand, XCircle } from "lucide-react";
 
 interface VisualEffectOverlayProps {
   effect: VisualEffectData | null;
@@ -29,7 +30,6 @@ const VisualEffectOverlay: React.FC<VisualEffectOverlayProps> = ({
       const isMobile = window.innerWidth < 768;
 
       if (isTwoPlayerMode) {
-        // İki kişilik mod ayarları (AYNI KALIYOR)
         if (effect.player === "p1") {
           setPosition({
             top: isMobile ? "85%" : "70%",
@@ -44,10 +44,7 @@ const VisualEffectOverlay: React.FC<VisualEffectOverlayProps> = ({
           });
         }
       } else {
-        // --- TEK KİŞİLİK MOD (BURAYI GÜNCELLİYORUZ) ---
         setPosition({
-          // ESKİSİ: top: isMobile ? "72%" : "50%",
-          // YENİSİ: %25 yaparak yukarıdaki boşluğa alıyoruz.
           top: "25%",
           left: "50%",
           transform: "translate(-50%, -50%)",
@@ -61,23 +58,23 @@ const VisualEffectOverlay: React.FC<VisualEffectOverlayProps> = ({
   return (
     <div key={key} className="effect-item fixed z-100" style={position}>
       {effect.type === "goal" && (
-        <div className="animate-goal text-7xl sm:text-9xl drop-shadow-[0_0_30px_rgba(34,197,94,0.8)]">
-          ⚽
+        <div className="animate-goal text-green-500 drop-shadow-[0_0_30px_rgba(34,197,94,0.8)]">
+          <CircleCheck size={160} strokeWidth={1.5} />
         </div>
       )}
       {effect.type === "post" && (
-        <div className="animate-post text-7xl sm:text-9xl drop-shadow-[0_0_30px_rgba(234,179,8,0.8)]">
-          🥅
+        <div className="animate-post text-yellow-500 drop-shadow-[0_0_30px_rgba(234,179,8,0.8)]">
+          <ShieldX size={160} strokeWidth={1.5} />
         </div>
       )}
       {effect.type === "miss" && (
-        <div className="animate-miss text-7xl sm:text-8xl opacity-60 grayscale">
-          ❌
+        <div className="animate-miss text-red-500 opacity-80">
+          <XCircle size={160} strokeWidth={1.5} />
         </div>
       )}
       {effect.type === "save" && (
-        <div className="animate-goal text-7xl sm:text-9xl drop-shadow-[0_0_30px_rgba(59,130,246,0.8)]">
-          🧤
+        <div className="animate-goal text-blue-500 drop-shadow-[0_0_30px_rgba(59,130,246,0.8)]">
+          <Hand size={160} strokeWidth={1.5} />
         </div>
       )}
     </div>

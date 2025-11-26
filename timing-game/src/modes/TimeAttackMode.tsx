@@ -7,6 +7,7 @@ import GameOverModal from "../components/common/GameOverModal";
 import GameLayout from "../components/layout/GameLayout";
 import { useGameLogic } from "../hooks/useGameLogic";
 import { THEMES } from "../utils/constants";
+import { Timer, ArrowLeft, Trophy } from "lucide-react";
 
 const TimeAttackMode = () => {
   const navigate = useNavigate();
@@ -48,8 +49,8 @@ const TimeAttackMode = () => {
 
   const scoreDisplay = (
     <div className="flex flex-col items-center">
-      <div className="text-5xl font-black text-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.4)] tracking-tighter">
-        {scores.p1}
+      <div className="text-5xl font-black text-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.4)] tracking-tighter flex items-center gap-3">
+        <Trophy size={48} /> {scores.p1}
       </div>
       <div className="text-xs text-gray-500 mt-2 bg-black/40 px-4 py-1 rounded-full border border-white/5 backdrop-blur-md">
         EN YÜKSEK: <span className="text-gray-300 font-bold">{highScore}</span>
@@ -73,8 +74,8 @@ const TimeAttackMode = () => {
       {/* Hazırlık */}
       {gameState === "idle" && !countdown && (
         <div className="flex flex-col items-center gap-6 z-20 bg-black/60 p-10 rounded-3xl border border-cyan-900/30 shadow-2xl max-w-sm w-full mx-4 backdrop-blur-xl">
-          <h2 className="text-2xl font-black text-cyan-400 tracking-widest uppercase drop-shadow-md">
-            ZAMANA KARŞI
+          <h2 className="text-2xl font-black text-cyan-400 tracking-widest uppercase drop-shadow-md flex items-center gap-3">
+            <Timer size={28} /> ZAMANA KARŞI
           </h2>
           <p className="text-center text-gray-400 text-sm leading-relaxed">
             60 Saniye içinde
@@ -90,9 +91,9 @@ const TimeAttackMode = () => {
           </button>
           <button
             onClick={handleBackToMenu}
-            className="text-gray-600 hover:text-gray-400 text-xs tracking-widest uppercase mt-2 transition-colors"
+            className="text-gray-600 hover:text-gray-400 text-xs tracking-widest uppercase mt-2 transition-colors flex items-center gap-1"
           >
-            ← Menüye Dön
+            <ArrowLeft size={14} /> Menüye Dön
           </button>
         </div>
       )}
