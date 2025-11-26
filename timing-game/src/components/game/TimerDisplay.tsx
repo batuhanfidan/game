@@ -1,6 +1,7 @@
 import React from "react";
 import { formatTime } from "../../utils/formatTime";
 import type { GameVariant } from "../../types";
+import { Apple } from "lucide-react";
 
 interface TimerDisplayProps {
   totalMs: number;
@@ -9,6 +10,8 @@ interface TimerDisplayProps {
   showProgressBar?: boolean;
   threshold?: number;
   goldenThreshold?: number;
+  isCursed?: boolean;
+  redTarget?: number | null;
 }
 
 const TimerDisplay: React.FC<TimerDisplayProps> = ({
@@ -18,10 +21,20 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({
   showProgressBar = true,
   threshold = 100,
   goldenThreshold = 0,
+  isCursed = false,
+  redTarget = null,
 }) => {
   const ms = totalMs % 1000;
   const percentage = (ms / 1000) * 100;
-  const targetPos = (targetOffset / 1000) * 100;
+
+  const visualTargetOffset = isCursed ? 1000 - targetOffset : targetOffset;
+  const targetPos = (visualTargetOffset / 1000) * 100;
+
+  let redPos = 0;
+  if (redTarget !== null) {
+    const visualRed = isCursed ? 1000 - redTarget : redTarget;
+    redPos = (visualRed / 1000) * 100;
+  }
 
   const isGhostHidden = variant === "ghost" && ms > 500;
 
@@ -30,17 +43,15 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({
     displayTime = displayTime.slice(0, 6) + "??";
   }
 
-  // Yeşil alan genişliği
   const thresholdWidthPercent = Math.max(2, (threshold / 1000) * 100);
-
-  // Altın alan genişliği
   const goldenWidthPercent =
     goldenThreshold > 0 ? (goldenThreshold / 1000) * 100 : 0;
 
   return (
     <div className="flex flex-col items-center w-full max-w-lg px-4">
+      {/* Ana Sayaç */}
       <div
-        className={`text-5xl sm:text-7xl font-black text-center my-6 font-mono tracking-widest text-white drop-shadow-[0_0_15px_rgba(255,255,255,0.4)] transition-opacity duration-300 ${
+        className={`text-5xl sm:text-7xl font-black text-center my-6 font-mono tracking-widest text-[#e4e4e7] drop-shadow-[0_0_15px_rgba(255,255,255,0.1)] transition-opacity duration-300 ${
           isGhostHidden ? "opacity-0" : "opacity-100"
         }`}
       >
@@ -50,25 +61,54 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({
       {showProgressBar && (
         <>
           <div
-            className={`w-full h-8 bg-gray-900 rounded-full overflow-hidden relative border-2 border-gray-700 shadow-[inset_0_2px_8px_rgba(0,0,0,0.6)] mt-2 transition-opacity duration-300 ${
+            className={`w-full h-8 bg-[#27272a] rounded-full overflow-hidden relative border-2 border-[#09090b] shadow-[inset_0_2px_8px_rgba(0,0,0,0.6)] mt-2 transition-opacity duration-300 ${
               isGhostHidden ? "opacity-0" : "opacity-100"
             }`}
+            style={{
+              transform: isCursed ? "scaleX(-1)" : "none",
+            }}
           >
-            {/* YEŞİL HEDEF BÖLGE */}
+            {/* --- KATMAN 1: HEDEFLER (z-20) --- */}
+
+            {/* KIRMIZI ELMA HEDEFİ (Riskli) - Mat Kırmızı */}
+            {redTarget !== null && (
+              <div
+                className="absolute top-0 h-full bg-[#ef4444] z-20 border-x border-white/50 animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.8)]"
+                style={{
+                  left: `${redPos}%`,
+                  width: `${thresholdWidthPercent / 2}%`,
+                  transform: "translateX(-50%)",
+                }}
+              >
+                {/* Elma İkonu */}
+                <div
+                  className="absolute -top-5 left-1/2 text-[#ef4444]"
+                  style={{
+                    transform: isCursed
+                      ? "scaleX(-1) translateX(50%)"
+                      : "translateX(-50%)",
+                  }}
+                >
+                  <Apple size={16} fill="#ef4444" />
+                </div>
+              </div>
+            )}
+
+            {/* YEŞİL HEDEF BÖLGE (Güvenli) - Mat Yeşil */}
             <div
-              className="absolute top-0 h-full bg-green-500 z-20 border-x-2 border-white/30 shadow-[0_0_15px_rgba(34,197,94,0.5)] transition-all duration-500 ease-out"
+              className="absolute top-0 h-full bg-[#10b981] z-20 border-x-2 border-white/50 shadow-[0_0_15px_rgba(16,185,129,0.6)] transition-all duration-500 ease-out"
               style={{
                 left: `${targetPos}%`,
                 width: `${thresholdWidthPercent}%`,
-                transform: "translateX(-50%)", // Hedefi ortala
+                transform: "translateX(-50%)",
               }}
             >
               {/* SARI ALTIN BÖLGE (Kritik) */}
               {goldenWidthPercent > 0 && (
                 <div
-                  className="absolute top-0 h-full bg-yellow-400 z-30 animate-pulse shadow-[0_0_10px_rgba(250,204,21,0.8)]"
+                  className="absolute top-0 h-full bg-[#f59e0b] z-30 animate-pulse shadow-[0_0_10px_rgba(245,158,11,1)]"
                   style={{
-                    left: "50%", // Yeşilin ortasında
+                    left: "50%",
                     width: `${
                       (goldenWidthPercent / thresholdWidthPercent) * 100
                     }%`,
@@ -78,38 +118,51 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({
               )}
             </div>
 
-            {/* İlerleme Çubuğu */}
+            {/* --- KATMAN 2: İLERLEME ÇUBUĞU  --- */}
+
             <div
-              className="absolute top-0 left-0 h-full bg-linear-to-r from-blue-900 via-blue-600 to-cyan-400 opacity-90 z-10"
+              className="absolute top-0 left-0 h-full bg-linear-to-r from-blue-900 via-blue-600 to-cyan-400 opacity-90 z-10 shadow-[0_0_10px_rgba(34,211,238,0.5)]"
               style={{ width: `${percentage}%` }}
             />
 
-            {/* İmleç */}
+            {/* --- KATMAN 3: İMLEÇ (z-50 - EN ÜSTTE) --- */}
+
             <div
-              className="absolute top-0 h-full w-1.5 bg-white shadow-[0_0_10px_rgba(255,255,255,1)] z-40"
+              className="absolute top-0 h-full w-1.5 bg-white shadow-[0_0_15px_rgba(255,255,255,1)] ring-1 ring-black/30 z-50"
               style={{ left: `${percentage}%` }}
             />
 
             {/* Orta Referans Çizgisi */}
-            <div className="absolute top-0 left-1/2 w-0.5 h-full bg-gray-600/50 z-20"></div>
+            <div className="absolute top-0 left-1/2 w-0.5 h-full bg-[#27272a] z-0"></div>
           </div>
 
-          <div className="flex justify-between w-full text-[10px] sm:text-xs text-gray-400 mt-2 font-mono uppercase tracking-wider font-bold px-1">
-            <span
-              className={
-                variant === "moving" ? "text-gray-600" : "text-green-400"
-              }
-            >
-              0ms
-            </span>
-            <span>500ms</span>
-            <span>1000ms</span>
+          {/* Alt Etiketler */}
+          <div className="flex justify-between w-full text-[10px] sm:text-xs text-[#71717a] mt-2 font-mono uppercase tracking-wider font-bold px-1">
+            {isCursed ? (
+              <>
+                <span className="text-[#10b981]">1000ms</span>
+                <span>500ms</span>
+                <span>0ms</span>
+              </>
+            ) : (
+              <>
+                <span
+                  className={
+                    variant === "moving" ? "text-[#71717a]" : "text-[#10b981]"
+                  }
+                >
+                  0ms
+                </span>
+                <span>500ms</span>
+                <span>1000ms</span>
+              </>
+            )}
           </div>
         </>
       )}
 
       {variant === "moving" && (
-        <div className="text-green-400 text-xs font-bold mt-1 animate-pulse">
+        <div className="text-[#10b981] text-xs font-bold mt-1 animate-pulse">
           HEDEF: {targetOffset}ms
         </div>
       )}
