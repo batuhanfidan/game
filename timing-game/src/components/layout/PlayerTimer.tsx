@@ -1,10 +1,16 @@
+import React from "react";
+
 interface PlayerTimerProps {
-  player: string;
+  player: React.ReactNode; // 'string' yerine 'React.ReactNode' yaptık
   minutes: number;
   seconds: number;
 }
 
-const PlayerTimer: React.FC<PlayerTimerProps> = ({ player, minutes, seconds }) => {
+const PlayerTimer: React.FC<PlayerTimerProps> = ({
+  player,
+  minutes,
+  seconds,
+}) => {
   const formattedTime = `${minutes.toString().padStart(2, "0")}:${seconds
     .toString()
     .padStart(2, "0")}`;

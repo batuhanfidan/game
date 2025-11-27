@@ -1,3 +1,5 @@
+import type { GameVariant } from "../types";
+
 export const THEMES = [
   { name: "Klasik", class: "bg-black" },
   { name: "Çim Saha", class: "bg-green-900" },
@@ -10,8 +12,8 @@ export const THEMES = [
 export const DIFFICULTIES = {
   EASY: { label: "Kolay", reaction: 2500, accuracy: 0.3 },
   MEDIUM: { label: "Orta", reaction: 2000, accuracy: 0.5 },
-  HARD: { label: "Zor", reaction: 1000, accuracy: 0.75 },
-  IMPOSSIBLE: { label: "İmkansız", reaction: 600, accuracy: 0.95 },
+  HARD: { label: "Zor", reaction: 1500, accuracy: 0.7 },
+  IMPOSSIBLE: { label: "İmkansız", reaction: 1000, accuracy: 0.9 },
 };
 
 // Vuruş bölgeleri (milisaniye cinsinden)
@@ -22,3 +24,11 @@ export const SHOT_ZONES = {
   CROSS: 510, // 310-509 ms -> Orta şansı
   FREEKICK: 710, // 510-709 ms -> Frikik şansı
 };
+
+export const VARIANTS: { key: GameVariant; label: string; desc: string }[] = [
+  { key: "classic", label: "Klasik", desc: "Standart oyun. Hedef 00ms." },
+  { key: "ghost", label: "Hayalet", desc: "Sayaç 500ms'den sonra kaybolur." },
+  { key: "unstable", label: "Dengesiz", desc: "Zamanın hızı sürekli değişir." },
+  { key: "random", label: "Rastgele", desc: "Her tur farklı yerden başlar." },
+  { key: "moving", label: "Gezgin", desc: "Hedef sürekli değişir." },
+];

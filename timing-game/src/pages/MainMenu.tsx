@@ -1,5 +1,17 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import {
+  User,
+  Users,
+  Bot,
+  Skull,
+  Timer,
+  Trophy,
+  ArrowRight,
+  Lock,
+  Gamepad2,
+  ArrowLeft,
+} from "lucide-react";
 
 type MenuState = "main" | "single" | "multi";
 
@@ -28,7 +40,8 @@ const MainMenu = () => {
           >
             <div className="absolute inset-0 w-full h-full bg-linear-to-r from-blue-600/20 to-purple-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <span className="relative flex items-center justify-center gap-3 text-lg md:text-xl">
-              👤 <span className="tracking-wide">TEK OYUNCU</span>
+              <User size={28} />{" "}
+              <span className="tracking-wide">TEK OYUNCU</span>
             </span>
           </button>
           <button
@@ -37,7 +50,8 @@ const MainMenu = () => {
           >
             <div className="absolute inset-0 w-full h-full bg-linear-to-r from-green-600/20 to-teal-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <span className="relative flex items-center justify-center gap-3 text-lg md:text-xl">
-              👥 <span className="tracking-wide">ÇOK OYUNCU</span>
+              <Users size={28} />{" "}
+              <span className="tracking-wide">ÇOK OYUNCU</span>
             </span>
           </button>
         </div>
@@ -53,39 +67,46 @@ const MainMenu = () => {
             onClick={() => navigate("/game/bot")}
             className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:scale-105 flex items-center justify-between group transition-all"
           >
-            <span>🤖 Bota Karşı</span>{" "}
-            <span className="opacity-0 group-hover:opacity-100 transition-opacity">
-              →
+            <span className="flex items-center gap-2">
+              <Bot size={20} /> Bota Karşı
             </span>
+            <ArrowRight
+              size={20}
+              className="opacity-0 group-hover:opacity-100 transition-opacity"
+            />
           </button>
 
-          {/* ARTIK AKTİF */}
           <button
             onClick={() => navigate("/game/survival")}
             className="bg-red-700 hover:bg-red-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:scale-105 flex items-center justify-between group transition-all"
           >
-            <span>💀 Hayatta Kalma</span>{" "}
-            <span className="opacity-0 group-hover:opacity-100 transition-opacity">
-              →
+            <span className="flex items-center gap-2">
+              <Skull size={20} /> Hayatta Kalma
             </span>
+            <ArrowRight
+              size={20}
+              className="opacity-0 group-hover:opacity-100 transition-opacity"
+            />
           </button>
 
-          {/* ARTIK AKTİF */}
           <button
             onClick={() => navigate("/game/time-attack")}
             className="bg-cyan-700 hover:bg-cyan-600 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:scale-105 flex items-center justify-between group transition-all"
           >
-            <span>⏱️ Zamana Karşı</span>{" "}
-            <span className="opacity-0 group-hover:opacity-100 transition-opacity">
-              →
+            <span className="flex items-center gap-2">
+              <Timer size={20} /> Zamana Karşı
             </span>
+            <ArrowRight
+              size={20}
+              className="opacity-0 group-hover:opacity-100 transition-opacity"
+            />
           </button>
 
           <button
             onClick={() => setMenuView("main")}
-            className="mt-4 text-gray-400 hover:text-white text-sm underline transition-all"
+            className="mt-4 text-gray-400 hover:text-white text-sm underline transition-all flex items-center justify-center gap-2"
           >
-            ← Geri Dön
+            <ArrowLeft size={16} /> Geri Dön
           </button>
         </div>
       )}
@@ -100,33 +121,38 @@ const MainMenu = () => {
             onClick={() => navigate("/game/2p")}
             className="bg-green-600 hover:bg-green-500 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:scale-105 flex items-center justify-between group transition-all"
           >
-            <span>⚽ Klasik Maç</span>{" "}
-            <span className="opacity-0 group-hover:opacity-100 transition-opacity">
-              →
+            <span className="flex items-center gap-2">
+              <Gamepad2 size={20} /> Klasik Maç
             </span>
+            <ArrowRight
+              size={20}
+              className="opacity-0 group-hover:opacity-100 transition-opacity"
+            />
           </button>
 
           <button
             disabled // Buton devre dışı bırakıldı
             className="bg-gray-700 text-gray-500 font-bold py-4 px-6 rounded-xl shadow-none flex items-center justify-between cursor-not-allowed opacity-70"
           >
-            <span>🥅 Penaltı Atışları</span>{" "}
-            <span className="text-xs bg-gray-800 px-2 py-1 rounded text-gray-400 border border-gray-600">
-              YAKINDA
+            <span className="flex items-center gap-2">
+              <Trophy size={20} /> Penaltı Atışları
+            </span>
+            <span className="text-xs bg-gray-800 px-2 py-1 rounded text-gray-400 border border-gray-600 flex items-center gap-1">
+              <Lock size={12} /> YAKINDA
             </span>
           </button>
 
           <button
             onClick={() => setMenuView("main")}
-            className="mt-4 text-gray-400 hover:text-white text-sm underline transition-all"
+            className="mt-4 text-gray-400 hover:text-white text-sm underline transition-all flex items-center justify-center gap-2"
           >
-            ← Geri Dön
+            <ArrowLeft size={16} /> Geri Dön
           </button>
         </div>
       )}
 
       <div className="absolute bottom-6 text-gray-600 text-xs font-mono">
-        v0.3
+        v0.4
       </div>
     </div>
   );

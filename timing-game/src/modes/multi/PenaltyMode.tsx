@@ -1,21 +1,21 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import TimerDisplay from "../components/game/TimerDisplay";
-import ActionButton from "../components/game/ActionButton";
-import GameOverModal from "../components/common/GameOverModal";
-import VisualEffectOverlay from "../components/layout/VisualEffectOverlay";
+import TimerDisplay from "../../components/game/TimerDisplay";
+import ActionButton from "../../components/game/ActionButton";
+import GameOverModal from "../../components/common/GameOverModal";
+import VisualEffectOverlay from "../../components/layout/VisualEffectOverlay";
 
-import { calculateShotResult } from "../utils/calculateShotResult";
-import { playSound, toggleMute, getMuteStatus } from "../utils/sound";
-import { triggerWinConfetti } from "../utils/confetti";
-import type { VisualEffectData } from "../types";
+import { calculateShotResult } from "../../utils/calculateShotResult";
+import { playSound, toggleMute, getMuteStatus } from "../../utils/sound";
+import { triggerWinConfetti } from "../../utils/confetti";
+import type { VisualEffectData } from "../../types";
+import { Volume2, VolumeX, ArrowLeft, User } from "lucide-react";
 
 type Player = "p1" | "p2";
 
 const PenaltyMode = () => {
   const navigate = useNavigate();
 
-  // --- STATE ---
   const [currentPlayer, setCurrentPlayer] = useState<Player>("p1");
   const [round, setRound] = useState(1);
   const [scores, setScores] = useState({ p1: 0, p2: 0 });
@@ -40,12 +40,9 @@ const PenaltyMode = () => {
   const startTimeRef = useRef<number>(0);
   const animationRef = useRef<number>(0);
 
-  // --- YARDIMCI FONKSİYONLAR ---
-
   const handleMuteToggle = () => setIsMuted(toggleMute());
   const handleBackToMenu = () => navigate("/", { replace: true });
 
-  // Efekt temizleme
   useEffect(() => {
     if (visualEffect) {
       const timer = setTimeout(() => setVisualEffect(null), 1500);
@@ -53,7 +50,6 @@ const PenaltyMode = () => {
     }
   }, [visualEffect]);
 
-  // Sayaç Mantığı
   useEffect(() => {
     if (isGameOver || shotTaken) return;
 
@@ -68,8 +64,6 @@ const PenaltyMode = () => {
     return () => cancelAnimationFrame(animationRef.current);
   }, [isGameOver, shotTaken]);
 
-  // --- AKSİYON ---
-
   const handleShoot = useCallback(() => {
     if (shotTaken || isGameOver) return;
     setShotTaken(true);
@@ -79,10 +73,8 @@ const PenaltyMode = () => {
     const { result, message, isGoal } = calculateShotResult(currentMs);
     const displayMs = String(Math.floor(currentMs / 10)).padStart(2, "0");
 
-    // Penaltı Modunda sadece GOL veya PENALTI sonucu gol sayılır
     const goalScored = result === "GOL" || (isGoal && result === "PENALTI");
 
-    // Sonucu İşle
     if (goalScored) {
       playSound("goal");
       setVisualEffect({ type: "goal", player: currentPlayer });
@@ -95,19 +87,16 @@ const PenaltyMode = () => {
       setActionMessage(`❌ KAÇTI! (${displayMs}ms) - ${message}`);
     }
 
-    // Tarihçeye ekle
     setHistory((h) => ({
       ...h,
       [currentPlayer]: [...h[currentPlayer], goalScored],
     }));
 
-    // Sıra Değiştirme veya Bitirme
     setTimeout(() => {
       if (currentPlayer === "p1") {
         setCurrentPlayer("p2");
         setShotTaken(false);
       } else {
-        // Tur Bitti
         if (round < 5) {
           setRound((r) => r + 1);
           setCurrentPlayer("p1");
@@ -179,7 +168,6 @@ const PenaltyMode = () => {
         currentPlayer={currentPlayer}
       />
 
-      {/* Üst Bar */}
       <div className="w-full p-4 flex justify-between items-center z-50">
         <div className="text-xl font-bold text-yellow-400">PENALTI MODU</div>
         <div className="flex gap-2">
@@ -187,43 +175,43 @@ const PenaltyMode = () => {
             onClick={handleMuteToggle}
             className="bg-gray-800 hover:bg-gray-700 p-2 rounded-full transition-colors"
           >
-            {isMuted ? "🔇" : "🔊"}
+            {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
           </button>
           <button
             onClick={handleBackToMenu}
-            className="bg-gray-800 hover:bg-gray-700 p-2 rounded text-sm transition-colors"
+            className="bg-gray-800 hover:bg-gray-700 p-2 rounded text-sm transition-colors flex items-center gap-1"
           >
-            Çıkış
+            <ArrowLeft size={16} /> Çıkış
           </button>
         </div>
       </div>
 
-      {/* Skor Tablosu */}
       <div className="flex flex-col w-full max-w-2xl px-4 mt-4 z-10">
-        {/* Oyuncu 1 */}
         <div
           className={`flex items-center justify-between bg-gray-800/50 p-4 rounded-xl mb-2 border-2 transition-colors ${
             currentPlayer === "p1" ? "border-blue-500" : "border-transparent"
           }`}
         >
-          <span className="text-xl font-bold text-blue-400">Oyuncu 1</span>
+          <span className="text-xl font-bold text-blue-400 flex items-center gap-2">
+            <User size={24} /> Oyuncu 1
+          </span>
           <div className="flex gap-2">{renderScoreDots("p1")}</div>
           <span className="text-3xl font-black">{scores.p1}</span>
         </div>
 
-        {/* Oyuncu 2 */}
         <div
           className={`flex items-center justify-between bg-gray-800/50 p-4 rounded-xl border-2 transition-colors ${
             currentPlayer === "p2" ? "border-red-500" : "border-transparent"
           }`}
         >
-          <span className="text-xl font-bold text-red-400">Oyuncu 2</span>
+          <span className="text-xl font-bold text-red-400 flex items-center gap-2">
+            <User size={24} /> Oyuncu 2
+          </span>
           <div className="flex gap-2">{renderScoreDots("p2")}</div>
           <span className="text-3xl font-black">{scores.p2}</span>
         </div>
       </div>
 
-      {/* Oyun Alanı */}
       <div className="flex-1 flex flex-col items-center justify-center w-full max-w-md relative z-10">
         <div className="text-4xl font-bold mb-6 text-yellow-400">
           TUR {round} / 5
