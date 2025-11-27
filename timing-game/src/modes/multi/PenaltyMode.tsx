@@ -1,14 +1,14 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import TimerDisplay from "../components/game/TimerDisplay";
-import ActionButton from "../components/game/ActionButton";
-import GameOverModal from "../components/common/GameOverModal";
-import VisualEffectOverlay from "../components/layout/VisualEffectOverlay";
+import TimerDisplay from "../../components/game/TimerDisplay";
+import ActionButton from "../../components/game/ActionButton";
+import GameOverModal from "../../components/common/GameOverModal";
+import VisualEffectOverlay from "../../components/layout/VisualEffectOverlay";
 
-import { calculateShotResult } from "../utils/calculateShotResult";
-import { playSound, toggleMute, getMuteStatus } from "../utils/sound";
-import { triggerWinConfetti } from "../utils/confetti";
-import type { VisualEffectData } from "../types";
+import { calculateShotResult } from "../../utils/calculateShotResult";
+import { playSound, toggleMute, getMuteStatus } from "../../utils/sound";
+import { triggerWinConfetti } from "../../utils/confetti";
+import type { VisualEffectData } from "../../types";
 import { Volume2, VolumeX, ArrowLeft, User } from "lucide-react";
 
 type Player = "p1" | "p2";

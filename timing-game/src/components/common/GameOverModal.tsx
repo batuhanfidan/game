@@ -1,5 +1,6 @@
 import React from "react";
-import { Trophy, RotateCcw } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Trophy, RotateCcw, Home } from "lucide-react";
 
 interface GameOverModalProps {
   winner: string;
@@ -12,6 +13,8 @@ const GameOverModal: React.FC<GameOverModalProps> = ({
   finalScore,
   onRestart,
 }) => {
+  const navigate = useNavigate();
+
   return (
     <div className="fixed inset-0 z-100 flex items-center justify-center bg-black/95 backdrop-blur-sm animate-fade-in p-4">
       <div className="relative w-full max-w-md transform overflow-hidden rounded-2xl border border-white/10 bg-neutral-900 text-center shadow-2xl transition-all">
@@ -32,16 +35,26 @@ const GameOverModal: React.FC<GameOverModalProps> = ({
             </p>
           </div>
 
-          <button
-            onClick={onRestart}
-            className="group relative w-full overflow-hidden rounded-xl bg-white py-4 text-black font-black uppercase tracking-widest transition-all hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(255,255,255,0.2)] active:scale-95"
-          >
-            <span className="relative z-10 flex items-center justify-center gap-2">
-              TEKRAR OYNA <RotateCcw size={20} />
-            </span>
+          <div className="flex flex-col gap-3">
+            {/* Tekrar Oyna Butonu (Primary) */}
+            <button
+              onClick={onRestart}
+              className="group relative w-full overflow-hidden rounded-xl bg-white py-4 text-black font-black uppercase tracking-widest transition-all hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(255,255,255,0.2)] active:scale-95"
+            >
+              <span className="relative z-10 flex items-center justify-center gap-2">
+                TEKRAR OYNA <RotateCcw size={20} />
+              </span>
+              <div className="absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-gray-300 to-transparent transition-transform duration-500 group-hover:translate-x-full opacity-50"></div>
+            </button>
 
-            <div className="absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-gray-300 to-transparent transition-transform duration-500 group-hover:translate-x-full opacity-50"></div>
-          </button>
+            {/* Ana Menüye Dön Butonu (Secondary) */}
+            <button
+              onClick={() => navigate("/")}
+              className="w-full py-3 rounded-xl text-gray-400 font-bold uppercase tracking-widest hover:text-white hover:bg-white/5 transition-all flex items-center justify-center gap-2 text-sm border border-transparent hover:border-white/10 active:scale-95"
+            >
+              <Home size={18} /> Ana Menüye Dön
+            </button>
+          </div>
         </div>
       </div>
     </div>

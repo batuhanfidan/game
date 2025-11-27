@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import TimerDisplay from "../components/game/TimerDisplay";
-import PlayerTimer from "../components/layout/PlayerTimer";
-import ActionButton from "../components/game/ActionButton";
-import GameOverModal from "../components/common/GameOverModal";
-import GameLayout from "../components/layout/GameLayout";
-import { useGameLogic } from "../hooks/useGameLogic";
-import { THEMES } from "../utils/constants";
+import TimerDisplay from "../../components/game/TimerDisplay";
+import PlayerTimer from "../../components/layout/PlayerTimer";
+import ActionButton from "../../components/game/ActionButton";
+import GameOverModal from "../../components/common/GameOverModal";
+import GameLayout from "../../components/layout/GameLayout";
+import { useGameLogic } from "../../hooks/useGameLogic";
+import { THEMES } from "../../utils/constants";
 import { Timer, ArrowLeft, Trophy } from "lucide-react";
 
 const TimeAttackMode = () => {
