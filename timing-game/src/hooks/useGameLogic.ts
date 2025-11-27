@@ -13,7 +13,7 @@ import type {
 // Alt hook'ları import ediyoruz
 import { useSurvivalSystem } from "./useSurvivalSystem";
 import { useGameTimer } from "./useGameTimer";
-import { useBotSystem } from "./UseBotSystem";
+import { useBotSystem } from "./useBotSystem";
 
 interface UseGameLogicProps {
   initialTime?: number;
@@ -467,7 +467,7 @@ export const useGameLogic = ({
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleAction, gameState, timer.isPaused, timer.togglePause]);
+  }, [handleAction, gameState, timer.isPaused, timer.togglePause, timer]);
 
   // --- 3. BOT SİSTEMİ ---
   useBotSystem({
