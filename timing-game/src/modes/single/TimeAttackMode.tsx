@@ -52,7 +52,7 @@ const TimeAttackMode = () => {
       <div className="text-5xl font-black text-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.4)] tracking-tighter flex items-center gap-3">
         <Trophy size={48} /> {scores.p1}
       </div>
-      <div className="text-xs text-gray-500 mt-2 bg-black/40 px-4 py-1 rounded-full border border-white/5 backdrop-blur-md">
+      <div className="text-s text-gray-500 mt-2 bg-black/40 px-4 py-1 rounded-full border border-white/5 backdrop-blur-md">
         EN YÜKSEK: <span className="text-gray-300 font-bold">{highScore}</span>
       </div>
     </div>
