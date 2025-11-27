@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { calculateShotResult } from "../utils/calculateShotResult";
-
 import { triggerWinConfetti } from "../utils/confetti";
 import { playSound } from "../utils/sound";
 import type {
@@ -10,6 +9,8 @@ import type {
   VisualEffectData,
   GameVariant,
 } from "../types";
+
+type CurseType = "REVERSE" | "UNSTABLE";
 
 interface UseGameLogicProps {
   initialTime?: number;
@@ -29,13 +30,10 @@ export const useGameLogic = ({
   const [gameState, setGameState] = useState<GameState>("idle");
   const [isPaused, setIsPaused] = useState(false);
 
-  // Ekranda görünen (veya hesaplanan) zaman
   const [gameTimeMs, setGameTimeMs] = useState(0);
-
   const [turnTimeLeft, setTurnTimeLeft] = useState(10);
   const [currentPlayer, setCurrentPlayer] = useState<Player>("p1");
 
-  // Varyasyon değişkenleri
   const [targetOffset, setTargetOffset] = useState(0);
   const [roundOffset, setRoundOffset] = useState(0);
 
@@ -44,8 +42,20 @@ export const useGameLogic = ({
     p2: gameMode === "bot" ? "Bot" : "Oyuncu 2",
   });
 
-  // --- SÜRE PAYLAŞIM MANTIĞI ---
-  // Classic ve Bot modlarında toplam süre oyunculara paylaştırılır.
+  // --- SURVIVAL & ADRENALIN STATE
+  const [lives, setLives] = useState(3);
+  const [speedMultiplier, setSpeedMultiplier] = useState(1.0);
+  const [survivalThreshold, setSurvivalThreshold] = useState(250);
+  const [adrenaline, setAdrenaline] = useState(0);
+  const [isFeverActive, setIsFeverActive] = useState(false);
+  const GOLDEN_THRESHOLD = 15;
+  const [hasShield, setHasShield] = useState(false);
+
+  //SURVIVAL MEKANİKLERİ
+  const [cursedRemaining, setCursedRemaining] = useState(0);
+  const [activeCurse, setActiveCurse] = useState<CurseType | null>(null);
+  const [redTarget, setRedTarget] = useState<number | null>(null);
+
   const isSharedTimeMode = gameMode === "classic" || gameMode === "bot";
   const startDuration = isSharedTimeMode
     ? Math.ceil(initialTime / 2)
@@ -87,7 +97,48 @@ export const useGameLogic = ({
   const startTimeRef = useRef<number>(0);
   const pauseStartTimeRef = useRef<number>(0);
 
-  // --- YARDIMCI FONKSİYONLAR ---
+  const generateRedTarget = useCallback((greenTarget: number) => {
+    if (Math.random() > 0.2) return null;
+
+    let red = 0;
+
+    if (Math.random() < 0.5) {
+      red = Math.floor(Math.random() * 100);
+    } else {
+      red = 900 + Math.floor(Math.random() * 100);
+    }
+
+    if (Math.abs(red - greenTarget) < 150) return null;
+
+    return red;
+  }, []);
+
+  const restartGame = useCallback(() => {
+    setGameState("idle");
+    setIsPaused(false);
+    setGameTimeMs(0);
+    startTimeRef.current = 0;
+    setTargetOffset(0);
+    setScores({ p1: 0, p2: 0 });
+    setPlayerTimes({ p1: startDuration, p2: startDuration });
+    setTurnTimeLeft(10);
+    setActionMessage("");
+    setVisualEffect(null);
+    setStreak(0);
+
+    // Survival değerlerini sıfırla
+    setLives(3);
+    setSpeedMultiplier(1.0);
+    setSurvivalThreshold(250);
+    setAdrenaline(0);
+    setIsFeverActive(false);
+    setHasShield(false);
+
+    // Yeni mekanikleri sıfırla
+    setCursedRemaining(0);
+    setActiveCurse(null);
+    setRedTarget(null);
+  }, [startDuration]);
 
   const randomizeRound = useCallback(() => {
     if (gameVariant === "random") {
@@ -143,7 +194,19 @@ export const useGameLogic = ({
     [getHighScoreKey]
   );
 
-  // --- OYUN AKIŞI ---
+  // --- FEVER TIMER ---
+  useEffect(() => {
+    if (isFeverActive) {
+      const timer = setTimeout(() => {
+        setIsFeverActive(false);
+        setAdrenaline(0);
+        setHasShield(true);
+        playSound("whistle");
+        setActionMessage("🛡️ KALKAN AKTİF! (Bir sonraki hatadan korur)");
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [isFeverActive]);
 
   const finishGame = useCallback(() => {
     setGameState("finished");
@@ -198,10 +261,7 @@ export const useGameLogic = ({
         clearInterval(id);
         setCountdown(null);
         setGameState("playing");
-
         playSound("whistle");
-
-        // Oyunu başlatırken ana zamanı sıfırla
         startTimeRef.current = Date.now();
 
         if (gameMode === "survival" || gameMode === "time_attack") {
@@ -217,9 +277,7 @@ export const useGameLogic = ({
     }, 1000);
   }, [playerNames, gameMode, randomizeRound]);
 
-  // --- ZAMANLAYICILAR ---
-
-  // 1. Ana Zamanlayıcı
+  // --- ANA ZAMANLAYICI ---
   useEffect(() => {
     if (gameState !== "playing" || isPaused) return;
 
@@ -230,24 +288,38 @@ export const useGameLogic = ({
     const interval = setInterval(() => {
       const now = Date.now();
       const elapsed = now - startTimeRef.current;
-      let visualTime = elapsed + roundOffset;
 
-      if (gameVariant === "unstable") {
+      const currentSpeed = isFeverActive
+        ? speedMultiplier * 0.5
+        : speedMultiplier;
+
+      let visualTime = elapsed * currentSpeed + roundOffset;
+
+      // YENİ: Dengesiz Hız Laneti veya Varyasyonu Aktifse
+      if (gameVariant === "unstable" || activeCurse === "UNSTABLE") {
         const t = now / 1000;
+        // Sinüs dalgaları ile kaotik hızlanma/yavaşlama
         const chaos =
           Math.sin(t * 1.5) * 250 +
           Math.cos(t * 4.2) * 120 +
           Math.sin(t * 9.8) * 60;
-        visualTime = elapsed + roundOffset + chaos;
+        visualTime += chaos;
       }
 
       setGameTimeMs(visualTime);
     }, 10);
 
     return () => clearInterval(interval);
-  }, [gameState, isPaused, gameVariant, roundOffset]);
+  }, [
+    gameState,
+    isPaused,
+    gameVariant,
+    roundOffset,
+    speedMultiplier,
+    isFeverActive,
+    activeCurse,
+  ]);
 
-  // 2. Saniye Bazlı Sayaçlar
   useEffect(() => {
     if (gameState !== "playing" || isPaused) return;
     const interval = setInterval(() => {
@@ -265,7 +337,6 @@ export const useGameLogic = ({
     return () => clearInterval(interval);
   }, [gameState, currentPlayer, isPaused, gameMode]);
 
-  // --- OYUN BİTİRME KONTROLLERİ ---
   useEffect(() => {
     if (gameState !== "playing" || isPaused) return;
 
@@ -276,8 +347,14 @@ export const useGameLogic = ({
 
     if (turnTimeLeft === 0) {
       if (gameMode === "survival") {
-        setActionMessage("⏰ Süre doldu! Elendin.");
-        finishGame();
+        if (lives > 1) {
+          setLives((l) => l - 1);
+          setActionMessage("⏰ SÜRE DOLDU! (-1 Can)");
+          setTurnTimeLeft(10);
+        } else {
+          setActionMessage("⏰ SÜRE DOLDU! Elendin.");
+          finishGame();
+        }
       } else {
         setActionMessage(`⏰ ${getCurrentPlayerName()} süresini doldurdu!`);
         playSound("miss");
@@ -288,11 +365,6 @@ export const useGameLogic = ({
 
     if (gameMode === "time_attack" && playerTimes.p1 === 0) {
       finishGame();
-    } else if (
-      (gameMode === "classic" || gameMode === "bot") &&
-      playerTimes[currentPlayer] === 0
-    ) {
-      // Hamle yapamıyor ama oyun bitmiyor
     }
   }, [
     turnTimeLeft,
@@ -307,9 +379,8 @@ export const useGameLogic = ({
     gameTimeMs,
     initialTime,
     isSharedTimeMode,
+    lives,
   ]);
-
-  // --- AKSİYON ---
 
   const handleAction = useCallback(() => {
     if (gameState !== "playing" || isPaused) return;
@@ -325,27 +396,150 @@ export const useGameLogic = ({
     playSound("kick");
 
     const currentMs = gameTimeMs % 1000;
-    const distance = Math.abs(currentMs - targetOffset);
-    const { result, message, isGoal } = calculateShotResult(distance);
-    const displayMs = String(Math.floor(distance / 10)).padStart(2, "0");
 
+    // --- SURVIVAL MODİFİKASYONLARI ---
     if (gameMode === "survival") {
-      if (isGoal) {
+      // Cursed Round:
+      const isReverseCurse = activeCurse === "REVERSE";
+      const effectiveTarget = isReverseCurse
+        ? 1000 - targetOffset
+        : targetOffset;
+
+      const distance = Math.abs(currentMs - effectiveTarget);
+      const redDistance =
+        redTarget !== null
+          ? isReverseCurse
+            ? Math.abs(currentMs - (1000 - redTarget))
+            : Math.abs(currentMs - redTarget)
+          : Infinity;
+
+      // Kırmızı alanın toleransı yarı yarıya daha az
+      const isRedHit = redDistance <= survivalThreshold / 2;
+      const isGreenHit = distance <= survivalThreshold;
+      const isCritical = distance <= GOLDEN_THRESHOLD;
+
+      let successMessage = "";
+
+      // ÖNCE KIRMIZI ELMA KONTROLÜ (Riskli Hedef)
+      if (isRedHit) {
         playSound("goal");
         setVisualEffect({ type: "goal", player: currentPlayer });
-        setStreak((s) => s + 1);
-        setActionMessage(`🔥 SERİ: ${streak + 1} | ${message}`);
-        handleTurnSwitch();
+        successMessage = "🍎 ELMA VURULDU! (+10 SERİ)";
+
+        setStreak((prev) => prev + 9);
+      } else if (!isGreenHit) {
+        // HATA YAPILDI
+        if (isFeverActive) {
+          playSound("miss");
+          setActionMessage("FEVER KORUMASI!");
+          return;
+        }
+        if (hasShield) {
+          setHasShield(false);
+          setVisualEffect({ type: "save", player: currentPlayer });
+          setActionMessage("🛡️ KALKAN KIRILDI! (Hayattasın)");
+          return;
+        }
+
+        setAdrenaline((prev) => Math.floor(prev / 2));
+
+        if (lives > 1) {
+          setLives((l) => l - 1);
+          playSound("miss");
+          setVisualEffect({ type: "post", player: currentPlayer });
+          setActionMessage(`⚠️ DİKKAT! (${lives - 1} Can Kaldı)`);
+        } else {
+          playSound("miss");
+          setVisualEffect({ type: "miss", player: currentPlayer });
+          setActionMessage(`💀 ÖLDÜN!`);
+          finishGame();
+        }
+        return;
       } else {
-        playSound("miss");
-        setVisualEffect({ type: "miss", player: currentPlayer });
-        setActionMessage(`❌ HATA! (${displayMs}ms) - ${message}`);
-        finishGame();
+        // YEŞİL VURULDU
+        if (isCritical && !isFeverActive) {
+          playSound("goal");
+          setVisualEffect({ type: "goal", player: currentPlayer });
+          setAdrenaline((prev) => {
+            const newValue = Math.min(prev + 100, 100);
+            if (newValue >= 100) {
+              setIsFeverActive(true);
+              playSound("whistle");
+            }
+            return newValue;
+          });
+        } else {
+          playSound("goal");
+          setVisualEffect({ type: "goal", player: currentPlayer });
+        }
       }
+
+      // --- ORTAK BAŞARI MANTIĞI ---
+      setStreak((prevStreak) => {
+        const bonus = isFeverActive && isCritical ? 3 : 1;
+        const newStreak = prevStreak + bonus;
+
+        // Zorluk Artışı
+        if (newStreak % 5 === 0) {
+          setSpeedMultiplier((s) => Math.min(s + 0.05, 2.5));
+          setSurvivalThreshold((t) => Math.max(30, t * 0.95));
+        }
+
+        //Cursed Round Trigger (Her 15 turda bir)
+        if (newStreak > 0 && newStreak % 15 === 0) {
+          setCursedRemaining(3);
+          // %50 ihtimalle Ters Akıntı veya Dengesiz Hız
+          const nextCurse = Math.random() < 0.5 ? "REVERSE" : "UNSTABLE";
+          setActiveCurse(nextCurse);
+
+          const curseName =
+            nextCurse === "REVERSE" ? "TERS AKINTI" : "DENGESİZ HIZ";
+          setActionMessage(`⚠️ LANET BAŞLIYOR: ${curseName}!`);
+        } else if (cursedRemaining > 0) {
+          const nextRemaining = Math.max(0, cursedRemaining - 1);
+          setCursedRemaining(nextRemaining);
+          if (nextRemaining === 0) {
+            setActiveCurse(null); // Laneti kaldır
+            setActionMessage("Lanet Kalktı!");
+          }
+        }
+
+        // Red Apple Spawn
+        const nextGreenTarget =
+          newStreak > 5 ? Math.floor(Math.random() * 800) + 100 : 0;
+        setTargetOffset(nextGreenTarget);
+
+        const newRed = generateRedTarget(nextGreenTarget);
+        setRedTarget(newRed);
+
+        // Mesaj belirleme
+        if (successMessage) {
+          setActionMessage(successMessage);
+        } else if (newStreak % 10 === 0) {
+          setLives((l) => Math.min(l + 1, 5));
+          setActionMessage(`💖 +1 CAN! | Hız: ${speedMultiplier.toFixed(1)}x`);
+        } else if (isFeverActive) {
+          setActionMessage(`🔥 FEVER MODU!`);
+        } else if (isCritical) {
+          setActionMessage(`🔥 KRİTİK! (+%20 Adrenalin)`);
+        } else {
+          setActionMessage(`GÜZEL! (Seri: ${newStreak})`);
+        }
+
+        return newStreak;
+      });
+
+      setTurnTimeLeft(10);
       return;
     }
 
+    // --- DİĞER MODLAR ---
+    const distance = Math.abs(currentMs - targetOffset);
+    const displayMs = String(Math.floor(distance / 10)).padStart(2, "0");
+
+    const { result, message, isGoal } = calculateShotResult(distance);
     setActionMessage(`${getCurrentPlayerName()}: ${message} (${displayMs}ms)`);
+
     if (isGoal || result === "GOL") {
       playSound("goal");
       setVisualEffect({ type: "goal", player: currentPlayer });
@@ -366,13 +560,21 @@ export const useGameLogic = ({
     handleTurnSwitch,
     getCurrentPlayerName,
     isPaused,
-    streak,
     finishGame,
     targetOffset,
     playerTimes,
+    survivalThreshold,
+    lives,
+    isFeverActive,
+    GOLDEN_THRESHOLD,
+    speedMultiplier,
+    hasShield,
+    cursedRemaining,
+    activeCurse,
+    redTarget,
+    generateRedTarget,
   ]);
 
-  // Klavye Kontrolü
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.code === "Space") {
@@ -385,7 +587,6 @@ export const useGameLogic = ({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [handleAction, gameState, isPaused, togglePause]);
 
-  // Bot Zekası
   useEffect(() => {
     if (
       gameMode !== "bot" ||
@@ -427,7 +628,6 @@ export const useGameLogic = ({
       handleTurnSwitch();
     }, botReactionTime);
     return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     gameState,
     currentPlayer,
@@ -436,21 +636,8 @@ export const useGameLogic = ({
     handleTurnSwitch,
     botAccuracy,
     isPaused,
+    playerTimes.p2,
   ]);
-
-  const restartGame = useCallback(() => {
-    setGameState("idle");
-    setIsPaused(false);
-    setGameTimeMs(0);
-    startTimeRef.current = 0;
-    setTargetOffset(0);
-    setScores({ p1: 0, p2: 0 });
-    setPlayerTimes({ p1: startDuration, p2: startDuration });
-    setTurnTimeLeft(10);
-    setActionMessage("");
-    setVisualEffect(null);
-    setStreak(0);
-  }, [startDuration]);
 
   return {
     gameState,
@@ -476,5 +663,14 @@ export const useGameLogic = ({
     visualEffect,
     targetOffset,
     gameVariant,
+    lives,
+    speedMultiplier,
+    survivalThreshold,
+    adrenaline,
+    isFeverActive,
+    goldenThreshold: GOLDEN_THRESHOLD,
+    hasShield,
+    activeCurse,
+    redTarget,
   };
 };

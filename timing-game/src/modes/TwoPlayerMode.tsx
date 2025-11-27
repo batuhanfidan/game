@@ -11,6 +11,21 @@ import PauseMenu from "../components/layout/PauseMenu";
 import { useGameLogic } from "../hooks/useGameLogic";
 import { toggleMute, getMuteStatus } from "../utils/sound";
 import type { GameVariant } from "../types";
+import {
+  Menu,
+  Volume2,
+  VolumeX,
+  Palette,
+  CircleHelp,
+  Trophy,
+  User,
+  Circle,
+  Ghost,
+  Activity,
+  Shuffle,
+  Target,
+  ArrowLeft,
+} from "lucide-react";
 
 const THEMES = [
   { name: "Klasik", class: "bg-black" },
@@ -20,39 +35,37 @@ const THEMES = [
 ];
 
 const VARIANTS: { key: GameVariant; label: string; desc: string }[] = [
-  { key: "classic", label: "🟢 Klasik", desc: "Standart oyun. Hedef 00ms." },
-  {
-    key: "ghost",
-    label: "👻 Hayalet",
-    desc: "Sayaç 500ms'den sonra kaybolur.",
-  },
-  {
-    key: "unstable",
-    label: "📉 Dengesiz",
-    desc: "Zamanın hızı sürekli değişir.",
-  },
-  {
-    key: "random",
-    label: "🔀 Rastgele",
-    desc: "Her tur farklı yerden başlar.",
-  },
-  {
-    key: "moving",
-    label: "🎯 Gezgin",
-    desc: "Hedef sürekli değişir. (Yardımcı bar zorunludur)",
-  },
+  { key: "classic", label: "Klasik", desc: "Standart oyun. Hedef 00ms." },
+  { key: "ghost", label: "Hayalet", desc: "Sayaç 500ms'den sonra kaybolur." },
+  { key: "unstable", label: "Dengesiz", desc: "Zamanın hızı sürekli değişir." },
+  { key: "random", label: "Rastgele", desc: "Her tur farklı yerden başlar." },
+  { key: "moving", label: "Gezgin", desc: "Hedef sürekli değişir." },
 ];
+
+const getVariantIcon = (key: GameVariant) => {
+  switch (key) {
+    case "classic":
+      return <Circle size={16} className="text-green-400" />;
+    case "ghost":
+      return <Ghost size={16} className="text-purple-400" />;
+    case "unstable":
+      return <Activity size={16} className="text-orange-400" />;
+    case "random":
+      return <Shuffle size={16} className="text-blue-400" />;
+    case "moving":
+      return <Target size={16} className="text-red-400" />;
+    default:
+      return <Circle size={16} />;
+  }
+};
 
 const TwoPlayerMode = () => {
   const navigate = useNavigate();
   const [selectedVariant, setSelectedVariant] =
     useState<GameVariant>("classic");
-
-  // SÜRE AYARI (Varsayılan 3dk - 180sn)
   const [gameDuration, setGameDuration] = useState(180);
   const [showProgressBar, setShowProgressBar] = useState(true);
 
-  // Gezgin modu seçilirse barı zorunlu aç
   useEffect(() => {
     if (selectedVariant === "moving") {
       setShowProgressBar(true);
@@ -139,9 +152,9 @@ const TwoPlayerMode = () => {
       <div className="absolute top-4 right-4 z-60 flex flex-col items-end">
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="md:hidden bg-gray-700 hover:bg-gray-600 text-white rounded-lg w-10 h-10 flex items-center justify-center text-2xl font-bold border border-gray-500 shadow-lg transition-transform active:scale-95"
+          className="md:hidden bg-gray-700 hover:bg-gray-600 text-white rounded-lg w-10 h-10 flex items-center justify-center border border-gray-500 shadow-lg transition-transform active:scale-95"
         >
-          {isMenuOpen ? "✕" : "☰"}
+          <Menu size={24} />
         </button>
         <div
           className={`flex-col md:flex-row gap-2 mt-2 md:mt-0 ${
@@ -150,21 +163,21 @@ const TwoPlayerMode = () => {
         >
           <button
             onClick={handleMuteToggle}
-            className="bg-gray-700 hover:bg-gray-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-xl font-bold shadow-md"
+            className="bg-gray-700 hover:bg-gray-600 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-md"
           >
-            {isMuted ? "🔇" : "🔊"}
+            {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
           </button>
           <button
             onClick={handleThemeChange}
-            className="bg-gray-700 hover:bg-gray-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-xl font-bold shadow-md"
+            className="bg-gray-700 hover:bg-gray-600 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-md"
           >
-            🎨
+            <Palette size={20} />
           </button>
           <button
             onClick={() => setShowRules(true)}
-            className="bg-gray-700 hover:bg-gray-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-xl font-bold shadow-md"
+            className="bg-gray-700 hover:bg-gray-600 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-md"
           >
-            ?
+            <CircleHelp size={20} />
           </button>
         </div>
       </div>
@@ -172,19 +185,30 @@ const TwoPlayerMode = () => {
       <RulesModal showRules={showRules} onClose={() => setShowRules(false)} />
 
       {gameState !== "idle" && (
-        <div className="absolute top-4 text-2xl md:text-3xl font-extrabold text-center text-yellow-400 drop-shadow-lg px-4 pointer-events-none">
-          🏆 Skor: {scores.p1} - {scores.p2}
+        <div className="absolute top-4 text-2xl md:text-3xl font-extrabold text-center text-yellow-400 drop-shadow-lg px-4 pointer-events-none flex items-center gap-3 justify-center w-full">
+          <Trophy size={32} />{" "}
+          <span>
+            Skor: {scores.p1} - {scores.p2}
+          </span>
         </div>
       )}
 
       <div className="absolute top-28 flex justify-between w-full px-4 md:px-20 text-xl">
         <PlayerTimer
-          player={`🧍 ${playerNames.p1}`}
+          player={
+            <span className="flex items-center gap-2">
+              <User size={20} /> {playerNames.p1}
+            </span>
+          }
           minutes={Math.floor(playerTimes.p1 / 60)}
           seconds={playerTimes.p1 % 60}
         />
         <PlayerTimer
-          player={`🧍 ${playerNames.p2}`}
+          player={
+            <span className="flex items-center gap-2">
+              <User size={20} /> {playerNames.p2}
+            </span>
+          }
           minutes={Math.floor(playerTimes.p2 / 60)}
           seconds={playerTimes.p2 % 60}
         />
@@ -192,12 +216,10 @@ const TwoPlayerMode = () => {
 
       {gameState === "idle" && !countdown && (
         <div className="flex flex-col items-center gap-6 z-10 bg-neutral-900 p-8 rounded-2xl border border-gray-700 shadow-2xl max-w-2xl w-full mx-4 overflow-y-auto max-h-[95vh]">
-          {/* OYUN TİPİ SEÇİMİ */}
           <div className="w-full">
             <h2 className="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">
               Oyun Tipi
             </h2>
-            {/* PC'de 2 sütun olacak şekilde güncellendi */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               {VARIANTS.map((v) => (
                 <button
@@ -210,13 +232,13 @@ const TwoPlayerMode = () => {
                   }`}
                 >
                   <span
-                    className={`font-bold text-sm ${
+                    className={`font-bold text-sm flex items-center gap-2 ${
                       selectedVariant === v.key
                         ? "text-green-400"
                         : "text-gray-300"
                     }`}
                   >
-                    {v.label}
+                    {getVariantIcon(v.key)} {v.label}
                   </span>
                   <span className="text-xs text-gray-500 mt-0.5">{v.desc}</span>
                 </button>
@@ -224,9 +246,7 @@ const TwoPlayerMode = () => {
             </div>
           </div>
 
-          {/* SÜRE VE BAR AYARLARI */}
           <div className="w-full flex flex-col gap-4">
-            {/* SÜRE SEÇİMİ */}
             <div>
               <h2 className="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">
                 Süre
@@ -248,7 +268,6 @@ const TwoPlayerMode = () => {
               </div>
             </div>
 
-            {/* YARDIMCI BAR SEÇİMİ */}
             <div>
               <h2 className="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">
                 Yardımcı Bar
@@ -338,9 +357,9 @@ const TwoPlayerMode = () => {
           </div>
           <button
             onClick={handleBackToMenu}
-            className="mt-2 text-gray-400 hover:text-white underline text-sm"
+            className="mt-2 text-gray-400 hover:text-white underline text-sm flex items-center gap-1"
           >
-            🔙 Menüye Dön
+            <ArrowLeft size={14} /> Menüye Dön
           </button>
         </div>
       )}
