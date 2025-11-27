@@ -57,15 +57,18 @@ export const useBotSystem = ({
       const currentAccuracy = latestState.current.botAccuracy;
 
       // Hata payı hesaplama
-      let error = 0;
-      if (currentAccuracy >= 0.9) error = Math.floor(Math.random() * 10);
-      else if (currentAccuracy >= 0.7) error = Math.floor(Math.random() * 50);
-      else error = Math.floor(Math.random() * 300);
+      const baseErrorRange = 1000; // En kötü botun yapabileceği max hata aralığı (ms)
+      const minErrorBuffer = 15; // En iyi botun bile sahip olduğu minimal insan hatası
+
+      // Formül:
+      const maxError =
+        Math.floor(baseErrorRange * (1 - currentAccuracy)) + minErrorBuffer;
+
+      const error = Math.floor(Math.random() * maxError);
 
       playSound("kick");
       const { result, message, isGoal } = calculateShotResult(error);
-      const isSuccess =
-        result === "GOL" || (isGoal && Math.random() < currentAccuracy);
+      const isSuccess = isGoal;
       const displayMs = String(Math.floor(error / 10)).padStart(2, "0");
 
       if (isSuccess) {
@@ -88,9 +91,6 @@ export const useBotSystem = ({
 
     return () => clearTimeout(timer);
   }, [
-    // DÜZELTME: playerTimes ve botAccuracy LİSTEDEN ÇIKARILDI.
-    // Artık sadece oyun durumu veya sıra değiştiğinde bu effect çalışacak.
-    // Saatin her saniye ilerlemesi botu resetlemeyecek.
     gameState,
     currentPlayer,
     gameMode,

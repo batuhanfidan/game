@@ -12,8 +12,8 @@ export const THEMES = [
 export const DIFFICULTIES = {
   EASY: { label: "Kolay", reaction: 2500, accuracy: 0.3 },
   MEDIUM: { label: "Orta", reaction: 2000, accuracy: 0.5 },
-  HARD: { label: "Zor", reaction: 1000, accuracy: 0.6 },
-  IMPOSSIBLE: { label: "İmkansız", reaction: 600, accuracy: 0.8 },
+  HARD: { label: "Zor", reaction: 1500, accuracy: 0.7 },
+  IMPOSSIBLE: { label: "İmkansız", reaction: 1000, accuracy: 0.9 },
 };
 
 // Vuruş bölgeleri (milisaniye cinsinden)
