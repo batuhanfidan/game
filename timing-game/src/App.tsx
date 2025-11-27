@@ -2,9 +2,9 @@ import { Routes, Route } from "react-router-dom";
 import MainMenu from "./pages/MainMenu";
 import TwoPlayerMode from "./modes/multi/TwoPlayerMode";
 import BotMode from "./modes/single/BotMode";
-import PenaltyMode from "./modes/PenaltyMode";
+import PenaltyMode from "./modes/multi/PenaltyMode";
 import SurvivalMode from "./modes/single/SurvivalMode";
-import TimeAttackMode from "./modes/TimeAttackMode";
+import TimeAttackMode from "./modes/single/TimeAttackMode";
 
 function App() {
   return (
