@@ -44,7 +44,7 @@ const VisualEffectOverlay: React.FC<VisualEffectOverlayProps> = ({
         }
       } else {
         setPosition({
-          top: "25%",
+          top: isMobile ? "72%" : "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
         });
