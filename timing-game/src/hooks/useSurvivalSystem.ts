@@ -1,10 +1,11 @@
 import { useState, useCallback, useEffect } from "react";
 import { playSound } from "../utils/sound";
+import { SURVIVAL_CONSTANTS } from "../utils/constants";
 
 export type CurseType = "REVERSE" | "UNSTABLE";
 
 export const useSurvivalSystem = () => {
-  const [lives, setLives] = useState(3);
+  const [lives, setLives] = useState(SURVIVAL_CONSTANTS.INITIAL_LIVES);
   const [speedMultiplier, setSpeedMultiplier] = useState(1.0);
   const [survivalThreshold, setSurvivalThreshold] = useState(250);
   const [adrenaline, setAdrenaline] = useState(0);
@@ -20,7 +21,7 @@ export const useSurvivalSystem = () => {
   const GOLDEN_THRESHOLD = 15;
 
   const generateRedTarget = useCallback((greenTarget: number) => {
-    if (Math.random() > 0.2) return null;
+    if (Math.random() > SURVIVAL_CONSTANTS.RED_TARGET_SPAWN_CHANCE) return null;
 
     let red = 0;
     if (Math.random() < 0.5) {
@@ -34,7 +35,7 @@ export const useSurvivalSystem = () => {
   }, []);
 
   const resetSurvivalState = useCallback(() => {
-    setLives(3);
+    setLives(SURVIVAL_CONSTANTS.INITIAL_LIVES);
     setSpeedMultiplier(1.0);
     setSurvivalThreshold(250);
     setAdrenaline(0);

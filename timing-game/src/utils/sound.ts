@@ -5,12 +5,28 @@ const sounds = {
   miss: new Audio("/sounds/miss.mp3"),
 };
 
+// Preload ve Hata Yönetimi
 Object.values(sounds).forEach((sound) => {
   sound.load();
   sound.volume = 0.5;
+  sound.addEventListener("error", (e) => {
+    console.warn("Ses dosyası yüklenemedi:", e);
+  });
 });
 
 let isMuted = false;
+
+// Seslerin hazır olup olmadığını kontrol eden bir promise
+export const soundsReady = Promise.all(
+  Object.values(sounds).map(
+    (s) =>
+      new Promise((resolve) => {
+        s.addEventListener("canplaythrough", resolve, { once: true });
+
+        s.addEventListener("error", resolve, { once: true });
+      })
+  )
+);
 
 export const toggleMute = (): boolean => {
   isMuted = !isMuted;
@@ -25,6 +41,10 @@ export const playSound = (type: keyof typeof sounds) => {
   const sound = sounds[type];
   if (sound) {
     sound.currentTime = 0;
-    sound.play().catch(() => {});
+    sound.play().catch((err) => {
+      if (err.name !== "AbortError") {
+        console.warn(`Sound '${type}' failed to play:`, err);
+      }
+    });
   }
 };

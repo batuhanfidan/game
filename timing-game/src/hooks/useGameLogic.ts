@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { calculateShotResult } from "../utils/calculateShotResult";
 import { triggerWinConfetti } from "../utils/confetti";
 import { playSound } from "../utils/sound";
+import { SURVIVAL_CONSTANTS } from "../utils/constants";
 import type {
   GameMode,
   GameState,
@@ -21,6 +22,12 @@ interface UseGameLogicProps {
   gameVariant?: GameVariant;
   botReactionTime?: number;
   botAccuracy?: number;
+}
+
+interface TimeChangePopup {
+  id: number;
+  value: number;
+  type: "positive" | "negative";
 }
 
 export const useGameLogic = ({
@@ -50,20 +57,13 @@ export const useGameLogic = ({
     null
   );
 
-  // Time Attack Popup State
-  const [timeChangePopup, setTimeChangePopup] = useState<{
-    id: number;
-    value: number;
-    type: "positive" | "negative";
-  } | null>(null);
+  const [timeChangePopup, setTimeChangePopup] =
+    useState<TimeChangePopup | null>(null);
 
   // --- ALT SİSTEMLER ---
   const survival = useSurvivalSystem();
   const timeAttack = useTimeAttackSystem();
 
-  // DÜZELTME: timeAttack objesini parçalayarak (destructuring) alıyoruz.
-  // Bu sayede dependency array'e kararsız 'timeAttack' objesi yerine
-  // kararlı (stable) olan 'spawnBoss' ve 'processHit' fonksiyonlarını verebiliyoruz.
   const {
     spawnBoss,
     processHit,
@@ -76,11 +76,10 @@ export const useGameLogic = ({
   } = timeAttack;
 
   const randomizeRound = useCallback(() => {
-    // Time Attack modunda yeşil barın konumu değiştikçe Boss'u da spawn et
     if (gameMode === "time_attack") {
       const nextTarget = Math.floor(Math.random() * 800) + 100;
       setTargetOffset(nextTarget);
-      spawnBoss(nextTarget); // timeAttack.spawnBoss yerine direkt spawnBoss
+      spawnBoss(nextTarget);
       return;
     }
 
@@ -95,7 +94,7 @@ export const useGameLogic = ({
     } else {
       setTargetOffset(0);
     }
-  }, [gameVariant, gameMode, spawnBoss]); // timeAttack yerine spawnBoss eklendi (Stabil)
+  }, [gameVariant, gameMode, spawnBoss]);
 
   const handleGameStartLogic = useCallback(() => {
     if (gameMode === "survival" || gameMode === "time_attack") {
@@ -127,8 +126,12 @@ export const useGameLogic = ({
 
   const [highScore, setHighScore] = useState(() => {
     if (gameMode === "classic" && gameVariant === "classic") return 0;
-    const saved = localStorage.getItem(getHighScoreKey());
-    return saved ? parseInt(saved, 10) : 0;
+    try {
+      const saved = localStorage.getItem(getHighScoreKey());
+      return saved ? parseInt(saved, 10) : 0;
+    } catch {
+      return 0;
+    }
   });
 
   const updateHighScore = useCallback(
@@ -160,7 +163,7 @@ export const useGameLogic = ({
     }
   }, [startDuration, gameState]);
 
-  const restartGame = useCallback(() => {
+  const resetGame = useCallback(() => {
     timer.resetTimer();
     setGameState("idle");
     setTargetOffset(0);
@@ -228,15 +231,17 @@ export const useGameLogic = ({
     randomizeRound();
   }, [gameMode, randomizeRound]);
 
-  // Zaman Sayacı
+  // Zaman Sayacı (Fix Memory Leak & Cleanup)
   useEffect(() => {
     if (gameState !== "playing" || timer.isPaused) return;
-
-    // Time Attack Fever modunda süre azalmaz!
     if (gameMode === "time_attack" && timeFeverActive) return;
 
     const interval = setInterval(() => {
-      setTurnTimeLeft((prev) => Math.max(0, prev - 1));
+      setTurnTimeLeft((prev) => {
+        if (prev <= 0) return 0;
+        return prev - 1;
+      });
+
       setPlayerTimes((prev) => {
         const newTimes = { ...prev };
         if (gameMode === "time_attack" || gameMode === "survival") {
@@ -247,6 +252,7 @@ export const useGameLogic = ({
         return newTimes;
       });
     }, 1000);
+
     return () => clearInterval(interval);
   }, [gameState, currentPlayer, timer.isPaused, gameMode, timeFeverActive]);
 
@@ -304,7 +310,6 @@ export const useGameLogic = ({
     }
   }, [visualEffect]);
 
-  // Popup Timer'ı temizle
   useEffect(() => {
     if (timeChangePopup) {
       const t = setTimeout(() => setTimeChangePopup(null), 1500);
@@ -336,17 +341,13 @@ export const useGameLogic = ({
       const result = processHit(currentMs, targetOffset);
 
       setActionMessage(result.message);
-
-      // Puan Güncelle
       setScores((s) => ({ ...s, p1: s.p1 + result.scoreBonus }));
 
-      // Zaman Güncelle (Bonus veya Ceza)
       if (result.timeBonus !== 0) {
         setPlayerTimes((prev) => ({
           ...prev,
           p1: Math.max(0, prev.p1 + result.timeBonus),
         }));
-        // Popup Tetikle
         setTimeChangePopup({
           id: Date.now(),
           value: result.timeBonus,
@@ -359,7 +360,6 @@ export const useGameLogic = ({
         setVisualEffect({ type: "goal", player: currentPlayer });
         if (result.isGolden) triggerWinConfetti();
       } else {
-        // Bloklandıysa veya ıskaysa
         playSound("miss");
         const effectType = result.message.includes("KIRMIZI") ? "save" : "miss";
         setVisualEffect({ type: effectType, player: currentPlayer });
@@ -446,12 +446,16 @@ export const useGameLogic = ({
         const bonus = survival.isFeverActive && isCritical ? 3 : 1;
         const newStreak = prevStreak + bonus;
 
-        if (newStreak % 5 === 0) {
+        // Use Constants
+        if (newStreak % SURVIVAL_CONSTANTS.SPEED_INCREASE_INTERVAL === 0) {
           survival.setSpeedMultiplier((s) => Math.min(s + 0.05, 2.5));
           survival.setSurvivalThreshold((t) => Math.max(30, t * 0.95));
         }
 
-        if (newStreak > 0 && newStreak % 15 === 0) {
+        if (
+          newStreak > 0 &&
+          newStreak % SURVIVAL_CONSTANTS.CURSE_INTERVAL === 0
+        ) {
           survival.setCursedRemaining(3);
           const nextCurse = Math.random() < 0.5 ? "REVERSE" : "UNSTABLE";
           survival.setActiveCurse(nextCurse);
@@ -476,8 +480,10 @@ export const useGameLogic = ({
 
         if (successMessage) {
           setActionMessage(successMessage);
-        } else if (newStreak % 10 === 0) {
-          survival.setLives((l) => Math.min(l + 1, 5));
+        } else if (newStreak % SURVIVAL_CONSTANTS.LIFE_BONUS_INTERVAL === 0) {
+          survival.setLives((l) =>
+            Math.min(l + 1, SURVIVAL_CONSTANTS.MAX_LIVES)
+          );
           setActionMessage(
             `💖 +1 CAN! | Hız: ${survival.speedMultiplier.toFixed(1)}x`
           );
@@ -529,11 +535,16 @@ export const useGameLogic = ({
     playerTimes,
     playerNames,
     survival,
-    processHit, // timeAttack yerine processHit
+    processHit,
   ]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Eğer kullanıcı bir input'a yazı yazıyorsa, oyun tuşlarını dinleme
+      if (["INPUT", "TEXTAREA"].includes((e.target as HTMLElement).tagName)) {
+        return;
+      }
+
       if (e.code === "Space") {
         e.preventDefault();
         if (gameState === "playing" && !timer.isPaused) handleAction();
@@ -542,7 +553,7 @@ export const useGameLogic = ({
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleAction, gameState, timer.isPaused, timer.togglePause, timer]);
+  }, [handleAction, gameState, timer.isPaused, timer.togglePause]);
 
   useBotSystem({
     gameMode,
@@ -575,14 +586,13 @@ export const useGameLogic = ({
     togglePause: timer.togglePause,
     startGame: timer.startGame,
     handleAction,
-    restartGame,
+    restartGame: resetGame,
     getCurrentPlayerName,
     setPlayerNames,
     playerNames,
     visualEffect,
     targetOffset,
     gameVariant,
-    // Survival props
     lives: survival.lives,
     speedMultiplier: survival.speedMultiplier,
     survivalThreshold: survival.survivalThreshold,
@@ -592,7 +602,6 @@ export const useGameLogic = ({
     hasShield: survival.hasShield,
     activeCurse: survival.activeCurse,
     redTarget: survival.redTarget,
-    // Time Attack Props
     combo,
     multiplier,
     timeTargetWidth: targetWidth,

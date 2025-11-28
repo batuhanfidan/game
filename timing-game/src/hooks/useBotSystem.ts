@@ -30,37 +30,52 @@ export const useBotSystem = ({
   setVisualEffect,
   setActionMessage,
 }: UseBotSystemProps) => {
-  const latestState = useRef({
+  const stateRef = useRef({
     playerTimes,
     botAccuracy,
+    gameState,
+    currentPlayer,
+    isPaused,
   });
 
-  // Her render'da ref'i güncelle (ama re-render tetikleme)
   useEffect(() => {
-    latestState.current = { playerTimes, botAccuracy };
-  }, [playerTimes, botAccuracy]);
+    stateRef.current = {
+      playerTimes,
+      botAccuracy,
+      gameState,
+      currentPlayer,
+      isPaused,
+    };
+  }, [playerTimes, botAccuracy, gameState, currentPlayer, isPaused]);
 
   useEffect(() => {
-    // Temel şartlar sağlanmıyorsa çık
     if (
       gameMode !== "bot" ||
       gameState !== "playing" ||
       currentPlayer !== "p2" ||
       isPaused
-    )
+    ) {
       return;
+    }
 
-    // Zaman bittiyse oynama (Ref üzerinden kontrol)
-    if (latestState.current.playerTimes.p2 <= 0) return;
+    // Botun süresi bittiyse oynama
+    if (stateRef.current.playerTimes.p2 <= 0) return;
 
     const timer = setTimeout(() => {
-      const currentAccuracy = latestState.current.botAccuracy;
+      // Oynama anında tekrar kontrol et
+      if (
+        stateRef.current.gameState !== "playing" ||
+        stateRef.current.isPaused ||
+        stateRef.current.playerTimes.p2 <= 0
+      ) {
+        return;
+      }
+
+      const currentAccuracy = stateRef.current.botAccuracy;
 
       // Hata payı hesaplama
-      const baseErrorRange = 1000; // En kötü botun yapabileceği max hata aralığı (ms)
-      const minErrorBuffer = 15; // En iyi botun bile sahip olduğu minimal insan hatası
-
-      // Formül:
+      const baseErrorRange = 1000;
+      const minErrorBuffer = 15;
       const maxError =
         Math.floor(baseErrorRange * (1 - currentAccuracy)) + minErrorBuffer;
 
@@ -68,10 +83,9 @@ export const useBotSystem = ({
 
       playSound("kick");
       const { result, message, isGoal } = calculateShotResult(error);
-      const isSuccess = isGoal;
       const displayMs = String(Math.floor(error / 10)).padStart(2, "0");
 
-      if (isSuccess) {
+      if (isGoal) {
         playSound("goal");
         setVisualEffect({ type: "goal", player: "p2" });
         setActionMessage(`🤖 Bot: ${message} (${displayMs}ms)`);
@@ -83,9 +97,12 @@ export const useBotSystem = ({
           player: "p2",
         });
         setActionMessage(
-          `🤖 Bot: ${isGoal ? "Golü kaçırdı!" : message} (${displayMs}ms)`
+          `🤖 Bot: ${
+            result === "GOL" ? "Golü kaçırdı!" : message
+          } (${displayMs}ms)`
         );
       }
+
       handleTurnSwitch();
     }, botReactionTime);
 
@@ -95,8 +112,8 @@ export const useBotSystem = ({
     currentPlayer,
     gameMode,
     botReactionTime,
-    handleTurnSwitch,
     isPaused,
+    handleTurnSwitch,
     setScores,
     setVisualEffect,
     setActionMessage,

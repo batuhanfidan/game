@@ -11,7 +11,7 @@ interface UseGameTimerProps {
   speedMultiplier: number;
   isFeverActive: boolean;
   activeCurse: CurseType | null;
-  onGameStart: () => void; // Oyun başladığında tetiklenecek (round randomize vb.)
+  onGameStart: () => void;
 }
 
 export const useGameTimer = ({
@@ -30,6 +30,7 @@ export const useGameTimer = ({
 
   const startTimeRef = useRef<number>(0);
   const pauseStartTimeRef = useRef<number>(0);
+  const animationFrameRef = useRef<number>(0);
 
   const startGame = useCallback(() => {
     let count = 3;
@@ -46,7 +47,7 @@ export const useGameTimer = ({
         setGameState("playing");
         playSound("whistle");
         startTimeRef.current = Date.now();
-        onGameStart(); // Logic tarafındaki randomizeRound vb. tetikler
+        onGameStart();
       }
     }, 1000);
   }, [setGameState, onGameStart]);
@@ -61,12 +62,16 @@ export const useGameTimer = ({
     setIsPaused(false);
     startTimeRef.current = 0;
     pauseStartTimeRef.current = 0;
+    if (animationFrameRef.current)
+      cancelAnimationFrame(animationFrameRef.current);
   }, []);
 
   // Pause Mantığı
   useEffect(() => {
     if (isPaused) {
       pauseStartTimeRef.current = Date.now();
+      if (animationFrameRef.current)
+        cancelAnimationFrame(animationFrameRef.current);
     } else if (pauseStartTimeRef.current > 0) {
       const pausedDuration = Date.now() - pauseStartTimeRef.current;
       startTimeRef.current += pausedDuration;
@@ -74,15 +79,19 @@ export const useGameTimer = ({
     }
   }, [isPaused]);
 
-  // --- ANA ZAMANLAYICI ---
+  // --- REQUEST ANIMATION FRAME TABANLI ZAMANLAYICI ---
   useEffect(() => {
-    if (gameState !== "playing" || isPaused) return;
+    if (gameState !== "playing" || isPaused) {
+      if (animationFrameRef.current)
+        cancelAnimationFrame(animationFrameRef.current);
+      return;
+    }
 
     if (startTimeRef.current === 0) {
       startTimeRef.current = Date.now();
     }
 
-    const interval = setInterval(() => {
+    const animate = () => {
       const now = Date.now();
       const elapsed = now - startTimeRef.current;
 
@@ -103,9 +112,15 @@ export const useGameTimer = ({
       }
 
       setGameTimeMs(visualTime);
-    }, 10);
+      animationFrameRef.current = requestAnimationFrame(animate);
+    };
 
-    return () => clearInterval(interval);
+    animationFrameRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationFrameRef.current)
+        cancelAnimationFrame(animationFrameRef.current);
+    };
   }, [
     gameState,
     isPaused,
