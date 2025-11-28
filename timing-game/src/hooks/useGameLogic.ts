@@ -15,6 +15,7 @@ import { useSurvivalSystem } from "./useSurvivalSystem";
 import { useGameTimer } from "./useGameTimer";
 import { useBotSystem } from "./useBotSystem";
 import { useTimeAttackSystem } from "./useTimeAttackSystem";
+import type { CurseType } from "./useSurvivalSystem";
 
 interface UseGameLogicProps {
   initialTime?: number;
@@ -24,6 +25,7 @@ interface UseGameLogicProps {
   botAccuracy?: number;
 }
 
+// Popup Tipi Tanımlaması
 interface TimeChangePopup {
   id: number;
   value: number;
@@ -57,6 +59,7 @@ export const useGameLogic = ({
     null
   );
 
+  // Type-safe Popup State
   const [timeChangePopup, setTimeChangePopup] =
     useState<TimeChangePopup | null>(null);
 
@@ -108,6 +111,15 @@ export const useGameLogic = ({
     randomizeRound();
   }, [gameMode, playerNames, randomizeRound]);
 
+  // Lanet aktifken hedefin hareket etmesini sağlayan fonksiyon
+  const handleTimerUpdate = useCallback(() => {
+    if (survival.activeCurse === "MOVING_TARGET") {
+      const now = Date.now();
+      const newTarget = 500 + 350 * Math.sin(now / 500);
+      setTargetOffset(newTarget);
+    }
+  }, [survival.activeCurse]);
+
   const timer = useGameTimer({
     gameState,
     setGameState,
@@ -117,6 +129,7 @@ export const useGameLogic = ({
     isFeverActive: survival.isFeverActive,
     activeCurse: survival.activeCurse,
     onGameStart: handleGameStartLogic,
+    onUpdate: handleTimerUpdate,
   });
 
   const getHighScoreKey = useCallback(
@@ -231,7 +244,7 @@ export const useGameLogic = ({
     randomizeRound();
   }, [gameMode, randomizeRound]);
 
-  // Zaman Sayacı (Fix Memory Leak & Cleanup)
+  // Zaman Sayacı
   useEffect(() => {
     if (gameState !== "playing" || timer.isPaused) return;
     if (gameMode === "time_attack" && timeFeverActive) return;
@@ -446,21 +459,32 @@ export const useGameLogic = ({
         const bonus = survival.isFeverActive && isCritical ? 3 : 1;
         const newStreak = prevStreak + bonus;
 
-        // Use Constants
         if (newStreak % SURVIVAL_CONSTANTS.SPEED_INCREASE_INTERVAL === 0) {
           survival.setSpeedMultiplier((s) => Math.min(s + 0.05, 2.5));
           survival.setSurvivalThreshold((t) => Math.max(30, t * 0.95));
         }
 
+        // Lanet Seçim Mantığı
         if (
           newStreak > 0 &&
           newStreak % SURVIVAL_CONSTANTS.CURSE_INTERVAL === 0
         ) {
           survival.setCursedRemaining(3);
-          const nextCurse = Math.random() < 0.5 ? "REVERSE" : "UNSTABLE";
+
+          // 3 Lanet türü arasından rastgele seçim
+          const rand = Math.random();
+          let nextCurse: CurseType = "REVERSE";
+          if (rand < 0.33) nextCurse = "REVERSE";
+          else if (rand < 0.66) nextCurse = "UNSTABLE";
+          else nextCurse = "MOVING_TARGET";
+
           survival.setActiveCurse(nextCurse);
-          const curseName =
-            nextCurse === "REVERSE" ? "TERS AKINTI" : "DENGESİZ HIZ";
+
+          let curseName = "";
+          if (nextCurse === "REVERSE") curseName = "TERS AKINTI";
+          else if (nextCurse === "UNSTABLE") curseName = "DENGESİZ HIZ";
+          else curseName = "GEZİCİ HEDEF";
+
           setActionMessage(`⚠️ LANET BAŞLIYOR: ${curseName}!`);
         } else if (survival.cursedRemaining > 0) {
           const nextRemaining = Math.max(0, survival.cursedRemaining - 1);
@@ -471,12 +495,14 @@ export const useGameLogic = ({
           }
         }
 
-        const nextGreenTarget =
-          newStreak > 5 ? Math.floor(Math.random() * 800) + 100 : 0;
-        setTargetOffset(nextGreenTarget);
+        if (survival.activeCurse !== "MOVING_TARGET") {
+          const nextGreenTarget =
+            newStreak > 5 ? Math.floor(Math.random() * 800) + 100 : 0;
+          setTargetOffset(nextGreenTarget);
 
-        const newRed = survival.generateRedTarget(nextGreenTarget);
-        survival.setRedTarget(newRed);
+          const newRed = survival.generateRedTarget(nextGreenTarget);
+          survival.setRedTarget(newRed);
+        }
 
         if (successMessage) {
           setActionMessage(successMessage);
@@ -538,6 +564,7 @@ export const useGameLogic = ({
     processHit,
   ]);
 
+  // Klavye Çakışması Fix (Input check)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Eğer kullanıcı bir input'a yazı yazıyorsa, oyun tuşlarını dinleme
@@ -553,7 +580,7 @@ export const useGameLogic = ({
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleAction, gameState, timer.isPaused, timer.togglePause]);
+  }, [handleAction, gameState, timer.isPaused, timer.togglePause, timer]);
 
   useBotSystem({
     gameMode,
