@@ -219,7 +219,7 @@ const SurvivalMode = () => {
                   className={`h-full transition-all duration-300 ease-out ${
                     isFeverActive
                       ? "bg-[#f59e0b] w-full animate-pulse"
-                      : "bg-linear-to-rrom-[#f59e0b] to-[#ef4444]"
+                      : "bg-linear-to-r from-[#f59e0b] to-[#ef4444]"
                   }`}
                   style={{ width: isFeverActive ? "100%" : `${adrenaline}%` }}
                 />
