@@ -47,6 +47,9 @@ const TimeAttackMode = () => {
 
   const handleBackToMenu = () => navigate("/", { replace: true });
 
+  const isLowTime = playerTimes.p1 <= 10;
+  const isFever = timeFeverActive; // Hook'tan gelen değer
+
   useEffect(() => {
     if (playerReady && gameState === "idle") startGame();
   }, [playerReady, gameState, startGame]);
@@ -107,6 +110,25 @@ const TimeAttackMode = () => {
       isTwoPlayerMode={false}
       bottomInfo="HARDCORE TIME ATTACK"
     >
+      {/* Arka Plan Efekti - Düşük Süre Uyarısı */}
+      <div
+        className={`fixed inset-0 pointer-events-none transition-opacity duration-500 z-0
+        ${isLowTime ? "opacity-100" : "opacity-0"}
+      `}
+      >
+        <div className="absolute inset-0 bg-red-900/20 animate-pulse"></div>
+        <div className="absolute inset-0 border-4 border-red-600/50 blur-md"></div>
+      </div>
+
+      {/* Fever Efekti - Buzlanma/Donma Efekti */}
+      <div
+        className={`fixed inset-0 pointer-events-none transition-opacity duration-500 z-0
+        ${isFever ? "opacity-100" : "opacity-0"}
+      `}
+      >
+        <div className="absolute inset-0 bg-cyan-400/10 mix-blend-screen"></div>
+        <div className="absolute top-0 w-full h-1 bg-cyan-400 shadow-[0_0_20px_rgba(34,211,238,1)]"></div>
+      </div>
       {/* Hazırlık */}
       {gameState === "idle" && !countdown && (
         <div className="flex flex-col items-center gap-6 z-20 bg-black/60 p-10 rounded-3xl border border-cyan-900/30 shadow-2xl max-w-sm w-full mx-4 backdrop-blur-xl">
