@@ -6,6 +6,7 @@ import PauseMenu from "./PauseMenu";
 import RulesModal from "./RulesModel";
 import { toggleMute, getMuteStatus } from "../../utils/sound";
 import type { GameState, VisualEffectData, Player } from "../../types";
+import { Volume2, VolumeX } from "lucide-react";
 
 interface GameLayoutProps {
   children: ReactNode;
@@ -96,7 +97,7 @@ const GameLayout: React.FC<GameLayoutProps> = ({
             onClick={handleMuteToggle}
             className="bg-gray-700 hover:bg-gray-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-xl font-bold shadow-md"
           >
-            {isMuted ? "🔇" : "🔊"}
+            {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
           </button>
           {showThemeButton && onThemeChange && (
             <button
