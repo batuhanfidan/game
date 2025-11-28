@@ -442,7 +442,7 @@ export const useGameLogic = ({
           playSound("goal");
           setVisualEffect({ type: "goal", player: currentPlayer });
           survival.setAdrenaline((prev) => {
-            const newValue = Math.min(prev + 100, 100);
+            const newValue = Math.min(prev + 35, 100);
             if (newValue >= 100) {
               survival.setIsFeverActive(true);
               playSound("whistle");
@@ -516,7 +516,7 @@ export const useGameLogic = ({
         } else if (survival.isFeverActive) {
           setActionMessage(`🔥 FEVER MODU!`);
         } else if (isCritical) {
-          setActionMessage(`🔥 KRİTİK! (+%20 Adrenalin)`);
+          setActionMessage(`🔥 KRİTİK! (+%35 Adrenalin)`);
         } else {
           setActionMessage(`GÜZEL! (Seri: ${newStreak})`);
         }
