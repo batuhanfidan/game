@@ -50,7 +50,7 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({
   return (
     <div className="flex flex-col items-center w-full max-w-lg px-4">
       <div
-        className={`text-5xl sm:text-7xl font-black text-center my-6 font-mono tracking-widest text-[#e4e4e7] drop-shadow-[0_0_15px_rgba(255,255,255,0.1)] transition-opacity duration-300 ${
+        className={`text-5xl sm:text-7xl md:text-8xl font-black text-center my-6 font-mono tracking-widest text-[#e4e4e7] drop-shadow-[0_0_15px_rgba(255,255,255,0.1)] transition-opacity duration-300 ${
           isGhostHidden ? "opacity-0" : "opacity-100"
         }`}
       >
@@ -60,7 +60,7 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({
       {showProgressBar && (
         <>
           <div
-            className={`w-full h-10 bg-[#27272a] rounded-full overflow-hidden relative border-2 border-[#09090b] shadow-[inset_0_2px_8px_rgba(0,0,0,0.6)] mt-2 transition-opacity duration-300 ${
+            className={`w-full h-10 md:h-12 bg-[#27272a] rounded-full overflow-hidden relative border-2 border-[#09090b] shadow-[inset_0_2px_8px_rgba(0,0,0,0.6)] mt-2 transition-opacity duration-300 ${
               isGhostHidden ? "opacity-0" : "opacity-100"
             }`}
             style={{
