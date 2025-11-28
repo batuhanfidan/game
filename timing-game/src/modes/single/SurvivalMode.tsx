@@ -219,7 +219,7 @@ const SurvivalMode = () => {
                   className={`h-full transition-all duration-300 ease-out ${
                     isFeverActive
                       ? "bg-[#f59e0b] w-full animate-pulse"
-                      : "bg-linear-to-rrom-[#f59e0b] to-[#ef4444]"
+                      : "bg-linear-to-r from-[#f59e0b] to-[#ef4444]"
                   }`}
                   style={{ width: isFeverActive ? "100%" : `${adrenaline}%` }}
                 />
@@ -233,6 +233,7 @@ const SurvivalMode = () => {
               goldenThreshold={goldenThreshold}
               isCursed={activeCurse === "REVERSE"}
               redTarget={redTarget}
+              disableTransition={activeCurse === "MOVING_TARGET"}
             />
 
             {/* Lanet Uyarısı */}
@@ -241,13 +242,17 @@ const SurvivalMode = () => {
                 className={`mt-4 flex items-center gap-2 px-6 py-2 rounded-full font-bold text-sm animate-pulse border ${
                   activeCurse === "REVERSE"
                     ? "bg-[#ef4444]/10 text-[#ef4444] border-[#ef4444]/50"
-                    : "bg-[#f59e0b]/10 text-[#f59e0b] border-[#f59e0b]/50"
+                    : activeCurse === "UNSTABLE"
+                    ? "bg-[#f59e0b]/10 text-[#f59e0b] border-[#f59e0b]/50"
+                    : "bg-[#a855f7]/10 text-[#a855f7] border-[#a855f7]/50"
                 }`}
               >
                 <AlertTriangle size={18} />
                 {activeCurse === "REVERSE"
                   ? "LANET: TERS AKINTI"
-                  : "LANET: DENGESİZ HIZ"}
+                  : activeCurse === "UNSTABLE"
+                  ? "LANET: DENGESİZ HIZ"
+                  : "LANET: GEZİCİ HEDEF"}
               </div>
             )}
           </div>
