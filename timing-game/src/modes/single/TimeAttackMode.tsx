@@ -7,7 +7,7 @@ import GameOverModal from "../../components/common/GameOverModal";
 import GameLayout from "../../components/layout/GameLayout";
 import { useGameLogic } from "../../hooks/useGameLogic";
 import { THEMES } from "../../utils/constants";
-import { Timer, ArrowLeft, Trophy } from "lucide-react";
+import { Timer, ArrowLeft, Trophy, Flame } from "lucide-react";
 
 const TimeAttackMode = () => {
   const navigate = useNavigate();
@@ -32,6 +32,14 @@ const TimeAttackMode = () => {
     visualEffect,
     isPaused,
     togglePause,
+    targetOffset, // <-- GEZGİN BAR POZİSYONU
+    // Time Attack Propsları:
+    combo,
+    multiplier,
+    timeTargetWidth,
+    timeBossActive,
+    timeBossPosition,
+    timeFeverActive,
   } = useGameLogic({
     gameMode: "time_attack",
     initialTime: 60,
@@ -48,11 +56,39 @@ const TimeAttackMode = () => {
   }, [gameState]);
 
   const scoreDisplay = (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center animate-fade-in">
       <div className="text-5xl font-black text-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.4)] tracking-tighter flex items-center gap-3">
         <Trophy size={48} /> {scores.p1}
       </div>
-      <div className="text-s text-gray-500 mt-2 bg-black/40 px-4 py-1 rounded-full border border-white/5 backdrop-blur-md">
+
+      {/* Kombo Göstergesi */}
+      {combo > 1 && (
+        <div
+          className={`flex items-center gap-2 mt-2 transition-all duration-300 ${
+            timeFeverActive ? "animate-bounce scale-110" : ""
+          }`}
+        >
+          <span
+            className={`text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg border ${
+              timeFeverActive
+                ? "bg-red-600 border-red-400"
+                : "bg-orange-500 border-orange-400"
+            }`}
+          >
+            {combo} KOMBO
+          </span>
+          {timeFeverActive && (
+            <span className="bg-yellow-500 text-black text-xs font-bold px-3 py-1 rounded-full shadow-lg border border-yellow-300 animate-pulse flex items-center gap-1">
+              <Flame size={12} fill="black" /> FEVER!
+            </span>
+          )}
+          <span className="bg-purple-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg border border-purple-400">
+            {multiplier}x PUAN
+          </span>
+        </div>
+      )}
+
+      <div className="text-xs text-gray-500 mt-2 bg-black/40 px-4 py-1 rounded-full border border-white/5 backdrop-blur-md">
         EN YÜKSEK: <span className="text-gray-300 font-bold">{highScore}</span>
       </div>
     </div>
@@ -69,7 +105,7 @@ const TimeAttackMode = () => {
       currentTheme={currentTheme}
       showThemeButton={false}
       isTwoPlayerMode={false}
-      bottomInfo="TIME ATTACK MODE"
+      bottomInfo="HARDCORE TIME ATTACK"
     >
       {/* Hazırlık */}
       {gameState === "idle" && !countdown && (
@@ -77,11 +113,11 @@ const TimeAttackMode = () => {
           <h2 className="text-2xl font-black text-cyan-400 tracking-widest uppercase drop-shadow-md flex items-center gap-3">
             <Timer size={28} /> ZAMANA KARŞI
           </h2>
-          <p className="text-center text-gray-400 text-sm leading-relaxed">
-            60 Saniye içinde
-            <br />
-            atabildiğin kadar gol at!
-          </p>
+          <div className="text-center text-gray-400 text-sm leading-relaxed space-y-2">
+            <p>Hedefi tam ortadan vur!</p>
+            <p className="text-green-400 font-bold">GOL = SÜRE KAZAN</p>
+            <p className="text-red-400 font-bold">ISKA = SÜRE KAYBET</p>
+          </div>
           <button
             onClick={() => setPlayerReady(true)}
             disabled={playerReady}
@@ -106,19 +142,35 @@ const TimeAttackMode = () => {
           </div>
         </div>
       )}
+
       {/* Oyun Alanı */}
       {gameState === "playing" && (
         <>
           <div className="absolute top-36 w-full flex justify-center opacity-90 z-0">
             <PlayerTimer
-              player="⏱️ KALAN SÜRE"
+              player={
+                <span
+                  className={
+                    playerTimes.p1 < 10
+                      ? "text-red-500 animate-pulse font-bold"
+                      : "text-white"
+                  }
+                >
+                  ⏱️ KALAN SÜRE
+                </span>
+              }
               minutes={Math.floor(playerTimes.p1 / 60)}
               seconds={playerTimes.p1 % 60}
             />
           </div>
 
-          <div className="mt-32">
-            <TimerDisplay totalMs={gameTimeMs} />
+          <div className="mt-32 w-full flex justify-center">
+            <TimerDisplay
+              totalMs={gameTimeMs}
+              targetOffset={targetOffset}
+              threshold={timeTargetWidth}
+              redTarget={timeBossActive ? timeBossPosition : null}
+            />
           </div>
 
           <div className="text-lg md:text-2xl mt-8 text-center font-medium px-4 h-8 text-cyan-300 tracking-wide drop-shadow-sm">
@@ -129,7 +181,8 @@ const TimeAttackMode = () => {
             <ActionButton
               onClick={handleAction}
               disabled={isPaused}
-              customColor="bg-slate-800 border border-cyan-500/50 text-cyan-100 hover:bg-slate-700 hover:border-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.15)]"
+              customText="VUR!"
+              customColor="bg-slate-800 border border-cyan-500/50 text-cyan-100 hover:bg-slate-700 hover:border-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.15)] active:bg-cyan-900"
             />
           </div>
 

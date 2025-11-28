@@ -14,6 +14,7 @@ import type {
 import { useSurvivalSystem } from "./useSurvivalSystem";
 import { useGameTimer } from "./useGameTimer";
 import { useBotSystem } from "./useBotSystem";
+import { useTimeAttackSystem } from "./useTimeAttackSystem";
 
 interface UseGameLogicProps {
   initialTime?: number;
@@ -50,24 +51,28 @@ export const useGameLogic = ({
     null
   );
 
-  // --- 1. SURVIVAL SİSTEMİ ---
-  // DÜZELTME: Parametre kaldırıldı
+  // --- ALT SİSTEMLER ---
   const survival = useSurvivalSystem();
+  const timeAttack = useTimeAttackSystem();
 
-  // --- 2. ZAMANLAYICI SİSTEMİ İÇİN GEREKLİ YARDIMCI FONKSİYONLAR ---
+  // --- ZAMANLAYICI SİSTEMİ VE GEZGİN BAR ---
   const randomizeRound = useCallback(() => {
+    // Görsel offset (başlangıç noktası)
     if (gameVariant === "random") {
       setRoundOffset(Math.floor(Math.random() * 800));
     } else {
       setRoundOffset(0);
     }
 
-    if (gameVariant === "moving") {
-      setTargetOffset(Math.floor(Math.random() * 800));
+    // Hedef offset (vuruş noktası)
+
+    if (gameVariant === "moving" || gameMode === "time_attack") {
+      // 100ms ile 900ms arasında güvenli bir alan
+      setTargetOffset(Math.floor(Math.random() * 800) + 100);
     } else {
       setTargetOffset(0);
     }
-  }, [gameVariant]);
+  }, [gameVariant, gameMode]);
 
   const handleGameStartLogic = useCallback(() => {
     if (gameMode === "survival" || gameMode === "time_attack") {
@@ -146,7 +151,8 @@ export const useGameLogic = ({
     setVisualEffect(null);
 
     survival.resetSurvivalState();
-  }, [startDuration, timer, survival]);
+    timeAttack.resetSystem();
+  }, [startDuration, timer, survival, timeAttack]);
 
   const finishGame = useCallback(() => {
     setGameState("finished");
@@ -186,9 +192,9 @@ export const useGameLogic = ({
     gameMode,
     highScore,
     playerNames,
-    survival.streak,
     updateHighScore,
     timer,
+    survival,
   ]);
 
   const handleTurnSwitch = useCallback(() => {
@@ -293,6 +299,44 @@ export const useGameLogic = ({
     playSound("kick");
 
     const currentMs = timer.gameTimeMs % 1000;
+
+    // --- TIME ATTACK MANTIĞI (BINARY & TIME BANK) ---
+    if (gameMode === "time_attack") {
+      // processHit fonksiyonu artık kendi kararını veriyor
+      const { isGoal, isGoldenHit, timeBonus, scoreBonus, message, isBlocked } =
+        timeAttack.processHit(currentMs, targetOffset);
+
+      setActionMessage(message);
+
+      if (isGoal) {
+        playSound("goal");
+        setVisualEffect({ type: "goal", player: currentPlayer });
+
+        // Skor ve Süre
+        setScores((s) => ({ ...s, p1: s.p1 + scoreBonus }));
+        setPlayerTimes((prev) => ({ ...prev, p1: prev.p1 + timeBonus }));
+
+        if (isGoldenHit) {
+          triggerWinConfetti(); // Altın vuruşta konfeti
+        }
+      } else {
+        if (isBlocked) {
+          playSound("miss");
+          setVisualEffect({ type: "save", player: currentPlayer });
+        } else {
+          playSound("miss");
+          setVisualEffect({ type: "miss", player: currentPlayer });
+        }
+        // Ceza (Sıfırın altına düşmesin)
+        setPlayerTimes((prev) => ({
+          ...prev,
+          p1: Math.max(0, prev.p1 + timeBonus),
+        }));
+      }
+
+      handleTurnSwitch(); // Gezgin bar için yer değişimi
+      return;
+    }
 
     // --- SURVIVAL MANTIĞI ---
     if (gameMode === "survival") {
@@ -421,7 +465,7 @@ export const useGameLogic = ({
       return;
     }
 
-    // --- DİĞER MODLAR ---
+    // --- CLASSIC / BOT MODLAR ---
     const distance = Math.abs(currentMs - targetOffset);
     const displayMs = String(Math.floor(distance / 10)).padStart(2, "0");
 
@@ -454,6 +498,7 @@ export const useGameLogic = ({
     playerTimes,
     playerNames,
     survival,
+    timeAttack,
   ]);
 
   // --- KEYBOARD ---
@@ -518,5 +563,12 @@ export const useGameLogic = ({
     hasShield: survival.hasShield,
     activeCurse: survival.activeCurse,
     redTarget: survival.redTarget,
+    // Time Attack Props
+    combo: timeAttack.combo,
+    multiplier: timeAttack.multiplier,
+    timeTargetWidth: timeAttack.targetWidth,
+    timeBossActive: timeAttack.bossActive,
+    timeBossPosition: timeAttack.bossPosition,
+    timeFeverActive: timeAttack.isFeverActive,
   };
 };
