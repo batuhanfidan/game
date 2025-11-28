@@ -50,23 +50,52 @@ export const useGameLogic = ({
     null
   );
 
+  // Time Attack Popup State
+  const [timeChangePopup, setTimeChangePopup] = useState<{
+    id: number;
+    value: number;
+    type: "positive" | "negative";
+  } | null>(null);
+
   // --- ALT SİSTEMLER ---
   const survival = useSurvivalSystem();
   const timeAttack = useTimeAttackSystem();
 
+  // DÜZELTME: timeAttack objesini parçalayarak (destructuring) alıyoruz.
+  // Bu sayede dependency array'e kararsız 'timeAttack' objesi yerine
+  // kararlı (stable) olan 'spawnBoss' ve 'processHit' fonksiyonlarını verebiliyoruz.
+  const {
+    spawnBoss,
+    processHit,
+    isFever: timeFeverActive,
+    combo,
+    multiplier,
+    targetWidth,
+    bossActive,
+    bossPosition,
+  } = timeAttack;
+
   const randomizeRound = useCallback(() => {
+    // Time Attack modunda yeşil barın konumu değiştikçe Boss'u da spawn et
+    if (gameMode === "time_attack") {
+      const nextTarget = Math.floor(Math.random() * 800) + 100;
+      setTargetOffset(nextTarget);
+      spawnBoss(nextTarget); // timeAttack.spawnBoss yerine direkt spawnBoss
+      return;
+    }
+
     if (gameVariant === "random") {
       setRoundOffset(Math.floor(Math.random() * 800));
     } else {
       setRoundOffset(0);
     }
 
-    if (gameVariant === "moving" || gameMode === "time_attack") {
+    if (gameVariant === "moving") {
       setTargetOffset(Math.floor(Math.random() * 800) + 100);
     } else {
       setTargetOffset(0);
     }
-  }, [gameVariant, gameMode]);
+  }, [gameVariant, gameMode, spawnBoss]); // timeAttack yerine spawnBoss eklendi (Stabil)
 
   const handleGameStartLogic = useCallback(() => {
     if (gameMode === "survival" || gameMode === "time_attack") {
@@ -86,19 +115,10 @@ export const useGameLogic = ({
     gameVariant,
     roundOffset,
     speedMultiplier: survival.speedMultiplier,
-    isFeverActive: survival.isFeverActive, // Survival fever'ı
+    isFeverActive: survival.isFeverActive,
     activeCurse: survival.activeCurse,
     onGameStart: handleGameStartLogic,
   });
-
-  // Time Attack Fever'ı sırasında zamanı durdurma mantığı
-  // (Timer hook'una dışarıdan pause sinyali gönderebiliriz veya manuel pause yaparız)
-  useEffect(() => {
-    if (gameMode === "time_attack" && timeAttack.isFever) {
-      // Burada timer'ı durdurmak için mantık eklenebilir.
-      // Şimdilik sadece görsel feedback veriyoruz.
-    }
-  }, [gameMode, timeAttack.isFever]);
 
   const getHighScoreKey = useCallback(
     () => `timing-game-highscore-${gameMode}-${gameVariant}`,
@@ -149,6 +169,7 @@ export const useGameLogic = ({
     setTurnTimeLeft(10);
     setActionMessage("");
     setVisualEffect(null);
+    setTimeChangePopup(null);
 
     survival.resetSurvivalState();
     timeAttack.resetSystem();
@@ -207,12 +228,12 @@ export const useGameLogic = ({
     randomizeRound();
   }, [gameMode, randomizeRound]);
 
-  // Zaman Sayacı (Saniye Azaltma)
+  // Zaman Sayacı
   useEffect(() => {
     if (gameState !== "playing" || timer.isPaused) return;
 
     // Time Attack Fever modunda süre azalmaz!
-    if (gameMode === "time_attack" && timeAttack.isFever) return;
+    if (gameMode === "time_attack" && timeFeverActive) return;
 
     const interval = setInterval(() => {
       setTurnTimeLeft((prev) => Math.max(0, prev - 1));
@@ -227,8 +248,9 @@ export const useGameLogic = ({
       });
     }, 1000);
     return () => clearInterval(interval);
-  }, [gameState, currentPlayer, timer.isPaused, gameMode, timeAttack.isFever]);
+  }, [gameState, currentPlayer, timer.isPaused, gameMode, timeFeverActive]);
 
+  // Oyun Bitiş Kontrolleri
   useEffect(() => {
     if (gameState !== "playing" || timer.isPaused) return;
 
@@ -247,7 +269,7 @@ export const useGameLogic = ({
           setActionMessage("⏰ SÜRE DOLDU! Elendin.");
           finishGame();
         }
-      } else {
+      } else if (gameMode !== "time_attack") {
         setActionMessage(`${playerNames[currentPlayer]} süresini doldurdu!`);
         playSound("miss");
         setVisualEffect({ type: "miss", player: currentPlayer });
@@ -282,6 +304,14 @@ export const useGameLogic = ({
     }
   }, [visualEffect]);
 
+  // Popup Timer'ı temizle
+  useEffect(() => {
+    if (timeChangePopup) {
+      const t = setTimeout(() => setTimeChangePopup(null), 1500);
+      return () => clearTimeout(t);
+    }
+  }, [timeChangePopup]);
+
   const getCurrentPlayerName = useCallback(
     () => playerNames[currentPlayer],
     [currentPlayer, playerNames]
@@ -303,41 +333,39 @@ export const useGameLogic = ({
 
     // --- TIME ATTACK MANTIĞI ---
     if (gameMode === "time_attack") {
-      const result = timeAttack.processHit(currentMs, targetOffset);
+      const result = processHit(currentMs, targetOffset);
 
       setActionMessage(result.message);
+
+      // Puan Güncelle
+      setScores((s) => ({ ...s, p1: s.p1 + result.scoreBonus }));
+
+      // Zaman Güncelle (Bonus veya Ceza)
+      if (result.timeBonus !== 0) {
+        setPlayerTimes((prev) => ({
+          ...prev,
+          p1: Math.max(0, prev.p1 + result.timeBonus),
+        }));
+        // Popup Tetikle
+        setTimeChangePopup({
+          id: Date.now(),
+          value: result.timeBonus,
+          type: result.timeBonus > 0 ? "positive" : "negative",
+        });
+      }
 
       if (result.isGoal) {
         playSound("goal");
         setVisualEffect({ type: "goal", player: currentPlayer });
-
-        setScores((s) => ({ ...s, p1: s.p1 + result.scoreBonus }));
-
-        if (result.timeBonus > 0) {
-          setPlayerTimes((prev) => ({
-            ...prev,
-            p1: prev.p1 + result.timeBonus,
-          }));
-        }
-
         if (result.isGolden) triggerWinConfetti();
-        if (result.shouldTriggerFever) playSound("whistle"); // Fever sesi
       } else {
-        if (result.message.includes("BLOK")) {
-          playSound("miss");
-          setVisualEffect({ type: "save", player: currentPlayer });
-        } else {
-          playSound("miss");
-          setVisualEffect({ type: "miss", player: currentPlayer });
-        }
-
-        if (result.timeBonus < 0) {
-          setPlayerTimes((prev) => ({
-            ...prev,
-            p1: Math.max(0, prev.p1 + result.timeBonus),
-          }));
-        }
+        // Bloklandıysa veya ıskaysa
+        playSound("miss");
+        const effectType = result.message.includes("KIRMIZI") ? "save" : "miss";
+        setVisualEffect({ type: effectType, player: currentPlayer });
       }
+
+      if (result.shouldTriggerFever) playSound("whistle");
 
       handleTurnSwitch();
       return;
@@ -468,6 +496,7 @@ export const useGameLogic = ({
       return;
     }
 
+    // --- KLASİK / BOT MANTIĞI ---
     const distance = Math.abs(currentMs - targetOffset);
     const displayMs = String(Math.floor(distance / 10)).padStart(2, "0");
 
@@ -500,7 +529,7 @@ export const useGameLogic = ({
     playerTimes,
     playerNames,
     survival,
-    timeAttack,
+    processHit, // timeAttack yerine processHit
   ]);
 
   useEffect(() => {
@@ -553,6 +582,7 @@ export const useGameLogic = ({
     visualEffect,
     targetOffset,
     gameVariant,
+    // Survival props
     lives: survival.lives,
     speedMultiplier: survival.speedMultiplier,
     survivalThreshold: survival.survivalThreshold,
@@ -563,11 +593,12 @@ export const useGameLogic = ({
     activeCurse: survival.activeCurse,
     redTarget: survival.redTarget,
     // Time Attack Props
-    combo: timeAttack.combo,
-    multiplier: timeAttack.multiplier,
-    timeTargetWidth: timeAttack.targetWidth,
-    timeBossActive: timeAttack.bossActive,
-    timeBossPosition: timeAttack.bossPosition,
-    timeFeverActive: timeAttack.isFever, // Güncellendi: timeAttack.isFever kullanılıyor
+    combo,
+    multiplier,
+    timeTargetWidth: targetWidth,
+    timeBossActive: bossActive,
+    timeBossPosition: bossPosition,
+    timeFeverActive: timeFeverActive,
+    timeChangePopup,
   };
 };

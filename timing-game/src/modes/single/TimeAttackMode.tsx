@@ -32,14 +32,14 @@ const TimeAttackMode = () => {
     visualEffect,
     isPaused,
     togglePause,
-    targetOffset, // <-- GEZGİN BAR POZİSYONU
-    // Time Attack Propsları:
+    targetOffset,
     combo,
     multiplier,
     timeTargetWidth,
     timeBossActive,
     timeBossPosition,
     timeFeverActive,
+    timeChangePopup, // Popup state'i
   } = useGameLogic({
     gameMode: "time_attack",
     initialTime: 60,
@@ -48,7 +48,7 @@ const TimeAttackMode = () => {
   const handleBackToMenu = () => navigate("/", { replace: true });
 
   const isLowTime = playerTimes.p1 <= 10;
-  const isFever = timeFeverActive; // Hook'tan gelen değer
+  const isFever = timeFeverActive;
 
   useEffect(() => {
     if (playerReady && gameState === "idle") startGame();
@@ -110,25 +110,29 @@ const TimeAttackMode = () => {
       isTwoPlayerMode={false}
       bottomInfo="HARDCORE TIME ATTACK"
     >
-      {/* Arka Plan Efekti - Düşük Süre Uyarısı */}
+      {/* Kritik Süre Efekti (Kırmızı yanıp sönen kenarlar) */}
       <div
-        className={`fixed inset-0 pointer-events-none transition-opacity duration-500 z-0
-        ${isLowTime ? "opacity-100" : "opacity-0"}
+        className={`fixed inset-0 pointer-events-none transition-all duration-500 z-0
+        ${isLowTime && gameState === "playing" ? "opacity-100" : "opacity-0"}
       `}
       >
-        <div className="absolute inset-0 bg-red-900/20 animate-pulse"></div>
-        <div className="absolute inset-0 border-4 border-red-600/50 blur-md"></div>
+        <div className="absolute inset-0 shadow-[inset_0_0_100px_rgba(220,38,38,0.6)] animate-pulse"></div>
+        <div className="absolute inset-0 border-4 border-red-600/50"></div>
       </div>
 
-      {/* Fever Efekti - Buzlanma/Donma Efekti */}
+      {/* Fever Efekti (Buz mavisi / Camgöbeği) */}
       <div
-        className={`fixed inset-0 pointer-events-none transition-opacity duration-500 z-0
+        className={`fixed inset-0 pointer-events-none transition-all duration-700 z-0
         ${isFever ? "opacity-100" : "opacity-0"}
       `}
       >
-        <div className="absolute inset-0 bg-cyan-400/10 mix-blend-screen"></div>
-        <div className="absolute top-0 w-full h-1 bg-cyan-400 shadow-[0_0_20px_rgba(34,211,238,1)]"></div>
+        {/* Soğuk Overlay */}
+        <div className="absolute inset-0 bg-cyan-500/10 mix-blend-screen animate-pulse"></div>
+        {/* Üst ve Alt Çerçeve Parlaması */}
+        <div className="absolute top-0 w-full h-2 bg-cyan-400 shadow-[0_0_40px_rgba(34,211,238,1)]"></div>
+        <div className="absolute bottom-0 w-full h-2 bg-cyan-400 shadow-[0_0_40px_rgba(34,211,238,1)]"></div>
       </div>
+
       {/* Hazırlık */}
       {gameState === "idle" && !countdown && (
         <div className="flex flex-col items-center gap-6 z-20 bg-black/60 p-10 rounded-3xl border border-cyan-900/30 shadow-2xl max-w-sm w-full mx-4 backdrop-blur-xl">
@@ -137,8 +141,8 @@ const TimeAttackMode = () => {
           </h2>
           <div className="text-center text-gray-400 text-sm leading-relaxed space-y-2">
             <p>Hedefi tam ortadan vur!</p>
-            <p className="text-green-400 font-bold">GOL = SÜRE KAZAN</p>
-            <p className="text-red-400 font-bold">ISKA = SÜRE KAYBET</p>
+            <p className="text-green-400 font-bold">GOL = PUAN & SÜRE</p>
+            <p className="text-red-400 font-bold">KIRMIZI = -10 SN CEZA!</p>
           </div>
           <button
             onClick={() => setPlayerReady(true)}
@@ -168,22 +172,40 @@ const TimeAttackMode = () => {
       {/* Oyun Alanı */}
       {gameState === "playing" && (
         <>
-          <div className="absolute top-36 w-full flex justify-center opacity-90 z-0">
-            <PlayerTimer
-              player={
-                <span
-                  className={
-                    playerTimes.p1 < 10
-                      ? "text-red-500 animate-pulse font-bold"
-                      : "text-white"
-                  }
+          <div className="absolute top-36 w-full flex justify-center opacity-90 z-10">
+            <div className="relative">
+              <PlayerTimer
+                player={
+                  <span
+                    className={
+                      playerTimes.p1 < 10
+                        ? "text-red-500 animate-pulse font-bold"
+                        : "text-white"
+                    }
+                  >
+                    ⏱️ KALAN SÜRE
+                  </span>
+                }
+                minutes={Math.floor(playerTimes.p1 / 60)}
+                seconds={playerTimes.p1 % 60}
+              />
+
+              {/* SÜRE DEĞİŞİM POPUP'I */}
+              {timeChangePopup && (
+                <div
+                  key={timeChangePopup.id}
+                  className={`absolute top-full left-1/2 -translate-x-1/2 mt-2 text-2xl font-black whitespace-nowrap animate-popup
+                    ${
+                      timeChangePopup.type === "positive"
+                        ? "text-green-400 drop-shadow-[0_0_10px_rgba(74,222,128,0.8)]"
+                        : "text-red-500 drop-shadow-[0_0_10px_rgba(239,68,68,0.8)]"
+                    }`}
                 >
-                  ⏱️ KALAN SÜRE
-                </span>
-              }
-              minutes={Math.floor(playerTimes.p1 / 60)}
-              seconds={playerTimes.p1 % 60}
-            />
+                  {timeChangePopup.type === "positive" ? "+" : ""}
+                  {timeChangePopup.value}sn
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="mt-32 w-full flex justify-center">
@@ -203,8 +225,12 @@ const TimeAttackMode = () => {
             <ActionButton
               onClick={handleAction}
               disabled={isPaused}
-              customText="VUR!"
-              customColor="bg-slate-800 border border-cyan-500/50 text-cyan-100 hover:bg-slate-700 hover:border-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.15)] active:bg-cyan-900"
+              customText={isFever ? "FEVER!" : "VUR!"}
+              customColor={
+                isFever
+                  ? "bg-cyan-600 hover:bg-cyan-500 border-2 border-white shadow-[0_0_20px_rgba(34,211,238,0.6)]"
+                  : "bg-slate-800 border border-cyan-500/50 text-cyan-100 hover:bg-slate-700 hover:border-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.15)] active:bg-cyan-900"
+              }
             />
           </div>
 

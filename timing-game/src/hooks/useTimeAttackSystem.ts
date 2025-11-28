@@ -3,7 +3,7 @@ import { useState, useCallback, useEffect } from "react";
 const INITIAL_TARGET_WIDTH = 150;
 const MIN_TARGET_WIDTH = 30;
 const SHRINK_RATE = 0.92;
-const BOSS_CHANCE_BASE = 0.3; // %30 Şansla Boss Gelir
+const BOSS_CHANCE_BASE = 0.4;
 const FEVER_DURATION_MS = 5000;
 const BOSS_WIDTH = 50;
 
@@ -44,21 +44,21 @@ export const useTimeAttackSystem = () => {
     }
   }, [isFever, feverEndTime]);
 
-  // Boss Spawn: Yeşilin hemen yanına koy
+  // Boss Spawn
   const spawnBoss = useCallback(
     (nextTarget: number) => {
-      const shouldSpawn = combo >= 5 && Math.random() < BOSS_CHANCE_BASE;
+      const shouldSpawn = combo >= 3 && Math.random() < BOSS_CHANCE_BASE;
 
       if (shouldSpawn) {
         setBossActive(true);
-        // Mesafe: (Yeşil Yarıçap) + (Kırmızı Yarıçap) + 10ms Güvenlik Payı
-        const distance = targetWidth / 2 + BOSS_WIDTH / 2 + 10;
+
+        const distance = targetWidth / 2 + BOSS_WIDTH / 2 + 2;
 
         let side = Math.random() < 0.5 ? 1 : -1;
 
-        // Ekrandan taşmaması için yönü düzelt
-        if (nextTarget - distance < 50) side = 1;
-        if (nextTarget + distance > 950) side = -1;
+        // Ekrandan taşmaması için yönü düzelt (0-1000 arası)
+        if (nextTarget - distance < 50) side = 1; // Soldan taşıyorsa sağa koy
+        if (nextTarget + distance > 950) side = -1; // Sağdan taşıyorsa sola koy
 
         setBossPosition(nextTarget + side * distance);
       } else {
@@ -88,8 +88,21 @@ export const useTimeAttackSystem = () => {
         shouldTriggerFever: false,
       };
 
-      // 1. KIRMIZIYA ÇARPMA (AĞIR CEZA)
-      if (isBlocked) {
+      // 1. FEVER KORUMASI VE KIRMIZIYA ÇARPMA
+      if (isFever) {
+        if (isBlocked) {
+          result.message = "🛡️ FEVER KALKANI KIRILDI!";
+          result.timeBonus = 0; // Ceza yok
+          setIsFever(false); // Fever biter
+          setFeverEndTime(null);
+          setBossActive(false);
+
+          return result;
+        }
+      }
+
+      // 2. KIRMIZIYA ÇARPMA (AĞIR CEZA - Normal Mod)
+      if (isBlocked && !isFever) {
         result.message = "🟥 DİREK KIRMIZI! (-10sn)";
         result.timeBonus = -10; // 10 saniye silinir
         result.isGoal = false;
@@ -97,25 +110,14 @@ export const useTimeAttackSystem = () => {
         setCombo(0);
         setMultiplier(1);
         setTargetWidth(INITIAL_TARGET_WIDTH);
-
-        // Fever Koruması
-        if (isFever) {
-          result.message = "🛡️ FEVER KORUDU!";
-          result.timeBonus = 0;
-          setIsFever(false); // Fever biter ama süre gitmez
-          setFeverEndTime(null);
-        }
-
         setBossActive(false);
         return result;
       }
 
-      // 2. ISKA (HAFİF CEZA)
+      // 3. ISKA (HAFİF CEZA)
       if (diff > halfWidth) {
         if (isFever) {
-          result.message = "🛡️ FEVER KORUDU!";
-          setIsFever(false);
-          setFeverEndTime(null);
+          result.message = "❄️ ISKA (Fever Aktif)";
         } else {
           result.message = "❌ ISKA! (-2sn)";
           result.timeBonus = -2;
@@ -127,7 +129,7 @@ export const useTimeAttackSystem = () => {
         return result;
       }
 
-      // 3. GOL (BAŞARILI)
+      // 4. GOL (BAŞARILI)
       result.isGoal = true;
       result.isGolden = diff <= 10;
 
@@ -138,21 +140,21 @@ export const useTimeAttackSystem = () => {
       const newMultiplier = Math.min(5, 1 + Math.floor(newCombo / 5) * 0.5);
       setMultiplier(newMultiplier);
 
-      // Puanlama: 1 veya 3 puan
+      // Puanlama: Normal +1, Altın +3
       const baseScore = result.isGolden ? 3 : 1;
-      result.scoreBonus = Math.floor(
-        baseScore * (isFever ? newMultiplier * 2 : newMultiplier)
-      );
+
+      result.scoreBonus = Math.floor(baseScore * newMultiplier);
 
       // Süre Kazanma
       if (result.isGolden) {
-        result.timeBonus = 2;
+        result.timeBonus = 2; // Altın vuruş +2sn
         result.message = "🌟 MÜKEMMEL! (+2sn)";
       } else if (newCombo % 5 === 0) {
-        result.timeBonus = 5;
-        result.message = `🔥 KOMBO! (+5sn)`;
+        result.timeBonus = 2; // Her 5 komboda +2sn
+        result.message = `🔥 KOMBO! (+2sn)`;
       } else {
         result.message = "GOL!";
+        result.timeBonus = 0; // Normal gol süre vermez, sadece puan
       }
 
       // Hedefi Daralt
