@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from "react";
 import { playSound } from "../utils/sound";
 import { SURVIVAL_CONSTANTS } from "../utils/constants";
 
-export type CurseType = "REVERSE" | "UNSTABLE";
+export type CurseType = "REVERSE" | "UNSTABLE" | "MOVING_TARGET";
 
 export const useSurvivalSystem = () => {
   const [lives, setLives] = useState(SURVIVAL_CONSTANTS.INITIAL_LIVES);

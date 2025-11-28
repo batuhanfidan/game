@@ -12,6 +12,7 @@ interface TimerDisplayProps {
   goldenThreshold?: number;
   isCursed?: boolean;
   redTarget?: number | null;
+  disableTransition?: boolean;
 }
 
 const TimerDisplay: React.FC<TimerDisplayProps> = ({
@@ -23,6 +24,7 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({
   goldenThreshold = 0,
   isCursed = false,
   redTarget = null,
+  disableTransition = false,
 }) => {
   const ms = totalMs % 1000;
   const percentage = (ms / 1000) * 100;
@@ -94,7 +96,12 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({
             )}
 
             <div
-              className="absolute top-0 h-full bg-[#10b981] z-20 border-x-2 border-white/50 shadow-[0_0_15px_rgba(16,185,129,0.6)] transition-all duration-300 ease-out"
+              className={`absolute top-0 h-full bg-[#10b981] z-20 border-x-2 border-white/50 shadow-[0_0_15px_rgba(16,185,129,0.6)] 
+                ${
+                  disableTransition
+                    ? ""
+                    : "transition-all duration-300 ease-out"
+                }`}
               style={{
                 left: `${targetPos}%`,
                 width: `${thresholdWidthPercent}%`,
