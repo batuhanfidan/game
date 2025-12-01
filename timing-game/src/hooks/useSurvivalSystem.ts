@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import { playSound } from "../utils/sound";
-import { SURVIVAL_CONSTANTS } from "../utils/constants";
+import { SURVIVAL_CONSTANTS, GAME_DELAYS } from "../utils/constants";
 
 export type CurseType = "REVERSE" | "UNSTABLE" | "MOVING_TARGET";
 
@@ -55,7 +55,7 @@ export const useSurvivalSystem = () => {
         setAdrenaline(0);
         setHasShield(true);
         playSound("whistle");
-      }, 5000);
+      }, GAME_DELAYS.FEVER_DURATION);
       return () => clearTimeout(timer);
     }
   }, [isFeverActive]);

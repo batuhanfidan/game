@@ -22,8 +22,17 @@ export const soundsReady = Promise.all(
     (s) =>
       new Promise((resolve) => {
         s.addEventListener("canplaythrough", resolve, { once: true });
-
-        s.addEventListener("error", resolve, { once: true });
+        s.addEventListener(
+          "error",
+          (e) => {
+            console.warn(
+              "Ses dosyası yüklenemedi, sessiz mod devam edecek:",
+              e
+            );
+            resolve(null); // Resolve to allow game to continue
+          },
+          { once: true }
+        );
       })
   )
 );

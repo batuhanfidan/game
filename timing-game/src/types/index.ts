@@ -1,11 +1,7 @@
 export type Player = "p1" | "p2";
 export type GameState = "idle" | "countdown" | "playing" | "finished";
-export type GameMode =
-  | "classic"
-  | "bot"
-  | "survival"
-  | "time_attack"
-  | "penalty";
+export type GameMode = "classic" | "bot" | "survival" | "time_attack";
+
 export type GameVariant =
   | "classic"
   | "ghost"

@@ -10,6 +10,7 @@ import { playSound, toggleMute, getMuteStatus } from "../../utils/sound";
 import { triggerWinConfetti } from "../../utils/confetti";
 import type { VisualEffectData } from "../../types";
 import { Volume2, VolumeX, ArrowLeft, User } from "lucide-react";
+import { GAME_DELAYS } from "../../utils/constants";
 
 type Player = "p1" | "p2";
 
@@ -91,24 +92,9 @@ const PenaltyMode = () => {
       ...h,
       [currentPlayer]: [...h[currentPlayer], goalScored],
     }));
+  }, [gameTimeMs, currentPlayer, shotTaken, isGameOver]);
 
-    setTimeout(() => {
-      if (currentPlayer === "p1") {
-        setCurrentPlayer("p2");
-        setShotTaken(false);
-      } else {
-        if (round < 5) {
-          setRound((r) => r + 1);
-          setCurrentPlayer("p1");
-          setShotTaken(false);
-        } else {
-          finishGame();
-        }
-      }
-    }, 2000);
-  }, [gameTimeMs, currentPlayer, round, shotTaken, isGameOver]);
-
-  const finishGame = () => {
+  const finishGame = useCallback(() => {
     setIsGameOver(true);
     playSound("whistle");
 
@@ -126,7 +112,28 @@ const PenaltyMode = () => {
       setWinner(winnerMsg);
       return currentScores;
     });
-  };
+  }, []);
+
+  useEffect(() => {
+    if (!shotTaken || isGameOver) return;
+
+    const timer = setTimeout(() => {
+      if (currentPlayer === "p1") {
+        setCurrentPlayer("p2");
+        setShotTaken(false);
+      } else {
+        if (round < 5) {
+          setRound((r) => r + 1);
+          setCurrentPlayer("p1");
+          setShotTaken(false);
+        } else {
+          finishGame();
+        }
+      }
+    }, GAME_DELAYS.SHOT_RESULT_DISPLAY);
+
+    return () => clearTimeout(timer);
+  }, [shotTaken, currentPlayer, round, isGameOver, finishGame]);
 
   const restartGame = () => {
     setRound(1);
@@ -161,7 +168,7 @@ const PenaltyMode = () => {
   };
 
   return (
-    <div className="h-screen w-screen bg-linear-to-b from-slate-900 to-black text-white flex flex-col items-center font-mono overflow-hidden relative">
+    <div className="h-screen-safe w-screen bg-linear-to-b from-slate-900 to-black text-white flex flex-col items-center font-mono overflow-hidden relative">
       <VisualEffectOverlay
         effect={visualEffect}
         isTwoPlayerMode={true}

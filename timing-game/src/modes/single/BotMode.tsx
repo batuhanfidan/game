@@ -10,6 +10,7 @@ import VisualEffectOverlay from "../../components/layout/VisualEffectOverlay";
 import PauseMenu from "../../components/layout/PauseMenu";
 import VariantIcon from "../../components/game/VariantIcon";
 import { useGameLogic } from "../../hooks/useGameLogic";
+import { useTheme } from "../../hooks/useTheme";
 import { toggleMute, getMuteStatus } from "../../utils/sound";
 import { DIFFICULTIES, VARIANTS } from "../../utils/constants";
 import type { GameVariant } from "../../types";
@@ -19,20 +20,13 @@ import {
   VolumeX,
   Palette,
   CircleHelp,
-  Trophy,
-  Star,
   User,
   Bot,
   ArrowLeft,
+  Trophy,
 } from "lucide-react";
 
 type DifficultyKey = keyof typeof DIFFICULTIES;
-
-const THEMES = [
-  { name: "Karanlık", class: "bg-black" },
-  { name: "Gece Mavisi", class: "bg-slate-950" },
-  { name: "Grafit", class: "bg-neutral-950" },
-];
 
 const BotMode = () => {
   const navigate = useNavigate();
@@ -41,7 +35,7 @@ const BotMode = () => {
     useState<GameVariant>("classic");
   const [gameDuration, setGameDuration] = useState(180);
   const [showProgressBar, setShowProgressBar] = useState(true);
-  const [currentTheme, setCurrentTheme] = useState(0);
+  const { theme, nextTheme } = useTheme(0);
   const [isMuted, setIsMuted] = useState(getMuteStatus());
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -58,7 +52,6 @@ const BotMode = () => {
     currentPlayer,
     playerTimes,
     scores,
-    highScore,
     actionMessage,
     winner,
     finalScore,
@@ -83,8 +76,6 @@ const BotMode = () => {
   const [showRules, setShowRules] = useState(false);
   const [playerReady, setPlayerReady] = useState(false);
 
-  const handleThemeChange = () =>
-    setCurrentTheme((prev) => (prev + 1) % THEMES.length);
   const handleMuteToggle = () => setIsMuted(toggleMute());
   const handleBackToMenu = () => navigate("/", { replace: true });
 
@@ -98,22 +89,24 @@ const BotMode = () => {
 
   return (
     <div
-      className={`h-screen w-screen text-white flex flex-col justify-center items-center relative font-mono overflow-hidden transition-colors duration-500 ${
-        THEMES[currentTheme].class
+      className={`h-screen-safe w-screen text-white flex flex-col justify-center items-center relative font-mono overflow-hidden transition-colors duration-500 ${
+        theme.class
       } ${visualEffect?.type === "goal" ? "animate-shake" : ""}`}
     >
       <VisualEffectOverlay effect={visualEffect} isTwoPlayerMode={false} />
 
+      {/* DURAKLAT BUTONU */}
       {gameState === "playing" && (
         <button
           onClick={togglePause}
-          className="absolute top-4 left-4 z-60 bg-gray-700/80 hover:bg-gray-600 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl font-bold shadow-lg transition-transform hover:scale-110"
+          className="absolute top-4 left-4 z-60 bg-gray-700/80 hover:bg-gray-600 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl font-bold shadow-lg transition-transform hover:scale-110 focus-visible:ring-4 focus-visible:ring-blue-500"
           title="Duraklat"
         >
           ⏸
         </button>
       )}
 
+      {/* PAUSE MENÜSÜ */}
       {isPaused && (
         <PauseMenu
           onResume={togglePause}
@@ -122,10 +115,13 @@ const BotMode = () => {
         />
       )}
 
+      {/* SAĞ ÜST MENÜ */}
       <div className="absolute top-4 right-4 z-60 flex flex-col items-end">
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="md:hidden bg-gray-700 hover:bg-gray-600 text-white rounded-lg w-10 h-10 flex items-center justify-center border border-gray-500 shadow-lg transition-transform active:scale-95"
+          aria-label={isMenuOpen ? "Menüyü Kapat" : "Menüyü Aç"}
+          aria-expanded={isMenuOpen}
+          className="md:hidden bg-gray-700 hover:bg-gray-600 text-white rounded-lg w-10 h-10 flex items-center justify-center border border-gray-500 shadow-lg transition-transform active:scale-95 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none"
         >
           <Menu size={24} />
         </button>
@@ -136,19 +132,19 @@ const BotMode = () => {
         >
           <button
             onClick={handleMuteToggle}
-            className="bg-gray-700 hover:bg-gray-600 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-md"
+            className="bg-gray-700 hover:bg-gray-600 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-md focus-visible:ring-2 focus-visible:ring-blue-500"
           >
             {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
           </button>
           <button
-            onClick={handleThemeChange}
-            className="bg-gray-700 hover:bg-gray-600 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-md"
+            onClick={nextTheme}
+            className="bg-gray-700 hover:bg-gray-600 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-md focus-visible:ring-2 focus-visible:ring-blue-500"
           >
             <Palette size={20} />
           </button>
           <button
             onClick={() => setShowRules(true)}
-            className="bg-gray-700 hover:bg-gray-600 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-md"
+            className="bg-gray-700 hover:bg-gray-600 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-md focus-visible:ring-2 focus-visible:ring-blue-500"
           >
             <CircleHelp size={20} />
           </button>
@@ -157,14 +153,11 @@ const BotMode = () => {
 
       <RulesModal showRules={showRules} onClose={() => setShowRules(false)} />
 
+      {/* SKOR TABLOSU  */}
       {gameState !== "idle" && (
         <div className="absolute top-4 w-full flex flex-col items-center z-10 pointer-events-none">
           <div className="text-3xl font-extrabold text-yellow-400 drop-shadow-lg flex items-center gap-3">
             <Trophy size={32} /> {scores.p1} - {scores.p2}
-          </div>
-          <div className="text-sm text-gray-400 mt-1 bg-gray-900/50 px-3 py-1 rounded-full border border-gray-700 flex items-center gap-2">
-            <Star size={14} className="text-yellow-400" /> En Yüksek:{" "}
-            <span className="text-white font-bold">{highScore}</span>
           </div>
         </div>
       )}
@@ -201,7 +194,7 @@ const BotMode = () => {
                 <button
                   key={key}
                   onClick={() => setDifficulty(key)}
-                  className={`flex-1 px-2 py-2 rounded text-xs font-bold transition-all ${
+                  className={`flex-1 px-2 py-2 rounded text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-blue-500 ${
                     difficulty === key
                       ? "bg-blue-600 text-white"
                       : "bg-gray-800 text-gray-400 hover:bg-gray-700"
@@ -222,7 +215,7 @@ const BotMode = () => {
                 <button
                   key={v.key}
                   onClick={() => setSelectedVariant(v.key)}
-                  className={`px-4 py-3 rounded-lg text-left flex flex-col transition-all border ${
+                  className={`px-4 py-3 rounded-lg text-left flex flex-col transition-all border focus-visible:ring-2 focus-visible:ring-green-500 ${
                     selectedVariant === v.key
                       ? "bg-gray-800 border-green-500 shadow-lg shadow-green-900/20"
                       : "bg-gray-800/50 border-transparent hover:bg-gray-800"
@@ -253,7 +246,7 @@ const BotMode = () => {
                   <button
                     key={t}
                     onClick={() => setGameDuration(t)}
-                    className={`flex-1 px-2 py-3 rounded text-xs font-bold transition-all ${
+                    className={`flex-1 px-2 py-3 rounded text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-blue-500 ${
                       gameDuration === t
                         ? "bg-blue-600 text-white"
                         : "bg-gray-800 text-gray-400 hover:bg-gray-700"
@@ -272,7 +265,7 @@ const BotMode = () => {
               <div className="flex gap-2 w-full">
                 <button
                   onClick={() => setShowProgressBar(true)}
-                  className={`flex-1 py-3 rounded-lg border transition-all font-bold text-sm ${
+                  className={`flex-1 py-3 rounded-lg border transition-all font-bold text-sm focus-visible:ring-2 focus-visible:ring-green-500 ${
                     showProgressBar
                       ? "bg-green-900/30 border-green-500 text-green-400 shadow-[0_0_10px_rgba(34,197,94,0.2)]"
                       : "bg-gray-800 border-transparent text-gray-500 hover:bg-gray-700"
@@ -284,7 +277,7 @@ const BotMode = () => {
                 <button
                   onClick={() => setShowProgressBar(false)}
                   disabled={selectedVariant === "moving"}
-                  className={`flex-1 py-3 rounded-lg border transition-all font-bold text-sm ${
+                  className={`flex-1 py-3 rounded-lg border transition-all font-bold text-sm focus-visible:ring-2 focus-visible:ring-red-500 ${
                     selectedVariant === "moving"
                       ? "bg-gray-900/50 border-gray-800 text-gray-700 opacity-50 cursor-not-allowed"
                       : !showProgressBar
@@ -303,15 +296,15 @@ const BotMode = () => {
           <button
             onClick={() => setPlayerReady(true)}
             disabled={playerReady}
-            className="px-10 py-4 rounded-xl text-xl font-bold transition w-full bg-green-600 hover:bg-green-500 cursor-pointer hover:scale-105 shadow-lg shadow-green-500/20"
+            className="px-10 py-4 rounded-xl text-xl font-bold transition w-full bg-green-600 hover:bg-green-500 cursor-pointer hover:scale-105 shadow-lg shadow-green-500/20 focus-visible:ring-4 focus-visible:ring-green-300"
           >
             {playerReady ? "Başlatılıyor..." : "OYUNU BAŞLAT"}
           </button>
           <button
             onClick={handleBackToMenu}
-            className="text-gray-500 hover:text-white text-sm underline cursor-pointer flex items-center justify-center gap-1"
+            className="text-gray-500 hover:text-white text-sm underline cursor-pointer flex items-center justify-center gap-1 focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
           >
-            <ArrowLeft size={14} /> Menüye Dön
+            <ArrowLeft size={16} /> Menüye Dön
           </button>
         </div>
       )}
@@ -364,7 +357,7 @@ const BotMode = () => {
         />
       )}
       <div className="absolute bottom-4 text-xs md:text-base text-gray-500 font-mono">
-        🎯 Tema: {THEMES[currentTheme].name}
+        🎯 Tema: {theme.name}
       </div>
     </div>
   );

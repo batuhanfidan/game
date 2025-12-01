@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { calculateShotResult } from "../utils/calculateShotResult";
 import { triggerWinConfetti } from "../utils/confetti";
 import { playSound } from "../utils/sound";
-import { SURVIVAL_CONSTANTS } from "../utils/constants";
+import { SURVIVAL_CONSTANTS, GAMEPLAY_CONSTANTS } from "../utils/constants";
 import type {
   GameMode,
   GameState,
@@ -15,6 +15,7 @@ import { useSurvivalSystem } from "./useSurvivalSystem";
 import { useGameTimer } from "./useGameTimer";
 import { useBotSystem } from "./useBotSystem";
 import { useTimeAttackSystem } from "./useTimeAttackSystem";
+import { useInterval } from "./useInterval";
 import type { CurseType } from "./useSurvivalSystem";
 
 interface UseGameLogicProps {
@@ -25,7 +26,6 @@ interface UseGameLogicProps {
   botAccuracy?: number;
 }
 
-// Popup Tipi Tanımlaması
 interface TimeChangePopup {
   id: number;
   value: number;
@@ -40,8 +40,15 @@ export const useGameLogic = ({
   botAccuracy = 0.5,
 }: UseGameLogicProps = {}) => {
   const [gameState, setGameState] = useState<GameState>("idle");
-  const [turnTimeLeft, setTurnTimeLeft] = useState(10);
+  const [turnTimeLeft, setTurnTimeLeft] = useState<number>(
+    GAMEPLAY_CONSTANTS.TURN_TIME_LIMIT
+  );
   const [currentPlayer, setCurrentPlayer] = useState<Player>("p1");
+  const currentPlayerRef = useRef<Player>(currentPlayer);
+
+  useEffect(() => {
+    currentPlayerRef.current = currentPlayer;
+  }, [currentPlayer]);
 
   const [targetOffset, setTargetOffset] = useState(0);
   const [roundOffset, setRoundOffset] = useState(0);
@@ -58,8 +65,6 @@ export const useGameLogic = ({
   const [visualEffect, setVisualEffect] = useState<VisualEffectData | null>(
     null
   );
-
-  // Type-safe Popup State
   const [timeChangePopup, setTimeChangePopup] =
     useState<TimeChangePopup | null>(null);
 
@@ -111,7 +116,6 @@ export const useGameLogic = ({
     randomizeRound();
   }, [gameMode, playerNames, randomizeRound]);
 
-  // Lanet aktifken hedefin hareket etmesini sağlayan fonksiyon
   const handleTimerUpdate = useCallback(() => {
     if (survival.activeCurse === "MOVING_TARGET") {
       const now = Date.now();
@@ -182,7 +186,7 @@ export const useGameLogic = ({
     setTargetOffset(0);
     setScores({ p1: 0, p2: 0 });
     setPlayerTimes({ p1: startDuration, p2: startDuration });
-    setTurnTimeLeft(10);
+    setTurnTimeLeft(GAMEPLAY_CONSTANTS.TURN_TIME_LIMIT);
     setActionMessage("");
     setVisualEffect(null);
     setTimeChangePopup(null);
@@ -231,45 +235,41 @@ export const useGameLogic = ({
     playerNames,
     updateHighScore,
     timer,
-    survival,
+    survival.streak,
   ]);
 
   const handleTurnSwitch = useCallback(() => {
     if (gameMode === "survival" || gameMode === "time_attack") {
-      setTurnTimeLeft(10);
+      setTurnTimeLeft(GAMEPLAY_CONSTANTS.TURN_TIME_LIMIT);
     } else {
       setCurrentPlayer((prev) => (prev === "p1" ? "p2" : "p1"));
-      setTurnTimeLeft(10);
+      setTurnTimeLeft(GAMEPLAY_CONSTANTS.TURN_TIME_LIMIT);
     }
     randomizeRound();
   }, [gameMode, randomizeRound]);
 
-  // Zaman Sayacı
-  useEffect(() => {
-    if (gameState !== "playing" || timer.isPaused) return;
-    if (gameMode === "time_attack" && timeFeverActive) return;
-
-    const interval = setInterval(() => {
-      setTurnTimeLeft((prev) => {
-        if (prev <= 0) return 0;
-        return prev - 1;
-      });
+  useInterval(
+    () => {
+      setTurnTimeLeft((prev) => (prev <= 0 ? 0 : prev - 1));
 
       setPlayerTimes((prev) => {
         const newTimes = { ...prev };
+        const player = currentPlayerRef.current;
         if (gameMode === "time_attack" || gameMode === "survival") {
           if (newTimes.p1 > 0) newTimes.p1 -= 1;
         } else {
-          if (newTimes[currentPlayer] > 0) newTimes[currentPlayer] -= 1;
+          if (newTimes[player] > 0) newTimes[player] -= 1;
         }
         return newTimes;
       });
-    }, 1000);
+    },
+    gameState === "playing" &&
+      !timer.isPaused &&
+      !(gameMode === "time_attack" && timeFeverActive)
+      ? 1000
+      : null
+  );
 
-    return () => clearInterval(interval);
-  }, [gameState, currentPlayer, timer.isPaused, gameMode, timeFeverActive]);
-
-  // Oyun Bitiş Kontrolleri
   useEffect(() => {
     if (gameState !== "playing" || timer.isPaused) return;
 
@@ -283,7 +283,7 @@ export const useGameLogic = ({
         if (survival.lives > 1) {
           survival.setLives((l) => l - 1);
           setActionMessage("⏰ SÜRE DOLDU! (-1 Can)");
-          setTurnTimeLeft(10);
+          setTurnTimeLeft(GAMEPLAY_CONSTANTS.TURN_TIME_LIMIT);
         } else {
           setActionMessage("⏰ SÜRE DOLDU! Elendin.");
           finishGame();
@@ -343,13 +343,14 @@ export const useGameLogic = ({
       (gameMode === "classic" || gameMode === "bot") &&
       playerTimes[currentPlayer] <= 0
     ) {
+      playSound("miss");
+      setActionMessage("⏰ Süren bitti! Sıra karşı oyuncuda.");
       return;
     }
 
     playSound("kick");
     const currentMs = timer.gameTimeMs % 1000;
 
-    // --- TIME ATTACK MANTIĞI ---
     if (gameMode === "time_attack") {
       const result = processHit(currentMs, targetOffset);
 
@@ -384,7 +385,6 @@ export const useGameLogic = ({
       return;
     }
 
-    // --- SURVIVAL MANTIĞI ---
     if (gameMode === "survival") {
       const isReverseCurse = survival.activeCurse === "REVERSE";
       const effectiveTarget = isReverseCurse
@@ -464,14 +464,11 @@ export const useGameLogic = ({
           survival.setSurvivalThreshold((t) => Math.max(30, t * 0.95));
         }
 
-        // Lanet Seçim Mantığı
         if (
           newStreak > 0 &&
           newStreak % SURVIVAL_CONSTANTS.CURSE_INTERVAL === 0
         ) {
           survival.setCursedRemaining(3);
-
-          // 3 Lanet türü arasından rastgele seçim
           const rand = Math.random();
           let nextCurse: CurseType = "REVERSE";
           if (rand < 0.33) nextCurse = "REVERSE";
@@ -524,11 +521,10 @@ export const useGameLogic = ({
         return newStreak;
       });
 
-      setTurnTimeLeft(10);
+      setTurnTimeLeft(GAMEPLAY_CONSTANTS.TURN_TIME_LIMIT);
       return;
     }
 
-    // --- KLASİK / BOT MANTIĞI ---
     const distance = Math.abs(currentMs - targetOffset);
     const displayMs = String(Math.floor(distance / 10)).padStart(2, "0");
 
@@ -564,11 +560,13 @@ export const useGameLogic = ({
     processHit,
   ]);
 
-  // Klavye Çakışması Fix (Input check)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Eğer kullanıcı bir input'a yazı yazıyorsa, oyun tuşlarını dinleme
-      if (["INPUT", "TEXTAREA"].includes((e.target as HTMLElement).tagName)) {
+      if (
+        ["INPUT", "TEXTAREA", "SELECT"].includes(
+          (e.target as HTMLElement).tagName
+        )
+      ) {
         return;
       }
 
@@ -624,7 +622,7 @@ export const useGameLogic = ({
     speedMultiplier: survival.speedMultiplier,
     survivalThreshold: survival.survivalThreshold,
     adrenaline: survival.adrenaline,
-    isFeverActive: survival.isFeverActive,
+    isSurvivalFever: survival.isFeverActive,
     goldenThreshold: survival.GOLDEN_THRESHOLD,
     hasShield: survival.hasShield,
     activeCurse: survival.activeCurse,
@@ -634,7 +632,7 @@ export const useGameLogic = ({
     timeTargetWidth: targetWidth,
     timeBossActive: bossActive,
     timeBossPosition: bossPosition,
-    timeFeverActive: timeFeverActive,
+    isTimeAttackFever: timeFeverActive,
     timeChangePopup,
   };
 };

@@ -16,13 +16,12 @@ export const DIFFICULTIES = {
   IMPOSSIBLE: { label: "İmkansız", reaction: 1000, accuracy: 1 },
 };
 
-// Vuruş bölgeleri (milisaniye cinsinden)
 export const SHOT_ZONES = {
-  GOAL: 10, // 0-9 ms -> Mükemmel Gol
-  PENALTY: 110, // 10-109 ms -> Penaltı şansı
-  SHOT: 310, // 110-309 ms -> Şut şansı
-  CROSS: 510, // 310-509 ms -> Orta şansı
-  FREEKICK: 710, // 510-709 ms -> Frikik şansı
+  GOAL: 10,
+  PENALTY: 110,
+  SHOT: 310,
+  CROSS: 510,
+  FREEKICK: 710,
 };
 
 export const VARIANTS: { key: GameVariant; label: string; desc: string }[] = [
@@ -34,10 +33,95 @@ export const VARIANTS: { key: GameVariant; label: string; desc: string }[] = [
 ];
 
 export const SURVIVAL_CONSTANTS = {
-  SPEED_INCREASE_INTERVAL: 5, // Her 5 seride hız artar
-  LIFE_BONUS_INTERVAL: 10, // Her 10 seride can verir
-  CURSE_INTERVAL: 15, // Her 15 seride lanet gelir
+  SPEED_INCREASE_INTERVAL: 5,
+  LIFE_BONUS_INTERVAL: 10,
+  CURSE_INTERVAL: 15,
   RED_TARGET_SPAWN_CHANCE: 0.2,
   INITIAL_LIVES: 3,
   MAX_LIVES: 5,
 };
+
+export const GAME_DELAYS = {
+  SHOT_RESULT_DISPLAY: 2000,
+  COUNTDOWN_INTERVAL: 1000,
+  FEVER_DURATION: 5000,
+  EFFECT_DISPLAY_DURATION: 1000,
+  POPUP_FADE_DURATION: 1500,
+  BOT_REACTION_BASE: 2000,
+} as const;
+
+export const GAMEPLAY_CONSTANTS = {
+  CURSE_INTERVAL: 15,
+  LIFE_BONUS_INTERVAL: 10,
+  SPEED_INCREASE_INTERVAL: 5,
+  MAX_LIVES: 5,
+  INITIAL_LIVES: 3,
+  TURN_TIME_LIMIT: 10,
+  FEVER_ADRENALINE_THRESHOLD: 100,
+} as const;
+
+export const UI_CONSTANTS = {
+  MAX_LIVES_DISPLAY: 5,
+  HEART_ICON_SIZE: 32,
+  MENU_ICON_SIZE: 24,
+  MOBILE_BREAKPOINT: 768,
+  Z_INDEX: {
+    TUTORIAL: 9999,
+    OVERLAY: 50,
+    MENU: 60,
+    POPUP: 100,
+  },
+  COLORS: {
+    PRIMARY: "#3b82f6",
+    SUCCESS: "#22c55e",
+    DANGER: "#ef4444",
+    WARNING: "#eab308",
+    TEXT_MUTED: "#a1a1aa",
+  },
+} as const;
+
+export const TUTORIAL_STEPS = [
+  {
+    target: "intro",
+    title: "Eğitim Moduna Hoşgeldin! 👋",
+    text: "Reflekslerini test etmeye hazır mısın? Bu kısa turda sana oyunun temellerini göstereceğiz.",
+    position: "center",
+  },
+  {
+    target: "timer",
+    title: "Hedefin: Zamanlama",
+    text: "Gördüğün zaman çubuğu senin en büyük rakibin. Amacın süreyi mükemmel anda, yani 00ms'de yakalamak.",
+    position: "layout-timer", // Çubuğun altı
+  },
+  {
+    target: "turn-info",
+    title: "Sıra Süresi",
+    text: "Hamle yapmak için 10 saniyen var. Eğer süre dolarsa sıranı kaybedersin.",
+    position: "layout-turn", // Sürenin altı
+  },
+  {
+    target: "player-timers",
+    title: "Oyuncu Süreleri",
+    text: "Toplam maç süresi iki oyuncu arasında paylaştırılır. Düşünürken harcadığın zaman kendi bakiyenden düşer.",
+    position: "layout-player", // Sol oyuncunun altı
+  },
+  {
+    target: "help",
+    title: "Kılavuz ve İpuçları",
+    text: "Takıldığın yerde detaylı kurallar için ?(Soru işareti)'ne tıklayabilirsin.",
+    position: "top-right",
+  },
+  // YENİ ADIM: Oyun Modu Bilgilendirmesi
+  {
+    target: "mode-info",
+    title: "Oyun Modu",
+    text: "Şu an Klasik Mod'da, Orta Seviye Bot'a karşı oynamaktasın. Ana menüden farklı oyun modları ve varyasyonları seçerek yeni deneyimler elde edebilirsin.",
+    position: "layout-mode", // Üst kısma yakın, skor tabelasının altı
+  },
+  {
+    target: "action-button",
+    title: "Vuruş Anı",
+    text: "Hazırsan başlayalım! Süre hedefe geldiğinde butona bas.",
+    position: "layout-action", // Butonun altı
+  },
+];

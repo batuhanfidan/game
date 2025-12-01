@@ -58,11 +58,9 @@ export const useBotSystem = ({
       return;
     }
 
-    // Botun süresi bittiyse oynama
     if (stateRef.current.playerTimes.p2 <= 0) return;
 
     const timer = setTimeout(() => {
-      // Oynama anında tekrar kontrol et
       if (
         stateRef.current.gameState !== "playing" ||
         stateRef.current.isPaused ||
@@ -73,12 +71,14 @@ export const useBotSystem = ({
 
       const currentAccuracy = stateRef.current.botAccuracy;
 
-      // Hata payı hesaplama
-      const baseErrorRange = 1000;
-      const minErrorBuffer = 15;
-      const maxError =
-        Math.floor(baseErrorRange * (1 - currentAccuracy)) + minErrorBuffer;
+      const getMaxError = (acc: number) => {
+        if (acc >= 0.9) return 25;
+        if (acc >= 0.7) return 50;
+        if (acc >= 0.5) return 200;
+        return 700;
+      };
 
+      const maxError = getMaxError(currentAccuracy);
       const error = Math.floor(Math.random() * maxError);
 
       playSound("kick");

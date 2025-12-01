@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import type { VisualEffectData } from "../../types";
+import { useMediaQuery } from "../../hooks/useMediaQuery";
+import { UI_CONSTANTS } from "../../utils/constants";
 
 interface VisualEffectOverlayProps {
   effect: VisualEffectData | null;
@@ -22,11 +24,13 @@ const VisualEffectOverlay: React.FC<VisualEffectOverlayProps> = ({
     transform: "translate(-50%, -50%)",
   });
 
+  const isMobile = useMediaQuery(
+    `(max-width: ${UI_CONSTANTS.MOBILE_BREAKPOINT}px)`
+  );
+
   useEffect(() => {
     if (effect) {
       setKey((prev) => prev + 1);
-
-      const isMobile = window.innerWidth < 768;
 
       if (isTwoPlayerMode) {
         if (effect.player === "p1") {
@@ -50,7 +54,7 @@ const VisualEffectOverlay: React.FC<VisualEffectOverlayProps> = ({
         });
       }
     }
-  }, [effect, isTwoPlayerMode]);
+  }, [effect, isTwoPlayerMode, isMobile]);
 
   if (!effect) return null;
 

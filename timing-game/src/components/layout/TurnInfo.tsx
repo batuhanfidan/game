@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Gamepad2, Timer } from "lucide-react";
 
 interface TurnInfoProps {
@@ -18,4 +19,4 @@ const TurnInfo: React.FC<TurnInfoProps> = ({ currentPlayer, turnTimeLeft }) => {
   );
 };
 
-export default TurnInfo;
+export default memo(TurnInfo);

@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useMemo, memo } from "react";
 import { formatTime } from "../../utils/formatTime";
 import type { GameVariant } from "../../types";
-import { Apple, ShieldAlert } from "lucide-react";
+import { Apple, ShieldAlert, Hand } from "lucide-react";
 
 interface TimerDisplayProps {
   totalMs: number;
@@ -13,6 +13,7 @@ interface TimerDisplayProps {
   isCursed?: boolean;
   redTarget?: number | null;
   disableTransition?: boolean;
+  showHint?: boolean;
 }
 
 const TimerDisplay: React.FC<TimerDisplayProps> = ({
@@ -25,18 +26,22 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({
   isCursed = false,
   redTarget = null,
   disableTransition = false,
+  showHint = false,
 }) => {
-  const ms = totalMs % 1000;
+  const ms = useMemo(() => totalMs % 1000, [totalMs]);
   const percentage = (ms / 1000) * 100;
 
-  const visualTargetOffset = isCursed ? 1000 - targetOffset : targetOffset;
+  const visualTargetOffset = useMemo(
+    () => (isCursed ? 1000 - targetOffset : targetOffset),
+    [isCursed, targetOffset]
+  );
   const targetPos = (visualTargetOffset / 1000) * 100;
 
-  let redPos = 0;
-  if (redTarget !== null) {
+  const redPos = useMemo(() => {
+    if (redTarget === null) return 0;
     const visualRed = isCursed ? 1000 - redTarget : redTarget;
-    redPos = (visualRed / 1000) * 100;
-  }
+    return (visualRed / 1000) * 100;
+  }, [redTarget, isCursed]);
 
   const isGhostHidden = variant === "ghost" && ms > 500;
 
@@ -62,6 +67,11 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({
       {showProgressBar && (
         <>
           <div
+            role="progressbar"
+            aria-valuenow={Math.round(percentage)}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label="Zamanlama Çubuğu"
             className={`w-full h-10 md:h-12 bg-[#27272a] rounded-full overflow-hidden relative border-2 border-[#09090b] shadow-[inset_0_2px_8px_rgba(0,0,0,0.6)] mt-2 transition-opacity duration-300 ${
               isGhostHidden ? "opacity-0" : "opacity-100"
             }`}
@@ -129,6 +139,23 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({
               className="absolute top-0 h-full w-1.5 bg-white shadow-[0_0_15px_rgba(255,255,255,1)] ring-1 ring-black/30 z-50"
               style={{ left: `${percentage}%` }}
             />
+
+            {showHint && (
+              <div
+                className="absolute -top-12 left-1/2 -translate-x-1/2 flex flex-col items-center animate-bounce z-50 pointer-events-none"
+                style={{
+                  left: `${targetPos}%`,
+                  transform: isCursed
+                    ? "scaleX(-1) translateX(50%)"
+                    : "translateX(-50%)",
+                }}
+              >
+                <span className="bg-white text-black text-[10px] font-bold px-2 py-1 rounded mb-1 whitespace-nowrap shadow-lg">
+                  BURADA BAS!
+                </span>
+                <Hand className="rotate-180 fill-white text-white" size={20} />
+              </div>
+            )}
           </div>
 
           <div className="flex justify-between w-full text-[10px] sm:text-xs text-[#71717a] mt-2 font-mono uppercase tracking-wider font-bold px-1">
@@ -164,4 +191,4 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({
   );
 };
 
-export default TimerDisplay;
+export default memo(TimerDisplay);

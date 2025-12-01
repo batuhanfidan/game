@@ -5,30 +5,48 @@ interface ActionButtonProps {
   disabled?: boolean;
   customText?: string;
   customColor?: string;
+  isFirstTurn?: boolean;
 }
 
 const ActionButton: React.FC<ActionButtonProps> = memo(
-  ({ onClick, disabled = false, customText = "Bas!", customColor }) => {
-    const baseColor = customColor || "bg-blue-600 hover:bg-blue-700";
+  ({
+    onClick,
+    disabled = false,
+    customText = "Bas!",
+    customColor,
+    isFirstTurn = false,
+  }) => {
+    const baseColor = customColor || "bg-blue-600 hover:bg-blue-500";
 
     return (
-      <button
-        onClick={onClick}
-        disabled={disabled}
-        className={`
-        px-8 py-6 sm:px-12 sm:py-8 md:px-12 md:py-6 
-        text-base sm:text-lg md:text-xl rounded-xl font-bold text-white transition transform active:scale-95
-        ${
-          disabled
-            ? "bg-gray-600 cursor-not-allowed opacity-50"
-            : `${baseColor} cursor-pointer shadow-lg hover:shadow-xl`
-        }
-      `}
-      >
-        {customText}
-      </button>
+      <div className="relative">
+        {isFirstTurn && !disabled && (
+          <div className="absolute inset-0 rounded-xl animate-pulse-ring pointer-events-none"></div>
+        )}
+
+        <button
+          onClick={onClick}
+          disabled={disabled}
+          className={`
+            relative z-10
+            px-8 py-6 sm:px-12 sm:py-8 md:px-16 md:py-8
+            text-lg sm:text-xl md:text-2xl font-black tracking-wider text-white 
+            rounded-2xl transition-all duration-150 transform
+            focus:outline-none focus-visible:ring-4 focus-visible:ring-white/50
+            optimize-gpu select-none
+            ${
+              disabled
+                ? "bg-neutral-800 text-neutral-500 cursor-not-allowed border border-neutral-700"
+                : `${baseColor} cursor-pointer shadow-[0_8px_0_rgb(0,0,0,0.3)] active:shadow-none active:translate-y-2er:brightness-110`
+            }
+          `}
+        >
+          {customText}
+        </button>
+      </div>
     );
   }
 );
 
+ActionButton.displayName = "ActionButton";
 export default ActionButton;
