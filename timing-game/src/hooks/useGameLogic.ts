@@ -26,7 +26,6 @@ interface UseGameLogicProps {
   botAccuracy?: number;
 }
 
-// Popup Tipi Tanımlaması
 interface TimeChangePopup {
   id: number;
   value: number;
@@ -47,7 +46,6 @@ export const useGameLogic = ({
   const [currentPlayer, setCurrentPlayer] = useState<Player>("p1");
   const currentPlayerRef = useRef<Player>(currentPlayer);
 
-  // currentPlayer her değiştiğinde ref'i güncelle
   useEffect(() => {
     currentPlayerRef.current = currentPlayer;
   }, [currentPlayer]);
@@ -67,8 +65,6 @@ export const useGameLogic = ({
   const [visualEffect, setVisualEffect] = useState<VisualEffectData | null>(
     null
   );
-
-  // Type-safe Popup State
   const [timeChangePopup, setTimeChangePopup] =
     useState<TimeChangePopup | null>(null);
 
@@ -120,7 +116,6 @@ export const useGameLogic = ({
     randomizeRound();
   }, [gameMode, playerNames, randomizeRound]);
 
-  // Lanet aktifken hedefin hareket etmesini sağlayan fonksiyon
   const handleTimerUpdate = useCallback(() => {
     if (survival.activeCurse === "MOVING_TARGET") {
       const now = Date.now();
@@ -259,7 +254,7 @@ export const useGameLogic = ({
 
       setPlayerTimes((prev) => {
         const newTimes = { ...prev };
-        const player = currentPlayerRef.current; // Ref kullanımı
+        const player = currentPlayerRef.current;
         if (gameMode === "time_attack" || gameMode === "survival") {
           if (newTimes.p1 > 0) newTimes.p1 -= 1;
         } else {
@@ -275,7 +270,6 @@ export const useGameLogic = ({
       : null
   );
 
-  // Oyun Bitiş Kontrolleri
   useEffect(() => {
     if (gameState !== "playing" || timer.isPaused) return;
 
@@ -357,7 +351,6 @@ export const useGameLogic = ({
     playSound("kick");
     const currentMs = timer.gameTimeMs % 1000;
 
-    // --- TIME ATTACK MANTIĞI ---
     if (gameMode === "time_attack") {
       const result = processHit(currentMs, targetOffset);
 
@@ -392,7 +385,6 @@ export const useGameLogic = ({
       return;
     }
 
-    // --- SURVIVAL MANTIĞI ---
     if (gameMode === "survival") {
       const isReverseCurse = survival.activeCurse === "REVERSE";
       const effectiveTarget = isReverseCurse
@@ -472,14 +464,11 @@ export const useGameLogic = ({
           survival.setSurvivalThreshold((t) => Math.max(30, t * 0.95));
         }
 
-        // Lanet Seçim Mantığı
         if (
           newStreak > 0 &&
           newStreak % SURVIVAL_CONSTANTS.CURSE_INTERVAL === 0
         ) {
           survival.setCursedRemaining(3);
-
-          // 3 Lanet türü arasından rastgele seçim
           const rand = Math.random();
           let nextCurse: CurseType = "REVERSE";
           if (rand < 0.33) nextCurse = "REVERSE";
@@ -536,7 +525,6 @@ export const useGameLogic = ({
       return;
     }
 
-    // --- KLASİK / BOT MANTIĞI ---
     const distance = Math.abs(currentMs - targetOffset);
     const displayMs = String(Math.floor(distance / 10)).padStart(2, "0");
 
@@ -572,10 +560,8 @@ export const useGameLogic = ({
     processHit,
   ]);
 
-  // Klavye Çakışması Fix (Input check)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Eğer kullanıcı bir input'a yazı yazıyorsa, oyun tuşlarını dinleme
       if (
         ["INPUT", "TEXTAREA", "SELECT"].includes(
           (e.target as HTMLElement).tagName
