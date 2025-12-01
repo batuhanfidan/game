@@ -97,20 +97,22 @@ export const useGameTimer = ({
     const feverChanged = prevFeverRef.current !== isFeverActive;
 
     if (feverChanged && isFeverActive) {
-      // Fever başladı ->
+      // Fever başladı -> Eski hızdan yeni hıza geçiş
       const currentElapsed = Date.now() - startTimeRef.current;
-      const currentSpeed = speedMultiplier;
-      const currentVisualTime = currentElapsed * currentSpeed + roundOffset;
+      const oldSpeed = speedMultiplier; // Fever öncesi hız
+      const currentVisualTime = currentElapsed * oldSpeed + roundOffset;
 
-      const newElapsed = currentVisualTime / (speedMultiplier * 0.5);
+      const newSpeed = speedMultiplier * 0.5; // Fever hızı (yarı hız)
+      const newElapsed = currentVisualTime / newSpeed;
       startTimeRef.current = Date.now() - newElapsed;
     } else if (feverChanged && !isFeverActive) {
-      // Fever bitti -> Normal hıza dön, geçen süreyi buna göre ayarla
+      // Fever bitti -> Yarı hızdan normal hıza dön
       const currentElapsed = Date.now() - startTimeRef.current;
-      const currentSpeed = speedMultiplier * 0.5;
-      const currentVisualTime = currentElapsed * currentSpeed + roundOffset;
+      const oldSpeed = speedMultiplier * 0.5; // Fever hızı
+      const currentVisualTime = currentElapsed * oldSpeed + roundOffset;
 
-      const newElapsed = currentVisualTime / speedMultiplier;
+      const newSpeed = speedMultiplier; // Normal hız
+      const newElapsed = currentVisualTime / newSpeed;
       startTimeRef.current = Date.now() - newElapsed;
     }
 

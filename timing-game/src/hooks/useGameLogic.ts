@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { calculateShotResult } from "../utils/calculateShotResult";
 import { triggerWinConfetti } from "../utils/confetti";
 import { playSound } from "../utils/sound";
-import { SURVIVAL_CONSTANTS } from "../utils/constants";
+import { SURVIVAL_CONSTANTS, GAMEPLAY_CONSTANTS } from "../utils/constants";
 import type {
   GameMode,
   GameState,
@@ -40,7 +40,9 @@ export const useGameLogic = ({
   botAccuracy = 0.5,
 }: UseGameLogicProps = {}) => {
   const [gameState, setGameState] = useState<GameState>("idle");
-  const [turnTimeLeft, setTurnTimeLeft] = useState(10);
+  const [turnTimeLeft, setTurnTimeLeft] = useState<number>(
+    GAMEPLAY_CONSTANTS.TURN_TIME_LIMIT
+  );
   const [currentPlayer, setCurrentPlayer] = useState<Player>("p1");
 
   const [targetOffset, setTargetOffset] = useState(0);
@@ -182,7 +184,7 @@ export const useGameLogic = ({
     setTargetOffset(0);
     setScores({ p1: 0, p2: 0 });
     setPlayerTimes({ p1: startDuration, p2: startDuration });
-    setTurnTimeLeft(10);
+    setTurnTimeLeft(GAMEPLAY_CONSTANTS.TURN_TIME_LIMIT);
     setActionMessage("");
     setVisualEffect(null);
     setTimeChangePopup(null);
@@ -231,15 +233,15 @@ export const useGameLogic = ({
     playerNames,
     updateHighScore,
     timer,
-    survival,
+    survival.streak,
   ]);
 
   const handleTurnSwitch = useCallback(() => {
     if (gameMode === "survival" || gameMode === "time_attack") {
-      setTurnTimeLeft(10);
+      setTurnTimeLeft(GAMEPLAY_CONSTANTS.TURN_TIME_LIMIT);
     } else {
       setCurrentPlayer((prev) => (prev === "p1" ? "p2" : "p1"));
-      setTurnTimeLeft(10);
+      setTurnTimeLeft(GAMEPLAY_CONSTANTS.TURN_TIME_LIMIT);
     }
     randomizeRound();
   }, [gameMode, randomizeRound]);
@@ -283,7 +285,7 @@ export const useGameLogic = ({
         if (survival.lives > 1) {
           survival.setLives((l) => l - 1);
           setActionMessage("⏰ SÜRE DOLDU! (-1 Can)");
-          setTurnTimeLeft(10);
+          setTurnTimeLeft(GAMEPLAY_CONSTANTS.TURN_TIME_LIMIT);
         } else {
           setActionMessage("⏰ SÜRE DOLDU! Elendin.");
           finishGame();
@@ -524,7 +526,7 @@ export const useGameLogic = ({
         return newStreak;
       });
 
-      setTurnTimeLeft(10);
+      setTurnTimeLeft(GAMEPLAY_CONSTANTS.TURN_TIME_LIMIT);
       return;
     }
 
@@ -568,7 +570,11 @@ export const useGameLogic = ({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Eğer kullanıcı bir input'a yazı yazıyorsa, oyun tuşlarını dinleme
-      if (["INPUT", "TEXTAREA"].includes((e.target as HTMLElement).tagName)) {
+      if (
+        ["INPUT", "TEXTAREA", "SELECT"].includes(
+          (e.target as HTMLElement).tagName
+        )
+      ) {
         return;
       }
 

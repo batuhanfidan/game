@@ -10,6 +10,7 @@ import { playSound, toggleMute, getMuteStatus } from "../../utils/sound";
 import { triggerWinConfetti } from "../../utils/confetti";
 import type { VisualEffectData } from "../../types";
 import { Volume2, VolumeX, ArrowLeft, User } from "lucide-react";
+import { GAME_DELAYS } from "../../utils/constants";
 
 type Player = "p1" | "p2";
 
@@ -91,8 +92,13 @@ const PenaltyMode = () => {
       ...h,
       [currentPlayer]: [...h[currentPlayer], goalScored],
     }));
+  }, [gameTimeMs, currentPlayer, shotTaken, isGameOver]);
 
-    setTimeout(() => {
+  // YENİ useEffect EKLE (handleShoot fonksiyonundan SONRA)
+  useEffect(() => {
+    if (!shotTaken || isGameOver) return;
+
+    const timer = setTimeout(() => {
       if (currentPlayer === "p1") {
         setCurrentPlayer("p2");
         setShotTaken(false);
@@ -105,8 +111,10 @@ const PenaltyMode = () => {
           finishGame();
         }
       }
-    }, 2000);
-  }, [gameTimeMs, currentPlayer, round, shotTaken, isGameOver]);
+    }, GAME_DELAYS.SHOT_RESULT_DISPLAY);
+
+    return () => clearTimeout(timer);
+  }, [shotTaken, currentPlayer, round, isGameOver]);
 
   const finishGame = () => {
     setIsGameOver(true);

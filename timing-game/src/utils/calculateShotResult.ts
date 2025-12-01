@@ -25,7 +25,8 @@ export function calculateShotResult(ms: number): ShotOutcome {
     }
   } else if (ms <= SHOT_ZONES.SHOT) {
     result = "ŞUT";
-    if (Math.random() * 100 <= 30 && Math.random() * 100 <= 25) {
+    const shotChance = Math.random() * 100;
+    if (shotChance <= 30) {
       message = "Ceza sahasından gol! ⚽";
       isGoal = true;
     } else {
