@@ -6,6 +6,7 @@ import BotMode from "./modes/single/BotMode";
 import PenaltyMode from "./modes/multi/PenaltyMode";
 import SurvivalMode from "./modes/single/SurvivalMode";
 import TimeAttackMode from "./modes/single/TimeAttackMode";
+import TutorialMode from "./modes/single/TutorialMode"; // YENİ IMPORT
 import ErrorBoundary from "./components/ErrorBoundary";
 import { soundsReady } from "./utils/sound";
 
@@ -24,7 +25,8 @@ function App() {
         <Route path="/game/bot" element={<BotMode />} />
         <Route path="/game/penalty" element={<PenaltyMode />} />
         <Route path="/game/survival" element={<SurvivalMode />} />
-        <Route path="/game/time-attack" element={<TimeAttackMode />} />{" "}
+        <Route path="/game/time-attack" element={<TimeAttackMode />} />
+        <Route path="/game/tutorial" element={<TutorialMode />} />{" "}
         <Route path="*" element={<MainMenu />} />
       </Routes>
     </ErrorBoundary>
