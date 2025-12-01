@@ -64,7 +64,8 @@ const GameLayout: React.FC<GameLayoutProps> = ({
       {gameState === "playing" && (
         <button
           onClick={togglePause}
-          className="absolute top-4 left-4 z-60 bg-gray-700/80 hover:bg-gray-600 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl font-bold shadow-lg transition-transform hover:scale-110"
+          aria-label="Oyunu Duraklat"
+          className="absolute top-4 left-4 z-60 bg-gray-700/80 hover:bg-gray-600 text-white rounded-full w-12 h-12 flex items-center justify-center text-2xl font-bold shadow-lg transition-transform hover:scale-110 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none"
           title="Duraklat"
         >
           ⏸
@@ -95,21 +96,24 @@ const GameLayout: React.FC<GameLayoutProps> = ({
         >
           <button
             onClick={handleMuteToggle}
-            className="bg-gray-700 hover:bg-gray-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-xl font-bold shadow-md"
+            aria-label={isMuted ? "Sesi Aç" : "Sesi Kapat"}
+            className="bg-gray-700 hover:bg-gray-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-xl font-bold shadow-md focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none"
           >
             {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
           </button>
           {showThemeButton && onThemeChange && (
             <button
               onClick={onThemeChange}
-              className="bg-gray-700 hover:bg-gray-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-xl font-bold shadow-md"
+              aria-label="Temayı Değiştir"
+              className="bg-gray-700 hover:bg-gray-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-xl font-bold shadow-md focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none"
             >
               🎨
             </button>
           )}
           <button
             onClick={() => setShowRules(true)}
-            className="bg-gray-700 hover:bg-gray-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-xl font-bold shadow-md"
+            aria-label="Oyun Kuralları"
+            className="bg-gray-700 hover:bg-gray-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-xl font-bold shadow-md focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none"
           >
             ?
           </button>
