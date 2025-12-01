@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 import { Circle, Ghost, Activity, Shuffle, Target } from "lucide-react";
 import type { GameVariant } from "../../types";
 
@@ -24,4 +24,4 @@ const VariantIcon: React.FC<VariantIconProps> = ({ variant, size = 16 }) => {
   }
 };
 
-export default VariantIcon;
+export default memo(VariantIcon);

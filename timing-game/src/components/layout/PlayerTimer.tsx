@@ -20,6 +20,13 @@ const PlayerTimer: React.FC<PlayerTimerProps> = memo(
         <div className="text-lg sm:text-xl md:text-2xl">{formattedTime}</div>
       </div>
     );
+  },
+  (prevProps, nextProps) => {
+    return (
+      prevProps.minutes === nextProps.minutes &&
+      prevProps.seconds === nextProps.seconds &&
+      prevProps.player === nextProps.player
+    );
   }
 );
 

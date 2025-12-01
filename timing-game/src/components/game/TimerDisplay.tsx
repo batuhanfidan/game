@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { formatTime } from "../../utils/formatTime";
 import type { GameVariant } from "../../types";
 import { Apple, ShieldAlert } from "lucide-react";
@@ -26,17 +26,23 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({
   redTarget = null,
   disableTransition = false,
 }) => {
-  const ms = totalMs % 1000;
-  const percentage = (ms / 1000) * 100;
+  const ms = useMemo(() => totalMs % 1000, [totalMs]);
+  const percentage = useMemo(() => (ms / 1000) * 100, [ms]);
 
-  const visualTargetOffset = isCursed ? 1000 - targetOffset : targetOffset;
-  const targetPos = (visualTargetOffset / 1000) * 100;
+  const visualTargetOffset = useMemo(
+    () => (isCursed ? 1000 - targetOffset : targetOffset),
+    [isCursed, targetOffset]
+  );
+  const targetPos = useMemo(
+    () => (visualTargetOffset / 1000) * 100,
+    [visualTargetOffset]
+  );
 
-  let redPos = 0;
-  if (redTarget !== null) {
+  const redPos = useMemo(() => {
+    if (redTarget === null) return 0;
     const visualRed = isCursed ? 1000 - redTarget : redTarget;
-    redPos = (visualRed / 1000) * 100;
-  }
+    return (visualRed / 1000) * 100;
+  }, [redTarget, isCursed]);
 
   const isGhostHidden = variant === "ghost" && ms > 500;
 
