@@ -5,7 +5,7 @@ export const useInterval = (callback: () => void, delay: number | null) => {
 
   useEffect(() => {
     savedCallback.current = callback;
-  }, [callback]);
+  });
 
   useEffect(() => {
     if (delay === null) return;

@@ -95,35 +95,24 @@ export const useGameTimer = ({
     }
 
     // Fever değişti mi kontrol et
-    const feverChanged = prevFeverRef.current !== isFeverActive;
-
-    if (feverChanged && isFeverActive) {
-      // Fever başladı -> Eski hızdan yeni hıza geçiş
-      const currentElapsed = Date.now() - startTimeRef.current;
-      const oldSpeed = prevSpeedRef.current; // Önceki gerçek hız
-      const currentVisualTime = currentElapsed * oldSpeed + roundOffset;
-
-      const newSpeed = speedMultiplier * 0.5; // Fever hızı (yarı hız)
-      const newElapsed = currentVisualTime / newSpeed;
-      startTimeRef.current = Date.now() - newElapsed;
-    } else if (feverChanged && !isFeverActive) {
-      // Fever bitti -> Yarı hızdan normal hıza dön
-      const currentElapsed = Date.now() - startTimeRef.current;
-      const oldSpeed = prevSpeedRef.current * 0.5; // Fever hızı
-      const currentVisualTime = currentElapsed * oldSpeed + roundOffset;
-
-      const newSpeed = speedMultiplier; // Normal hız
-      const newElapsed = currentVisualTime / newSpeed;
-      startTimeRef.current = Date.now() - newElapsed;
-    }
-
-    // Fever durumunu güncelle
-    prevFeverRef.current = isFeverActive;
-    prevSpeedRef.current = speedMultiplier;
-
-    // SADECE ilk başlatmada startTime'ı sıfırla (eğer henüz başlamadıysa)
     if (startTimeRef.current === 0) {
       startTimeRef.current = Date.now();
+    }
+
+    const feverChanged = prevFeverRef.current !== isFeverActive;
+
+    if (feverChanged) {
+      const currentElapsed = Date.now() - startTimeRef.current;
+
+      const oldSpeed = prevSpeedRef.current ?? speedMultiplier;
+      const currentVisualTime = currentElapsed * oldSpeed + roundOffset;
+
+      const newSpeed = isFeverActive ? speedMultiplier * 0.5 : speedMultiplier;
+
+      if (newSpeed > 0) {
+        const newElapsed = currentVisualTime / newSpeed;
+        startTimeRef.current = Date.now() - newElapsed;
+      }
     }
 
     const animate = () => {
@@ -149,6 +138,9 @@ export const useGameTimer = ({
       setGameTimeMs(visualTime);
 
       if (onUpdate) onUpdate();
+
+      prevFeverRef.current = isFeverActive;
+      prevSpeedRef.current = speedMultiplier;
 
       animationFrameRef.current = requestAnimationFrame(animate);
     };
