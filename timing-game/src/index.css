@@ -1,9 +1,11 @@
 @import "tailwindcss";
 
-/* Mobile Safari viewport fix */
 .h-screen-safe {
   height: 100vh;
-  height: 100dvh; /* Dynamic viewport height - modern tarayıcılar için */
+  height: 100dvh;
+
+  padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0)
+    env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
 }
 
 /* Fallback for older browsers */
