@@ -31,4 +31,5 @@ const ActionButton: React.FC<ActionButtonProps> = memo(
   }
 );
 
+ActionButton.displayName = "ActionButton";
 export default ActionButton;

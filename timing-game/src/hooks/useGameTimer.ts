@@ -36,6 +36,7 @@ export const useGameTimer = ({
 
   // Fever değişikliğini izlemek için ref
   const prevFeverRef = useRef<boolean>(isFeverActive);
+  const prevSpeedRef = useRef<number>(speedMultiplier);
 
   const startGame = useCallback(() => {
     let count = 3;
@@ -99,7 +100,7 @@ export const useGameTimer = ({
     if (feverChanged && isFeverActive) {
       // Fever başladı -> Eski hızdan yeni hıza geçiş
       const currentElapsed = Date.now() - startTimeRef.current;
-      const oldSpeed = speedMultiplier; // Fever öncesi hız
+      const oldSpeed = prevSpeedRef.current; // Önceki gerçek hız
       const currentVisualTime = currentElapsed * oldSpeed + roundOffset;
 
       const newSpeed = speedMultiplier * 0.5; // Fever hızı (yarı hız)
@@ -108,7 +109,7 @@ export const useGameTimer = ({
     } else if (feverChanged && !isFeverActive) {
       // Fever bitti -> Yarı hızdan normal hıza dön
       const currentElapsed = Date.now() - startTimeRef.current;
-      const oldSpeed = speedMultiplier * 0.5; // Fever hızı
+      const oldSpeed = prevSpeedRef.current * 0.5; // Fever hızı
       const currentVisualTime = currentElapsed * oldSpeed + roundOffset;
 
       const newSpeed = speedMultiplier; // Normal hız
@@ -118,6 +119,7 @@ export const useGameTimer = ({
 
     // Fever durumunu güncelle
     prevFeverRef.current = isFeverActive;
+    prevSpeedRef.current = speedMultiplier;
 
     // SADECE ilk başlatmada startTime'ı sıfırla (eğer henüz başlamadıysa)
     if (startTimeRef.current === 0) {

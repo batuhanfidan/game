@@ -10,6 +10,7 @@ import VisualEffectOverlay from "../../components/layout/VisualEffectOverlay";
 import PauseMenu from "../../components/layout/PauseMenu";
 import VariantIcon from "../../components/game/VariantIcon";
 import { useGameLogic } from "../../hooks/useGameLogic";
+import { useTheme } from "../../hooks/useTheme";
 import { toggleMute, getMuteStatus } from "../../utils/sound";
 import { DIFFICULTIES, VARIANTS } from "../../utils/constants";
 import type { GameVariant } from "../../types";
@@ -20,19 +21,12 @@ import {
   Palette,
   CircleHelp,
   Trophy,
-  Star,
   User,
   Bot,
   ArrowLeft,
 } from "lucide-react";
 
 type DifficultyKey = keyof typeof DIFFICULTIES;
-
-const THEMES = [
-  { name: "Karanlık", class: "bg-black" },
-  { name: "Gece Mavisi", class: "bg-slate-950" },
-  { name: "Grafit", class: "bg-neutral-950" },
-];
 
 const BotMode = () => {
   const navigate = useNavigate();
@@ -41,7 +35,7 @@ const BotMode = () => {
     useState<GameVariant>("classic");
   const [gameDuration, setGameDuration] = useState(180);
   const [showProgressBar, setShowProgressBar] = useState(true);
-  const [currentTheme, setCurrentTheme] = useState(0);
+  const { theme, nextTheme } = useTheme(0);
   const [isMuted, setIsMuted] = useState(getMuteStatus());
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -58,7 +52,7 @@ const BotMode = () => {
     currentPlayer,
     playerTimes,
     scores,
-    highScore,
+
     actionMessage,
     winner,
     finalScore,
@@ -83,8 +77,6 @@ const BotMode = () => {
   const [showRules, setShowRules] = useState(false);
   const [playerReady, setPlayerReady] = useState(false);
 
-  const handleThemeChange = () =>
-    setCurrentTheme((prev) => (prev + 1) % THEMES.length);
   const handleMuteToggle = () => setIsMuted(toggleMute());
   const handleBackToMenu = () => navigate("/", { replace: true });
 
@@ -98,8 +90,8 @@ const BotMode = () => {
 
   return (
     <div
-      className={`h-screen w-screen text-white flex flex-col justify-center items-center relative font-mono overflow-hidden transition-colors duration-500 ${
-        THEMES[currentTheme].class
+      className={`h-screen-safe w-screen text-white flex flex-col justify-center items-center relative font-mono overflow-hidden transition-colors duration-500 ${
+        theme.class
       } ${visualEffect?.type === "goal" ? "animate-shake" : ""}`}
     >
       <VisualEffectOverlay effect={visualEffect} isTwoPlayerMode={false} />
@@ -143,7 +135,7 @@ const BotMode = () => {
             {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
           </button>
           <button
-            onClick={handleThemeChange}
+            onClick={nextTheme}
             className="bg-gray-700 hover:bg-gray-600 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-md"
           >
             <Palette size={20} />
@@ -163,10 +155,6 @@ const BotMode = () => {
         <div className="absolute top-4 w-full flex flex-col items-center z-10 pointer-events-none">
           <div className="text-3xl font-extrabold text-yellow-400 drop-shadow-lg flex items-center gap-3">
             <Trophy size={32} /> {scores.p1} - {scores.p2}
-          </div>
-          <div className="text-sm text-gray-400 mt-1 bg-gray-900/50 px-3 py-1 rounded-full border border-gray-700 flex items-center gap-2">
-            <Star size={14} className="text-yellow-400" /> En Yüksek:{" "}
-            <span className="text-white font-bold">{highScore}</span>
           </div>
         </div>
       )}
@@ -366,7 +354,7 @@ const BotMode = () => {
         />
       )}
       <div className="absolute bottom-4 text-xs md:text-base text-gray-500 font-mono">
-        🎯 Tema: {THEMES[currentTheme].name}
+        🎯 Tema: {theme.name}
       </div>
     </div>
   );

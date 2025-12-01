@@ -94,7 +94,26 @@ const PenaltyMode = () => {
     }));
   }, [gameTimeMs, currentPlayer, shotTaken, isGameOver]);
 
-  // YENİ useEffect EKLE (handleShoot fonksiyonundan SONRA)
+  const finishGame = useCallback(() => {
+    setIsGameOver(true);
+    playSound("whistle");
+
+    setScores((currentScores) => {
+      let winnerMsg = "";
+      if (currentScores.p1 > currentScores.p2) {
+        winnerMsg = "🏆 Oyuncu 1 Kazandı!";
+        triggerWinConfetti();
+      } else if (currentScores.p2 > currentScores.p1) {
+        winnerMsg = "🏆 Oyuncu 2 Kazandı!";
+        triggerWinConfetti();
+      } else {
+        winnerMsg = "🤝 Berabere!";
+      }
+      setWinner(winnerMsg);
+      return currentScores;
+    });
+  }, []);
+
   useEffect(() => {
     if (!shotTaken || isGameOver) return;
 
@@ -114,27 +133,7 @@ const PenaltyMode = () => {
     }, GAME_DELAYS.SHOT_RESULT_DISPLAY);
 
     return () => clearTimeout(timer);
-  }, [shotTaken, currentPlayer, round, isGameOver]);
-
-  const finishGame = () => {
-    setIsGameOver(true);
-    playSound("whistle");
-
-    setScores((currentScores) => {
-      let winnerMsg = "";
-      if (currentScores.p1 > currentScores.p2) {
-        winnerMsg = "🏆 Oyuncu 1 Kazandı!";
-        triggerWinConfetti();
-      } else if (currentScores.p2 > currentScores.p1) {
-        winnerMsg = "🏆 Oyuncu 2 Kazandı!";
-        triggerWinConfetti();
-      } else {
-        winnerMsg = "🤝 Berabere!";
-      }
-      setWinner(winnerMsg);
-      return currentScores;
-    });
-  };
+  }, [shotTaken, currentPlayer, round, isGameOver, finishGame]);
 
   const restartGame = () => {
     setRound(1);
@@ -169,7 +168,7 @@ const PenaltyMode = () => {
   };
 
   return (
-    <div className="h-screen w-screen bg-linear-to-b from-slate-900 to-black text-white flex flex-col items-center font-mono overflow-hidden relative">
+    <div className="h-screen-safe w-screen bg-linear-to-b from-slate-900 to-black text-white flex flex-col items-center font-mono overflow-hidden relative">
       <VisualEffectOverlay
         effect={visualEffect}
         isTwoPlayerMode={true}

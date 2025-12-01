@@ -1,5 +1,18 @@
 @import "tailwindcss";
 
+/* Mobile Safari viewport fix */
+.h-screen-safe {
+  height: 100vh;
+  height: 100dvh; /* Dynamic viewport height - modern tarayıcılar için */
+}
+
+/* Fallback for older browsers */
+@supports not (height: 100dvh) {
+  .h-screen-safe {
+    height: calc(100vh - env(safe-area-inset-bottom));
+  }
+}
+
 @keyframes popup {
   from {
     opacity: 0;

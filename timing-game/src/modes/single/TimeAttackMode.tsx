@@ -38,7 +38,7 @@ const TimeAttackMode = () => {
     timeTargetWidth,
     timeBossActive,
     timeBossPosition,
-    timeFeverActive,
+    isTimeAttackFever,
     timeChangePopup, // Popup state'i
   } = useGameLogic({
     gameMode: "time_attack",
@@ -48,7 +48,7 @@ const TimeAttackMode = () => {
   const handleBackToMenu = () => navigate("/", { replace: true });
 
   const isLowTime = playerTimes.p1 <= 10;
-  const isFever = timeFeverActive;
+  const isFever = isTimeAttackFever;
 
   useEffect(() => {
     if (playerReady && gameState === "idle") startGame();
@@ -68,19 +68,19 @@ const TimeAttackMode = () => {
       {combo > 1 && (
         <div
           className={`flex items-center gap-2 mt-2 transition-all duration-300 ${
-            timeFeverActive ? "animate-bounce scale-110" : ""
+            isTimeAttackFever ? "animate-bounce scale-110" : ""
           }`}
         >
           <span
             className={`text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg border ${
-              timeFeverActive
+              isTimeAttackFever
                 ? "bg-red-600 border-red-400"
                 : "bg-orange-500 border-orange-400"
             }`}
           >
             {combo} KOMBO
           </span>
-          {timeFeverActive && (
+          {isTimeAttackFever && (
             <span className="bg-yellow-500 text-black text-xs font-bold px-3 py-1 rounded-full shadow-lg border border-yellow-300 animate-pulse flex items-center gap-1">
               <Flame size={12} fill="black" /> FEVER!
             </span>

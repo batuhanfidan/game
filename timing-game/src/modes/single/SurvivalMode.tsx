@@ -5,7 +5,7 @@ import ActionButton from "../../components/game/ActionButton";
 import GameOverModal from "../../components/common/GameOverModal";
 import GameLayout from "../../components/layout/GameLayout";
 import { useGameLogic } from "../../hooks/useGameLogic";
-import { THEMES } from "../../utils/constants";
+import { THEMES, UI_CONSTANTS } from "../../utils/constants";
 import {
   Heart,
   Shield,
@@ -45,7 +45,7 @@ const SurvivalMode = () => {
     survivalThreshold,
     targetOffset,
     adrenaline,
-    isFeverActive,
+    isSurvivalFever,
     goldenThreshold,
     hasShield,
     activeCurse,
@@ -69,10 +69,10 @@ const SurvivalMode = () => {
   const renderLives = () => {
     return (
       <div className="flex gap-1">
-        {[...Array(5)].map((_, i) => (
+        {[...Array(UI_CONSTANTS.MAX_LIVES_DISPLAY)].map((_, i) => (
           <Heart
             key={i}
-            size={32}
+            size={UI_CONSTANTS.HEART_ICON_SIZE}
             className={`${
               i < lives
                 ? "fill-[#ef4444] text-[#ef4444] drop-shadow-[0_0_10px_rgba(239,68,68,0.6)]"
@@ -102,7 +102,7 @@ const SurvivalMode = () => {
           <Flame
             size={32}
             className={
-              isFeverActive
+              isSurvivalFever
                 ? "text-[#f59e0b] fill-[#f59e0b] animate-bounce"
                 : "text-[#ef4444]"
             }
@@ -136,7 +136,7 @@ const SurvivalMode = () => {
       bottomInfo="SURVIVAL MODE"
     >
       {/* FEVER EFEKT KATMANI */}
-      {isFeverActive && (
+      {isSurvivalFever && (
         <div className="fixed inset-0 z-0 pointer-events-none animate-pulse">
           <div className="absolute inset-0 border-20 border-[#f59e0b]/20 blur-sm"></div>
           <div className="absolute inset-0 bg-[#f59e0b]/5 mix-blend-overlay"></div>
@@ -200,28 +200,28 @@ const SurvivalMode = () => {
             <div className="w-full flex items-center gap-3 mb-3 px-4">
               <span
                 className={`text-[10px] font-black w-16 tracking-widest ${
-                  isFeverActive
+                  isSurvivalFever
                     ? "text-[#f59e0b] animate-bounce"
                     : "text-[#71717a]"
                 }`}
               >
-                {isFeverActive ? "FEVER!" : "ADRENALİN"}
+                {isSurvivalFever ? "FEVER!" : "ADRENALİN"}
               </span>
 
               <div
                 className={`flex-1 h-2 bg-[#27272a] rounded-full overflow-hidden border ${
-                  isFeverActive
+                  isSurvivalFever
                     ? "border-[#f59e0b] shadow-[0_0_15px_rgba(245,158,11,0.5)]"
                     : "border-[#3f3f46]"
                 }`}
               >
                 <div
                   className={`h-full transition-all duration-300 ease-out ${
-                    isFeverActive
+                    isSurvivalFever
                       ? "bg-[#f59e0b] w-full animate-pulse"
                       : "bg-linear-to-r from-[#f59e0b] to-[#ef4444]"
                   }`}
-                  style={{ width: isFeverActive ? "100%" : `${adrenaline}%` }}
+                  style={{ width: isSurvivalFever ? "100%" : `${adrenaline}%` }}
                 />
               </div>
             </div>

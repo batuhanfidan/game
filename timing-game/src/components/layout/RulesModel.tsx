@@ -49,7 +49,7 @@ const RulesModal: React.FC<RulesModalProps> = ({ showRules, onClose }) => {
             <h3 className="text-lg font-bold text-blue-400 mb-3 flex items-center gap-2">
               🕹️ NASIL OYNANIR?
             </h3>
-            <p className="text-sm text-gray-400 leading-relaxed">
+            <p className="text-sm text-gray-300 leading-relaxed">
               Kronometre çalışırken hedef <strong>milisaniyeyi (ms)</strong>{" "}
               yakalamaya çalış.
               <br />
@@ -65,7 +65,7 @@ const RulesModal: React.FC<RulesModalProps> = ({ showRules, onClose }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="bg-neutral-800/50 p-3 rounded-lg border border-neutral-700">
                 <h4 className="font-bold text-white mb-1">Klasik & Bot</h4>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-gray-300">
                   Belirlenen süre (örn: 3dk) iki oyuncuya paylaştırılır. Ana
                   süre dolana kadar en çok golü atan kazanır.
                 </p>
@@ -74,7 +74,7 @@ const RulesModal: React.FC<RulesModalProps> = ({ showRules, onClose }) => {
                 <h4 className="font-bold text-red-400 mb-1">
                   💀 Hayatta Kalma
                 </h4>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-gray-300">
                   Hata yapma lüksün yok! "GOL" harici herhangi bir sonuçta oyun
                   biter. Serini uzatmaya çalış.
                 </p>
@@ -83,14 +83,14 @@ const RulesModal: React.FC<RulesModalProps> = ({ showRules, onClose }) => {
                 <h4 className="font-bold text-cyan-400 mb-1">
                   ⏱️ Zamana Karşı
                 </h4>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-gray-300">
                   60 saniye içinde atabildiğin kadar gol at. Süre bitince oyun
                   biter.
                 </p>
               </div>
               <div className="bg-neutral-800/50 p-3 rounded-lg border border-neutral-700">
                 <h4 className="font-bold text-yellow-400 mb-1">🥅 Penaltı</h4>
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-gray-300">
                   5'er atışlık seri penaltı atışları. Sadece "GOL" ve "PENALTI"
                   bölgeleri gol sayılır.
                 </p>
@@ -156,7 +156,7 @@ const RulesModal: React.FC<RulesModalProps> = ({ showRules, onClose }) => {
                     <th className="p-3">Sonuç</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-neutral-700 text-gray-400">
+                <tbody className="divide-y divide-neutral-700 text-gray-300">
                   <tr className="bg-green-900/20">
                     <td className="p-3 font-bold text-green-400">0 ms</td>
                     <td className="p-3 font-bold text-white">

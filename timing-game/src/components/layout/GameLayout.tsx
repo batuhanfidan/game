@@ -6,7 +6,7 @@ import PauseMenu from "./PauseMenu";
 import RulesModal from "./RulesModel";
 import { toggleMute, getMuteStatus } from "../../utils/sound";
 import type { GameState, VisualEffectData, Player } from "../../types";
-import { Volume2, VolumeX } from "lucide-react";
+import { Volume2, VolumeX, Menu, X } from "lucide-react";
 
 interface GameLayoutProps {
   children: ReactNode;
@@ -49,7 +49,7 @@ const GameLayout: React.FC<GameLayoutProps> = ({
 
   return (
     <div
-      className={`h-screen w-screen text-white flex flex-col justify-center items-center relative font-mono overflow-hidden transition-colors duration-500 ${
+      className={`h-screen-safe w-screen text-white flex flex-col justify-center items-center relative font-mono overflow-hidden transition-colors duration-500 ${
         THEMES[currentTheme].class
       } ${visualEffect?.type === "goal" ? "animate-shake" : ""}`}
     >
@@ -85,9 +85,11 @@ const GameLayout: React.FC<GameLayoutProps> = ({
       <div className="absolute top-4 right-4 z-60 flex flex-col items-end">
         <button
           onClick={() => setIsMenuOpen(!isMenuOpen)}
-          className="md:hidden bg-gray-700 hover:bg-gray-600 text-white rounded-lg w-10 h-10 flex items-center justify-center text-2xl font-bold border border-gray-500 shadow-lg transition-transform active:scale-95"
+          aria-label={isMenuOpen ? "Menüyü Kapat" : "Menüyü Aç"}
+          aria-expanded={isMenuOpen}
+          className="md:hidden bg-gray-700 hover:bg-gray-600 text-white rounded-lg w-10 h-10 flex items-center justify-center text-2xl font-bold border border-gray-500 shadow-lg transition-transform active:scale-95 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none"
         >
-          {isMenuOpen ? "✕" : "☰"}
+          {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
         <div
           className={`flex-col md:flex-row gap-2 mt-2 md:mt-0 ${
@@ -132,7 +134,7 @@ const GameLayout: React.FC<GameLayoutProps> = ({
 
       {/* Alt Bilgi */}
       {bottomInfo && (
-        <div className="absolute bottom-4 text-xs md:text-base text-gray-500 font-mono font-bold uppercase tracking-widest opacity-50">
+        <div className="absolute bottom-4 text-xs md:text-base text-gray-300 font-mono font-bold uppercase tracking-widest opacity-50">
           {bottomInfo}
         </div>
       )}

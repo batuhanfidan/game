@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, memo } from "react";
 import { formatTime } from "../../utils/formatTime";
 import type { GameVariant } from "../../types";
 import { Apple, ShieldAlert } from "lucide-react";
@@ -27,16 +27,13 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({
   disableTransition = false,
 }) => {
   const ms = useMemo(() => totalMs % 1000, [totalMs]);
-  const percentage = useMemo(() => (ms / 1000) * 100, [ms]);
+  const percentage = (ms / 1000) * 100;
 
   const visualTargetOffset = useMemo(
     () => (isCursed ? 1000 - targetOffset : targetOffset),
     [isCursed, targetOffset]
   );
-  const targetPos = useMemo(
-    () => (visualTargetOffset / 1000) * 100,
-    [visualTargetOffset]
-  );
+  const targetPos = (visualTargetOffset / 1000) * 100;
 
   const redPos = useMemo(() => {
     if (redTarget === null) return 0;
@@ -170,4 +167,14 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({
   );
 };
 
-export default TimerDisplay;
+export default memo(TimerDisplay, (prevProps, nextProps) => {
+  return (
+    prevProps.totalMs === nextProps.totalMs &&
+    prevProps.targetOffset === nextProps.targetOffset &&
+    prevProps.variant === nextProps.variant &&
+    prevProps.showProgressBar === nextProps.showProgressBar &&
+    prevProps.threshold === nextProps.threshold &&
+    prevProps.isCursed === nextProps.isCursed &&
+    prevProps.redTarget === nextProps.redTarget
+  );
+});

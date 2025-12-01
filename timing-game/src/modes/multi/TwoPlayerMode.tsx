@@ -10,6 +10,7 @@ import VisualEffectOverlay from "../../components/layout/VisualEffectOverlay";
 import PauseMenu from "../../components/layout/PauseMenu";
 import VariantIcon from "../../components/game/VariantIcon";
 import { useGameLogic } from "../../hooks/useGameLogic";
+import { useTheme } from "../../hooks/useTheme";
 import { toggleMute, getMuteStatus } from "../../utils/sound";
 import { VARIANTS } from "../../utils/constants";
 import type { GameVariant } from "../../types";
@@ -23,14 +24,6 @@ import {
   User,
   ArrowLeft,
 } from "lucide-react";
-
-// İki Oyunculu mod için özel tema listesi (Mevcut davranışı korumak için)
-const THEMES = [
-  { name: "Klasik", class: "bg-black" },
-  { name: "Çim Saha", class: "bg-green-900" },
-  { name: "Gece Mavisi", class: "bg-slate-900" },
-  { name: "Neon", class: "bg-purple-900" },
-];
 
 const TwoPlayerMode = () => {
   const navigate = useNavigate();
@@ -76,12 +69,10 @@ const TwoPlayerMode = () => {
   const [p1Ready, setP1Ready] = useState(false);
   const [p2Ready, setP2Ready] = useState(false);
 
-  const [currentTheme, setCurrentTheme] = useState(0);
+  const { theme, nextTheme } = useTheme(0);
   const [isMuted, setIsMuted] = useState(getMuteStatus());
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const handleThemeChange = () =>
-    setCurrentTheme((prev) => (prev + 1) % THEMES.length);
   const handleMuteToggle = () => setIsMuted(toggleMute());
   const handleBackToMenu = () => navigate("/", { replace: true });
 
@@ -98,8 +89,8 @@ const TwoPlayerMode = () => {
 
   return (
     <div
-      className={`h-screen w-screen text-white flex flex-col justify-center items-center relative font-mono overflow-hidden transition-colors duration-500 ${
-        THEMES[currentTheme].class
+      className={`h-screen-safe w-screen text-white flex flex-col justify-center items-center relative font-mono overflow-hidden transition-colors duration-500 ${
+        theme.class
       } ${visualEffect?.type === "goal" ? "animate-shake" : ""}`}
     >
       <VisualEffectOverlay effect={visualEffect} isTwoPlayerMode={true} />
@@ -143,7 +134,7 @@ const TwoPlayerMode = () => {
             {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
           </button>
           <button
-            onClick={handleThemeChange}
+            onClick={nextTheme}
             className="bg-gray-700 hover:bg-gray-600 text-white rounded-full w-10 h-10 flex items-center justify-center shadow-md"
           >
             <Palette size={20} />
@@ -403,7 +394,7 @@ const TwoPlayerMode = () => {
         />
       )}
       <div className="absolute bottom-4 text-sm text-gray-400">
-        🎯 Tema: {THEMES[currentTheme].name}
+        🎯 Tema: {theme.name}
       </div>
     </div>
   );

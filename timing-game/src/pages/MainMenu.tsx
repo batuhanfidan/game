@@ -20,14 +20,14 @@ const MainMenu = () => {
   const [menuView, setMenuView] = useState<MenuState>("main");
 
   return (
-    <div className="h-screen w-screen flex flex-col justify-center items-center bg-linear-to-br from-gray-900 to-black text-white font-mono overflow-hidden relative">
+    <div className="h-screen-safe w-screen flex flex-col justify-center items-center bg-linear-to-br from-gray-900 to-black text-white font-mono overflow-hidden relative">
       <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops))] from-gray-800/20 via-black to-black pointer-events-none"></div>
 
       <div className="z-10 text-center mb-10">
         <h1 className="text-5xl md:text-7xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-blue-400 via-purple-400 to-green-400 drop-shadow-[0_0_15px_rgba(59,130,246,0.5)] animate-pulse tracking-tighter">
           TIMING GAME
         </h1>
-        <p className="text-gray-500 text-xs md:text-sm mt-3 tracking-[0.5em] uppercase opacity-80">
+        <p className="text-gray-300 text-xs md:text-sm mt-3 tracking-[0.5em] uppercase opacity-80">
           Reflekslerini Test Et
         </p>
       </div>
@@ -104,7 +104,7 @@ const MainMenu = () => {
 
           <button
             onClick={() => setMenuView("main")}
-            className="mt-4 text-gray-400 hover:text-white text-sm underline transition-all flex items-center justify-center gap-2"
+            className="mt-4 text-gray-300 hover:text-white text-sm underline transition-all flex items-center justify-center gap-2"
           >
             <ArrowLeft size={16} /> Geri Dön
           </button>
@@ -144,7 +144,7 @@ const MainMenu = () => {
 
           <button
             onClick={() => setMenuView("main")}
-            className="mt-4 text-gray-400 hover:text-white text-sm underline transition-all flex items-center justify-center gap-2"
+            className="mt-4 text-gray-300 hover:text-white text-sm underline transition-all flex items-center justify-center gap-2"
           >
             <ArrowLeft size={16} /> Geri Dön
           </button>

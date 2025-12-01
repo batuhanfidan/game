@@ -1,4 +1,4 @@
-import { Component, type ErrorInfo, type ReactNode } from "react"; // Düzeltme 1 & 2
+import { Component, type ErrorInfo, type ReactNode } from "react";
 import { AlertTriangle, Home, RotateCcw } from "lucide-react";
 
 interface Props {
@@ -53,7 +53,6 @@ class ErrorBoundary extends Component<Props, State> {
                 yükleyin.
               </p>
 
-              {/* Düzeltme 3: process.env.NODE_ENV yerine import.meta.env.DEV kullanıldı */}
               {import.meta.env.DEV && this.state.error && (
                 <details className="w-full mb-6 text-left">
                   <summary className="cursor-pointer text-sm text-gray-500 hover:text-gray-300 mb-2">
