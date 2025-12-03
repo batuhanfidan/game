@@ -11,7 +11,8 @@ export const useTimeAttackSystem = () => {
   const [combo, setCombo] = useState(0);
   const [multiplier, setMultiplier] = useState(1);
   const [targetWidth, setTargetWidth] = useState(INITIAL_TARGET_WIDTH);
-  const [bossActive, setBossActive] = useState(false);
+
+  const [isBossActive, setIsBossActive] = useState(false);
   const [bossPosition, setBossPosition] = useState<number | null>(null);
   const [isFever, setIsFever] = useState(false);
   const [feverEndTime, setFeverEndTime] = useState<number | null>(null);
@@ -20,7 +21,7 @@ export const useTimeAttackSystem = () => {
     setCombo(0);
     setMultiplier(1);
     setTargetWidth(INITIAL_TARGET_WIDTH);
-    setBossActive(false);
+    setIsBossActive(false);
     setBossPosition(null);
     setIsFever(false);
     setFeverEndTime(null);
@@ -46,39 +47,38 @@ export const useTimeAttackSystem = () => {
     return () => clearTimeout(timer);
   }, [isFever, feverEndTime]);
 
-  // Boss Spawn
   const spawnBoss = useCallback(
     (nextTarget: number) => {
       const shouldSpawn = combo >= 3 && Math.random() < BOSS_CHANCE_BASE;
 
       if (shouldSpawn) {
-        setBossActive(true);
-
+        setIsBossActive(true);
         const distance = targetWidth / 2 + BOSS_WIDTH / 2 + 2;
-
         let side = Math.random() < 0.5 ? 1 : -1;
 
-        // Ekrandan taşmaması için yönü düzelt (0-1000 arası)
-        if (nextTarget - distance < 50) side = 1; // Soldan taşıyorsa sağa koy
-        if (nextTarget + distance > 950) side = -1; // Sağdan taşıyorsa sola koy
+        if (nextTarget - distance < 50) side = 1;
+        if (nextTarget + distance > 950) side = -1;
 
         setBossPosition(nextTarget + side * distance);
       } else {
-        setBossActive(false);
+        setIsBossActive(false);
       }
     },
     [combo, targetWidth]
   );
 
-  const processHit = useCallback(
+  // RENAMED: More descriptive name
+  const checkHitAccuracy = useCallback(
     (currentMs: number, targetOffset: number) => {
       const diff = Math.abs(currentMs - targetOffset);
       const halfWidth = targetWidth / 2;
       let isBlocked = false;
-      if (bossActive && bossPosition !== null) {
+
+      if (isBossActive && bossPosition !== null) {
         const distToBoss = Math.abs(currentMs - bossPosition);
         if (distToBoss < BOSS_WIDTH / 2) isBlocked = true;
       }
+
       const result = {
         isGoal: false,
         isGolden: false,
@@ -93,7 +93,7 @@ export const useTimeAttackSystem = () => {
           result.message = "🛡️ FEVER KALKANI KIRILDI!";
           setIsFever(false);
           setFeverEndTime(null);
-          setBossActive(false);
+          setIsBossActive(false);
           return result;
         }
       }
@@ -103,7 +103,7 @@ export const useTimeAttackSystem = () => {
         setCombo(0);
         setMultiplier(1);
         setTargetWidth(INITIAL_TARGET_WIDTH);
-        setBossActive(false);
+        setIsBossActive(false);
         return result;
       }
       if (diff > halfWidth) {
@@ -116,7 +116,7 @@ export const useTimeAttackSystem = () => {
           setMultiplier(1);
           setTargetWidth(INITIAL_TARGET_WIDTH);
         }
-        setBossActive(false);
+        setIsBossActive(false);
         return result;
       }
 
@@ -149,17 +149,17 @@ export const useTimeAttackSystem = () => {
       }
       return result;
     },
-    [combo, targetWidth, bossActive, bossPosition, isFever]
+    [combo, targetWidth, isBossActive, bossPosition, isFever]
   );
 
   return {
     combo,
     multiplier,
     targetWidth,
-    bossActive,
+    isBossActive,
     bossPosition,
     isFever,
-    processHit,
+    checkHitAccuracy,
     resetSystem,
     spawnBoss,
   };

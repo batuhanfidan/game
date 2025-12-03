@@ -8,7 +8,6 @@ import {
   Timer,
   Trophy,
   ArrowRight,
-  Lock,
   Gamepad2,
   ArrowLeft,
   Zap,
@@ -20,7 +19,6 @@ const MainMenu = () => {
   const navigate = useNavigate();
   const [menuView, setMenuView] = useState<MenuState>("main");
 
-  // Tutorial'a gider
   const handleQuickPlay = () => {
     navigate("/game/tutorial");
   };
@@ -29,7 +27,6 @@ const MainMenu = () => {
     <div className="h-screen-safe w-screen flex flex-col justify-center items-center bg-linear-to-br from-gray-900 to-black text-white font-mono overflow-hidden relative">
       <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops))] from-gray-800/20 via-black to-black pointer-events-none"></div>
 
-      {/* HIZLI BAŞLA BUTONU */}
       <button
         onClick={handleQuickPlay}
         className="absolute top-6 right-6 z-50 bg-linear-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-black font-black py-3 px-6 rounded-full shadow-[0_0_20px_rgba(234,179,8,0.4)] transition-transform hover:scale-105 active:scale-95 flex items-center gap-2 animate-fade-in focus-visible:ring-4 focus-visible:ring-blue-500"
@@ -145,15 +142,16 @@ const MainMenu = () => {
           </button>
 
           <button
-            disabled
-            className="bg-gray-700 text-gray-500 font-bold py-4 px-6 rounded-xl shadow-none flex items-center justify-between cursor-not-allowed opacity-70"
+            onClick={() => navigate("/game/penalty")}
+            className="bg-purple-600 hover:bg-purple-500 text-white font-bold py-4 px-6 rounded-xl shadow-lg hover:scale-105 flex items-center justify-between group transition-all focus-visible:ring-4 focus-visible:ring-purple-300 outline-none"
           >
             <span className="flex items-center gap-2">
               <Trophy size={20} /> Penaltı Atışları
             </span>
-            <span className="text-xs bg-gray-800 px-2 py-1 rounded text-gray-400 border border-gray-600 flex items-center gap-1">
-              <Lock size={12} /> YAKINDA
-            </span>
+            <ArrowRight
+              size={20}
+              className="opacity-0 group-hover:opacity-100 transition-opacity"
+            />
           </button>
 
           <button
@@ -166,7 +164,7 @@ const MainMenu = () => {
       )}
 
       <div className="absolute bottom-6 text-gray-600 text-xs font-mono">
-        v0.5
+        v0.6
       </div>
     </div>
   );

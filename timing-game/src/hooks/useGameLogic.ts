@@ -83,12 +83,12 @@ export const useGameLogic = ({
 
   const {
     spawnBoss,
-    processHit,
+    checkHitAccuracy,
     isFever: timeFeverActive,
     combo,
     multiplier,
     targetWidth,
-    bossActive,
+    isBossActive,
     bossPosition,
   } = timeAttack;
 
@@ -366,7 +366,7 @@ export const useGameLogic = ({
     const currentMs = timer.gameTimeMs % 1000;
 
     if (gameMode === "time_attack") {
-      const result = processHit(currentMs, targetOffset);
+      const result = checkHitAccuracy(currentMs, targetOffset);
 
       setActionMessage(result.message);
       setScores((s) => ({ ...s, p1: s.p1 + result.scoreBonus }));
@@ -577,7 +577,7 @@ export const useGameLogic = ({
     playerTimes,
     playerNames,
     survival,
-    processHit,
+    checkHitAccuracy,
   ]);
 
   useEffect(() => {
@@ -650,7 +650,7 @@ export const useGameLogic = ({
     combo,
     multiplier,
     timeTargetWidth: targetWidth,
-    timeBossActive: bossActive,
+    timeBossActive: isBossActive,
     timeBossPosition: bossPosition,
     isTimeAttackFever: timeFeverActive,
     timeChangePopup,
