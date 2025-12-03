@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import type { VisualEffectData } from "../../types";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { UI_CONSTANTS } from "../../utils/constants";
@@ -14,15 +14,6 @@ const VisualEffectOverlay: React.FC<VisualEffectOverlayProps> = ({
   isTwoPlayerMode,
 }) => {
   const [key, setKey] = useState(0);
-  const [position, setPosition] = useState<{
-    top: string;
-    left: string;
-    transform: string;
-  }>({
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-  });
 
   const isMobile = useMediaQuery(
     `(max-width: ${UI_CONSTANTS.MOBILE_BREAKPOINT}px)`
@@ -31,28 +22,32 @@ const VisualEffectOverlay: React.FC<VisualEffectOverlayProps> = ({
   useEffect(() => {
     if (effect) {
       setKey((prev) => prev + 1);
+    }
+  }, [effect]);
 
-      if (isTwoPlayerMode) {
-        if (effect.player === "p1") {
-          setPosition({
-            top: isMobile ? "85%" : "70%",
-            left: isMobile ? "25%" : "30%",
-            transform: "translate(-50%, -50%)",
-          });
-        } else {
-          setPosition({
-            top: isMobile ? "85%" : "70%",
-            left: isMobile ? "75%" : "70%",
-            transform: "translate(-50%, -50%)",
-          });
-        }
-      } else {
-        setPosition({
-          top: "25%",
-          left: "50%",
+  const position = useMemo(() => {
+    if (!effect) return {};
+
+    if (isTwoPlayerMode) {
+      if (effect.player === "p1") {
+        return {
+          top: isMobile ? "85%" : "70%",
+          left: isMobile ? "25%" : "30%",
           transform: "translate(-50%, -50%)",
-        });
+        };
+      } else {
+        return {
+          top: isMobile ? "85%" : "70%",
+          left: isMobile ? "75%" : "70%",
+          transform: "translate(-50%, -50%)",
+        };
       }
+    } else {
+      return {
+        top: "25%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+      };
     }
   }, [effect, isTwoPlayerMode, isMobile]);
 

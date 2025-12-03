@@ -36,8 +36,8 @@ const ActionButton: React.FC<ActionButtonProps> = memo(
             optimize-gpu select-none
             ${
               disabled
-                ? "bg-neutral-800 text-neutral-500 cursor-not-allowed border border-neutral-700"
-                : `${baseColor} cursor-pointer shadow-[0_8px_0_rgb(0,0,0,0.3)] active:shadow-none active:translate-y-2er:brightness-110`
+                ? "bg-neutral-800 text-neutral-500 cursor-not-allowed border border-neutral-700 shadow-[0_4px_0_rgb(0,0,0,0.2)]"
+                : `${baseColor} cursor-pointer shadow-[0_8px_0_rgb(0,0,0,0.3)] active:shadow-none active:translate-y-2 hover:brightness-110`
             }
           `}
         >

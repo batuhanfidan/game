@@ -1,4 +1,4 @@
-import React, { useState, type ReactNode } from "react";
+import React, { useState, type ReactNode, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { THEMES } from "../../utils/constants";
 import VisualEffectOverlay from "./VisualEffectOverlay";
@@ -47,6 +47,17 @@ const GameLayout: React.FC<GameLayoutProps> = ({
   const handleMuteToggle = () => setIsMuted(toggleMute());
   const handleBackToMenu = () => navigate("/", { replace: true });
 
+  // Escape key to close menu
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isMenuOpen) {
+        setIsMenuOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleEsc);
+    return () => window.removeEventListener("keydown", handleEsc);
+  }, [isMenuOpen]);
+
   return (
     <div
       className={`h-screen-safe w-screen text-white flex flex-col justify-center items-center relative font-mono overflow-hidden transition-colors duration-500 ${
@@ -87,14 +98,25 @@ const GameLayout: React.FC<GameLayoutProps> = ({
           onClick={() => setIsMenuOpen(!isMenuOpen)}
           aria-label={isMenuOpen ? "Menüyü Kapat" : "Menüyü Aç"}
           aria-expanded={isMenuOpen}
-          className="md:hidden bg-gray-700 hover:bg-gray-600 text-white rounded-lg w-10 h-10 flex items-center justify-center text-2xl font-bold border border-gray-500 shadow-lg transition-transform active:scale-95 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none"
+          aria-controls="mobile-menu"
+          className="md:hidden bg-gray-700 hover:bg-gray-600 text-white rounded-lg w-10 h-10 flex items-center justify-center text-2xl font-bold border border-gray-500 shadow-lg transition-transform active:scale-95 focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:outline-none z-70 relative"
         >
           {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
+
+        {/* Backdrop for mobile menu */}
+        {isMenuOpen && (
+          <div
+            className="fixed inset-0 z-50 bg-black/20 backdrop-blur-[1px] md:hidden"
+            onClick={() => setIsMenuOpen(false)}
+          />
+        )}
+
         <div
+          id="mobile-menu"
           className={`flex-col md:flex-row gap-2 mt-2 md:mt-0 ${
             isMenuOpen ? "flex" : "hidden"
-          } md:flex transition-all duration-300 ease-in-out`}
+          } md:flex transition-all duration-300 ease-in-out z-60 relative`}
         >
           <button
             onClick={handleMuteToggle}
