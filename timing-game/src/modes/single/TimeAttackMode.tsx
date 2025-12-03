@@ -39,7 +39,7 @@ const TimeAttackMode = () => {
     timeBossActive,
     timeBossPosition,
     isTimeAttackFever,
-    timeChangePopup, // Popup state'i
+    timeChangePopup,
   } = useGameLogic({
     gameMode: "time_attack",
     initialTime: 60,
@@ -66,33 +66,36 @@ const TimeAttackMode = () => {
 
       {/* Kombo Göstergesi */}
       {combo > 1 && (
-        <div
-          className={`flex items-center gap-2 mt-2 transition-all duration-300 ${
-            isTimeAttackFever ? "animate-bounce scale-110" : ""
-          }`}
-        >
-          <span
-            className={`text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg border ${
-              isTimeAttackFever
-                ? "bg-red-600 border-red-400"
-                : "bg-orange-500 border-orange-400"
+        <div className={`mt-2 ${isTimeAttackFever ? "animate-bounce" : ""}`}>
+          <div
+            className={`flex items-center gap-2 transition-transform duration-300 ${
+              isTimeAttackFever ? "scale-110" : "scale-100"
             }`}
           >
-            {combo} KOMBO
-          </span>
-          {isTimeAttackFever && (
-            <span className="bg-yellow-500 text-black text-xs font-bold px-3 py-1 rounded-full shadow-lg border border-yellow-300 animate-pulse flex items-center gap-1">
-              <Flame size={12} fill="black" /> FEVER!
+            <span
+              className={`text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg border ${
+                isTimeAttackFever
+                  ? "bg-red-600 border-red-400"
+                  : "bg-orange-500 border-orange-400"
+              }`}
+            >
+              {combo} KOMBO
             </span>
-          )}
-          <span className="bg-purple-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg border border-purple-400">
-            {multiplier}x PUAN
-          </span>
+            {isTimeAttackFever && (
+              <span className="bg-yellow-500 text-black text-xs font-bold px-3 py-1 rounded-full shadow-lg border border-yellow-300 animate-pulse flex items-center gap-1">
+                <Flame size={12} fill="black" /> FEVER!
+              </span>
+            )}
+            <span className="bg-purple-600 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg border border-purple-400">
+              {multiplier}x PUAN
+            </span>
+          </div>
         </div>
       )}
 
-      <div className="text-xs text-gray-500 mt-2 bg-black/40 px-4 py-1 rounded-full border border-white/5 backdrop-blur-md">
-        EN YÜKSEK: <span className="text-gray-300 font-bold">{highScore}</span>
+      <div className="text-xs text-gray-300 mt-2 bg-black/60 px-4 py-1.5 rounded-full border border-white/10 backdrop-blur-md font-medium">
+        EN YÜKSEK:{" "}
+        <span className="text-white font-bold ml-1">{highScore}</span>
       </div>
     </div>
   );
@@ -110,7 +113,6 @@ const TimeAttackMode = () => {
       isTwoPlayerMode={false}
       bottomInfo="HARDCORE TIME ATTACK"
     >
-      {/* Kritik Süre Efekti (Kırmızı yanıp sönen kenarlar) */}
       <div
         className={`fixed inset-0 pointer-events-none transition-all duration-500 z-0
         ${isLowTime && gameState === "playing" ? "opacity-100" : "opacity-0"}
@@ -120,26 +122,23 @@ const TimeAttackMode = () => {
         <div className="absolute inset-0 border-4 border-red-600/50"></div>
       </div>
 
-      {/* Fever Efekti (Buz mavisi / Camgöbeği) */}
       <div
         className={`fixed inset-0 pointer-events-none transition-all duration-700 z-0
         ${isFever ? "opacity-100" : "opacity-0"}
       `}
       >
-        {/* Soğuk Overlay */}
         <div className="absolute inset-0 bg-cyan-500/10 mix-blend-screen animate-pulse"></div>
-        {/* Üst ve Alt Çerçeve Parlaması */}
         <div className="absolute top-0 w-full h-2 bg-cyan-400 shadow-[0_0_40px_rgba(34,211,238,1)]"></div>
         <div className="absolute bottom-0 w-full h-2 bg-cyan-400 shadow-[0_0_40px_rgba(34,211,238,1)]"></div>
       </div>
 
-      {/* Hazırlık */}
       {gameState === "idle" && !countdown && (
-        <div className="flex flex-col items-center gap-6 z-20 bg-black/60 p-10 rounded-3xl border border-cyan-900/30 shadow-2xl max-w-sm w-full mx-4 backdrop-blur-xl">
+        <div className="flex flex-col items-center gap-6 z-20 bg-black/80 p-8 md:p-10 rounded-3xl border border-cyan-900/30 shadow-2xl max-w-sm w-full mx-4 backdrop-blur-xl animate-popup">
           <h2 className="text-2xl font-black text-cyan-400 tracking-widest uppercase drop-shadow-md flex items-center gap-3">
             <Timer size={28} /> ZAMANA KARŞI
           </h2>
-          <div className="text-center text-gray-400 text-sm leading-relaxed space-y-2">
+
+          <div className="text-center text-gray-300 text-sm leading-relaxed space-y-2">
             <p>Hedefi tam ortadan vur!</p>
             <p className="text-green-400 font-bold">GOL = PUAN & SÜRE</p>
             <p className="text-red-400 font-bold">KIRMIZI = -10 SN CEZA!</p>
@@ -153,14 +152,13 @@ const TimeAttackMode = () => {
           </button>
           <button
             onClick={handleBackToMenu}
-            className="text-gray-600 hover:text-gray-400 text-xs tracking-widest uppercase mt-2 transition-colors flex items-center gap-1"
+            className="text-gray-500 hover:text-gray-300 text-xs tracking-widest uppercase mt-2 transition-colors flex items-center gap-1"
           >
             <ArrowLeft size={14} /> Menüye Dön
           </button>
         </div>
       )}
 
-      {/* Geri Sayım */}
       {countdown !== null && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/40 backdrop-blur-[2px]">
           <div className="text-9xl font-black text-cyan-400 animate-ping drop-shadow-[0_0_30px_rgba(34,211,238,0.8)]">
@@ -169,10 +167,9 @@ const TimeAttackMode = () => {
         </div>
       )}
 
-      {/* Oyun Alanı */}
       {gameState === "playing" && (
         <>
-          <div className="absolute top-36 w-full flex justify-center opacity-90 z-10">
+          <div className="absolute top-28 md:top-36 w-full flex justify-center opacity-90 z-10">
             <div className="relative">
               <PlayerTimer
                 player={
@@ -190,7 +187,6 @@ const TimeAttackMode = () => {
                 seconds={playerTimes.p1 % 60}
               />
 
-              {/* SÜRE DEĞİŞİM POPUP'I */}
               {timeChangePopup && (
                 <div
                   key={timeChangePopup.id}
@@ -217,11 +213,11 @@ const TimeAttackMode = () => {
             />
           </div>
 
-          <div className="text-lg md:text-2xl mt-8 text-center font-medium px-4 h-8 text-cyan-300 tracking-wide drop-shadow-sm">
+          <div className="text-lg md:text-2xl mt-8 text-center font-medium px-4 h-8 text-cyan-300 tracking-wide drop-shadow-sm truncate w-full">
             {actionMessage}
           </div>
 
-          <div className="flex justify-center w-full px-4 mt-12">
+          <div className="flex justify-center w-full px-4 mt-8 md:mt-12">
             <ActionButton
               onClick={handleAction}
               disabled={isPaused}
@@ -234,7 +230,7 @@ const TimeAttackMode = () => {
             />
           </div>
 
-          <div className="mt-8 text-gray-600 text-xs uppercase tracking-[0.2em] animate-pulse hidden md:block">
+          <div className="mt-8 text-gray-500 text-[10px] uppercase tracking-[0.2em] animate-pulse hidden md:block">
             [SPACE] TUŞU İLE OYNA
           </div>
         </>
