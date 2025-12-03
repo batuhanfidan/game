@@ -33,22 +33,32 @@ export const useGameTimer = ({
   const startTimeRef = useRef<number>(0);
   const pauseStartTimeRef = useRef<number>(0);
   const animationFrameRef = useRef<number>(0);
+  const countdownIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
+    null
+  );
 
-  // Fever değişikliğini izlemek için ref
   const prevFeverRef = useRef<boolean>(isFeverActive);
   const prevSpeedRef = useRef<number>(speedMultiplier);
 
+  const clearCountdown = () => {
+    if (countdownIntervalRef.current) {
+      clearInterval(countdownIntervalRef.current);
+      countdownIntervalRef.current = null;
+    }
+  };
+
   const startGame = useCallback(() => {
+    clearCountdown(); // Eski sayacı temizle
     let count = 3;
     setCountdown(count);
     setIsPaused(false);
 
-    const id = setInterval(() => {
+    countdownIntervalRef.current = setInterval(() => {
       count--;
       if (count > 0) {
         setCountdown(count);
       } else {
-        clearInterval(id);
+        clearCountdown();
         setCountdown(null);
         setGameState("playing");
         playSound("whistle");
@@ -66,6 +76,8 @@ export const useGameTimer = ({
   const resetTimer = useCallback(() => {
     setGameTimeMs(0);
     setIsPaused(false);
+    clearCountdown();
+    setCountdown(null);
     startTimeRef.current = 0;
     pauseStartTimeRef.current = 0;
     prevFeverRef.current = false;
@@ -86,7 +98,7 @@ export const useGameTimer = ({
     }
   }, [isPaused]);
 
-  // --- REQUEST ANIMATION FRAME TABANLI ZAMANLAYICI ---
+  // --- RAF ZAMANLAYICI & FEVER  ---
   useEffect(() => {
     if (gameState !== "playing" || isPaused) {
       if (animationFrameRef.current)
@@ -94,7 +106,6 @@ export const useGameTimer = ({
       return;
     }
 
-    // Fever değişti mi kontrol et
     if (startTimeRef.current === 0) {
       startTimeRef.current = Date.now();
     }
@@ -102,16 +113,17 @@ export const useGameTimer = ({
     const feverChanged = prevFeverRef.current !== isFeverActive;
 
     if (feverChanged) {
-      const currentElapsed = Date.now() - startTimeRef.current;
+      const now = Date.now();
+      const currentElapsed = now - startTimeRef.current;
 
       const oldSpeed = prevSpeedRef.current ?? speedMultiplier;
-      const currentVisualTime = currentElapsed * oldSpeed + roundOffset;
+      const currentVisualTime = currentElapsed * oldSpeed;
 
       const newSpeed = isFeverActive ? speedMultiplier * 0.5 : speedMultiplier;
 
-      if (newSpeed > 0) {
+      if (newSpeed > 0.01) {
         const newElapsed = currentVisualTime / newSpeed;
-        startTimeRef.current = Date.now() - newElapsed;
+        startTimeRef.current = now - newElapsed;
       }
     }
 
@@ -125,7 +137,7 @@ export const useGameTimer = ({
 
       let visualTime = elapsed * currentSpeed + roundOffset;
 
-      // Dengesiz Hız Laneti veya Varyasyonu
+      // Dengesiz Hız Laneti (Kaos)
       if (gameVariant === "unstable" || activeCurse === "UNSTABLE") {
         const t = now / 1000;
         const chaos =
@@ -135,7 +147,9 @@ export const useGameTimer = ({
         visualTime += chaos;
       }
 
-      setGameTimeMs(visualTime);
+      if (!isNaN(visualTime) && visualTime >= 0) {
+        setGameTimeMs(visualTime);
+      }
 
       if (onUpdate) onUpdate();
 
@@ -161,6 +175,10 @@ export const useGameTimer = ({
     activeCurse,
     onUpdate,
   ]);
+
+  useEffect(() => {
+    return () => clearCountdown();
+  }, []);
 
   return {
     gameTimeMs,

@@ -74,7 +74,7 @@ const PenaltyMode = () => {
     const { result, message, isGoal } = calculateShotResult(currentMs);
     const displayMs = String(Math.floor(currentMs / 10)).padStart(2, "0");
 
-    const goalScored = result === "GOL" || (isGoal && result === "PENALTI");
+    const goalScored = isGoal;
 
     if (goalScored) {
       playSound("goal");
@@ -83,6 +83,7 @@ const PenaltyMode = () => {
       setActionMessage(`⚽ GOL! (${displayMs}ms)`);
     } else {
       playSound("miss");
+
       const missType = result === "DİREK" ? "post" : "miss";
       setVisualEffect({ type: missType, player: currentPlayer });
       setActionMessage(`❌ KAÇTI! (${displayMs}ms) - ${message}`);

@@ -39,6 +39,15 @@ export const useGameLogic = ({
   botReactionTime = 2000,
   botAccuracy = 0.5,
 }: UseGameLogicProps = {}) => {
+  // MEMORY LEAK GUARD
+  const isMounted = useRef(true);
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
   const [gameState, setGameState] = useState<GameState>("idle");
   const [turnTimeLeft, setTurnTimeLeft] = useState<number>(
     GAMEPLAY_CONSTANTS.TURN_TIME_LIMIT
@@ -291,7 +300,8 @@ export const useGameLogic = ({
       } else if (gameMode !== "time_attack") {
         setActionMessage(`${playerNames[currentPlayer]} süresini doldurdu!`);
         playSound("miss");
-        setVisualEffect({ type: "miss", player: currentPlayer });
+        if (isMounted.current)
+          setVisualEffect({ type: "miss", player: currentPlayer });
         handleTurnSwitch();
       }
     }
@@ -318,14 +328,18 @@ export const useGameLogic = ({
 
   useEffect(() => {
     if (visualEffect) {
-      const t = setTimeout(() => setVisualEffect(null), 1000);
+      const t = setTimeout(() => {
+        if (isMounted.current) setVisualEffect(null);
+      }, 1000);
       return () => clearTimeout(t);
     }
   }, [visualEffect]);
 
   useEffect(() => {
     if (timeChangePopup) {
-      const t = setTimeout(() => setTimeChangePopup(null), 1500);
+      const t = setTimeout(() => {
+        if (isMounted.current) setTimeChangePopup(null);
+      }, 1500);
       return () => clearTimeout(t);
     }
   }, [timeChangePopup]);
@@ -362,6 +376,7 @@ export const useGameLogic = ({
           ...prev,
           p1: Math.max(0, prev.p1 + result.timeBonus),
         }));
+
         setTimeChangePopup({
           id: Date.now(),
           value: result.timeBonus,
@@ -387,9 +402,14 @@ export const useGameLogic = ({
 
     if (gameMode === "survival") {
       const isReverseCurse = survival.activeCurse === "REVERSE";
-      const effectiveTarget = isReverseCurse
-        ? 1000 - targetOffset
-        : targetOffset;
+
+      let effectiveTarget = targetOffset;
+      if (survival.activeCurse === "MOVING_TARGET") {
+        const now = Date.now();
+        effectiveTarget = 500 + 350 * Math.sin(now / 500);
+      } else if (isReverseCurse) {
+        effectiveTarget = 1000 - targetOffset;
+      }
 
       const distance = Math.abs(currentMs - effectiveTarget);
       const redDistance =

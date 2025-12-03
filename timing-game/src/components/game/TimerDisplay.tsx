@@ -45,14 +45,28 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({
 
   const isGhostHidden = variant === "ghost" && ms > 500;
 
-  let displayTime = formatTime(totalMs);
-  if (variant === "moving") {
-    displayTime = displayTime.slice(0, 6) + "??";
-  }
+  const displayTime = useMemo(() => {
+    let dt = formatTime(totalMs);
+    if (variant === "moving") {
+      dt = dt.slice(0, 6) + "??";
+    }
+    return dt;
+  }, [totalMs, variant]);
 
-  const thresholdWidthPercent = Math.max(2, (threshold / 1000) * 100);
-  const effectiveGoldenThreshold = goldenThreshold > 0 ? goldenThreshold : 10;
-  const goldenWidthPercent = (effectiveGoldenThreshold / 1000) * 100;
+  const thresholdWidthPercent = useMemo(
+    () => Math.max(2, (threshold / 1000) * 100),
+    [threshold]
+  );
+
+  const goldenWidthPercent = useMemo(() => {
+    const effectiveGolden = goldenThreshold > 0 ? goldenThreshold : 10;
+    return (effectiveGolden / 1000) * 100;
+  }, [goldenThreshold]);
+
+  const goldenLeft = useMemo(
+    () => (goldenWidthPercent / thresholdWidthPercent) * 100,
+    [goldenWidthPercent, thresholdWidthPercent]
+  );
 
   return (
     <div className="flex flex-col items-center w-full max-w-lg px-4">
@@ -122,9 +136,7 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({
                 className="absolute top-0 h-full bg-[#f59e0b] z-30 opacity-80"
                 style={{
                   left: "50%",
-                  width: `${
-                    (goldenWidthPercent / thresholdWidthPercent) * 100
-                  }%`,
+                  width: `${goldenLeft}%`,
                   transform: "translateX(-50%)",
                 }}
               />

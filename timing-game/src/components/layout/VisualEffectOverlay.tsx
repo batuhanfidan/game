@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useMemo, memo } from "react";
 import type { VisualEffectData } from "../../types";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { UI_CONSTANTS } from "../../utils/constants";
@@ -13,17 +13,9 @@ const VisualEffectOverlay: React.FC<VisualEffectOverlayProps> = ({
   effect,
   isTwoPlayerMode,
 }) => {
-  const [key, setKey] = useState(0);
-
   const isMobile = useMediaQuery(
     `(max-width: ${UI_CONSTANTS.MOBILE_BREAKPOINT}px)`
   );
-
-  useEffect(() => {
-    if (effect) {
-      setKey((prev) => prev + 1);
-    }
-  }, [effect]);
 
   const position = useMemo(() => {
     if (!effect) return {};
@@ -54,7 +46,7 @@ const VisualEffectOverlay: React.FC<VisualEffectOverlayProps> = ({
   if (!effect) return null;
 
   return (
-    <div key={key} className="effect-item fixed z-100" style={position}>
+    <div className="effect-item fixed z-100" style={position}>
       {effect.type === "goal" && (
         <div className="animate-goal text-7xl sm:text-9xl drop-shadow-[0_0_30px_rgba(34,197,94,0.8)]">
           ⚽
@@ -79,4 +71,4 @@ const VisualEffectOverlay: React.FC<VisualEffectOverlayProps> = ({
   );
 };
 
-export default VisualEffectOverlay;
+export default memo(VisualEffectOverlay);
