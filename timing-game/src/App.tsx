@@ -10,6 +10,8 @@ import TutorialMode from "./features/modes/single/TutorialMode";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { soundsReady } from "./shared/utils/sound";
 import { GameProvider } from "./context/GameContext";
+import { useGameLogic } from "./hooks/useGameLogic"; //
+import { useTheme } from "./hooks/core/useTheme"; //
 
 function App() {
   useEffect(() => {
@@ -18,27 +20,38 @@ function App() {
     });
   }, []);
 
+  const { theme, currentTheme } = useTheme();
+
+  const gameLogic = useGameLogic({
+    initialTime: 60,
+    gameMode: "classic",
+    gameVariant: "classic",
+  });
+
   return (
     <ErrorBoundary>
       <GameProvider
-        gameState="idle"
-        isPaused={false}
-        togglePause={() => {}}
-        restartGame={() => {}}
-        currentTheme={0}
-        visualEffect={null}
+        gameState={gameLogic.gameState}
+        isPaused={gameLogic.isPaused}
+        togglePause={gameLogic.togglePause}
+        restartGame={gameLogic.restartGame}
+        currentTheme={currentTheme}
+        visualEffect={gameLogic.visualEffect}
         isTwoPlayerMode={false}
       >
-        <Routes>
-          <Route path="/" element={<MainMenu />} />
-          <Route path="/game/2p" element={<TwoPlayerMode />} />
-          <Route path="/game/bot" element={<BotMode />} />
-          <Route path="/game/penalty" element={<PenaltyMode />} />
-          <Route path="/game/survival" element={<SurvivalMode />} />
-          <Route path="/game/time-attack" element={<TimeAttackMode />} />
-          <Route path="/game/tutorial" element={<TutorialMode />} />
-          <Route path="*" element={<MainMenu />} />
-        </Routes>
+        <div className={theme.class}>
+          {" "}
+          <Routes>
+            <Route path="/" element={<MainMenu />} />
+            <Route path="/game/2p" element={<TwoPlayerMode />} />
+            <Route path="/game/bot" element={<BotMode />} />
+            <Route path="/game/penalty" element={<PenaltyMode />} />
+            <Route path="/game/survival" element={<SurvivalMode />} />
+            <Route path="/game/time-attack" element={<TimeAttackMode />} />
+            <Route path="/game/tutorial" element={<TutorialMode />} />
+            <Route path="*" element={<MainMenu />} />
+          </Routes>
+        </div>
       </GameProvider>
     </ErrorBoundary>
   );
