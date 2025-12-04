@@ -205,6 +205,7 @@ export const useGameLogic = ({
   }, [startDuration, timer, survival, timeAttack]);
 
   const finishGame = useCallback(() => {
+    if (!isMounted.current) return;
     setGameState("finished");
     timer.setIsPaused(false);
     playSound("whistle");
@@ -248,6 +249,7 @@ export const useGameLogic = ({
   ]);
 
   const handleTurnSwitch = useCallback(() => {
+    if (!isMounted.current) return;
     if (gameMode === "survival" || gameMode === "time_attack") {
       setTurnTimeLeft(GAMEPLAY_CONSTANTS.TURN_TIME_LIMIT);
     } else {
