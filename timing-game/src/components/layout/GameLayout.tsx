@@ -24,11 +24,9 @@ const GameLayout: React.FC<{ children: React.ReactNode }> = memo(
       onThemeChange,
     } = useGameContext();
 
-    // Menü ve Ses mantığını burada basitçe tutabilir veya useMenuLogic gibi bir hook'tan çekebilirsiniz.
-    // Bu örnekte, context dışındaki UI state'leri için yerel state kullanıyoruz.
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
     const [showRules, setShowRules] = React.useState(false);
-    // Ses kontrolü basitlik adına burada, istenirse context'e taşınabilir.
+
     const [isMuted, setIsMuted] = React.useState(false);
 
     return (
@@ -84,7 +82,7 @@ const GameLayout: React.FC<{ children: React.ReactNode }> = memo(
             } md:flex transition-all duration-300 ease-in-out z-60 relative`}
           >
             <button
-              onClick={() => setIsMuted(!isMuted)} // Basit toggle, gerçek logic utils/sound.ts'den gelmeli
+              onClick={() => setIsMuted(!isMuted)}
               className="bg-gray-700 hover:bg-gray-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-xl font-bold shadow-md focus-visible:ring-2 focus-visible:ring-blue-500"
             >
               {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}

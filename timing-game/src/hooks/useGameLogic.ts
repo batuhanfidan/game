@@ -2,7 +2,8 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { calculateShotResult } from "../shared/utils/calculateShotResult";
 import { triggerWinConfetti } from "../shared/utils/confetti";
 import { playSound } from "../shared/utils/sound";
-import { GAMEPLAY_CONSTANTS } from "../shared/constants/game";
+
+import { GAMEPLAY_CONSTANTS, GAME_DELAYS } from "../shared/constants/game";
 import type {
   GameMode,
   GameVariant,
@@ -85,23 +86,6 @@ export const useGameLogic = ({
     GOLDEN_THRESHOLD,
   } = survival;
 
-  const timer = useGameTimer({
-    gameState,
-    setGameState,
-    gameVariant,
-    roundOffset,
-    speedMultiplier,
-    isFeverActive: isSurvivalFever,
-    activeCurse,
-    onGameStart: () => handleGameStartLogic(),
-    onUpdate: () => {
-      if (activeCurse === "MOVING_TARGET") {
-        const now = Date.now();
-        setTargetOffset(500 + 350 * Math.sin(now / 500));
-      }
-    },
-  });
-
   const {
     currentPlayer,
     setCurrentPlayer,
@@ -146,6 +130,25 @@ export const useGameLogic = ({
     }
     randomizeRound();
   }, [gameMode, playerNames, randomizeRound, setCurrentPlayer]);
+
+  const handleTimerUpdate = useCallback(() => {
+    if (activeCurse === "MOVING_TARGET") {
+      const now = Date.now();
+      setTargetOffset(500 + 350 * Math.sin(now / 500));
+    }
+  }, [activeCurse]);
+
+  const timer = useGameTimer({
+    gameState,
+    setGameState,
+    gameVariant,
+    roundOffset,
+    speedMultiplier,
+    isFeverActive: isSurvivalFever,
+    activeCurse,
+    onGameStart: handleGameStartLogic,
+    onUpdate: handleTimerUpdate,
+  });
 
   const handleTurnSwitch = useCallback(() => {
     if (!isMounted.current) return;
@@ -292,7 +295,7 @@ export const useGameLogic = ({
     if (visualEffect) {
       const t = setTimeout(() => {
         if (isMounted.current) setVisualEffect(null);
-      }, 1000);
+      }, GAME_DELAYS.EFFECT_DISPLAY_DURATION);
       return () => clearTimeout(t);
     }
   }, [visualEffect]);
@@ -301,7 +304,7 @@ export const useGameLogic = ({
     if (timeChangePopup) {
       const t = setTimeout(() => {
         if (isMounted.current) setTimeChangePopup(null);
-      }, 1500);
+      }, GAME_DELAYS.POPUP_FADE_DURATION);
       return () => clearTimeout(t);
     }
   }, [timeChangePopup]);
