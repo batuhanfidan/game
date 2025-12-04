@@ -112,8 +112,9 @@ export const useGameTimer = ({
     }
 
     const feverChanged = prevFeverRef.current !== isFeverActive;
+    const speedChanged = prevSpeedRef.current !== speedMultiplier;
 
-    if (feverChanged) {
+    if (feverChanged || speedChanged) {
       const now = Date.now();
       const currentElapsed = now - startTimeRef.current;
 
