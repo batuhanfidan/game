@@ -16,23 +16,32 @@ Object.values(sounds).forEach((sound) => {
 
 let isMuted = false;
 
-// Seslerin hazır olup olmadığını kontrol eden bir promise
+// Seslerin hazır olup olmadığını kontrol eden güvenli Promise
 export const soundsReady = Promise.all(
   Object.values(sounds).map(
     (s) =>
       new Promise((resolve) => {
-        s.addEventListener("canplaythrough", resolve, { once: true });
-        s.addEventListener(
-          "error",
-          (e) => {
-            console.warn(
-              "Ses dosyası yüklenemedi, sessiz mod devam edecek:",
-              e
-            );
-            resolve(null); // Resolve to allow game to continue
-          },
-          { once: true }
-        );
+        // Eğer ses zaten yüklendiyse
+        if (s.readyState >= 3) {
+          resolve(null);
+          return;
+        }
+
+        const onSuccess = () => {
+          s.removeEventListener("canplaythrough", onSuccess);
+          s.removeEventListener("error", onError);
+          resolve(null);
+        };
+
+        const onError = (e: Event) => {
+          console.warn("Ses dosyası yüklenemedi, sessiz mod devam edecek:", e);
+          s.removeEventListener("canplaythrough", onSuccess);
+          s.removeEventListener("error", onError);
+          resolve(null);
+        };
+
+        s.addEventListener("canplaythrough", onSuccess, { once: true });
+        s.addEventListener("error", onError, { once: true });
       })
   )
 );
@@ -49,11 +58,10 @@ export const playSound = (type: keyof typeof sounds) => {
 
   const sound = sounds[type];
   if (sound) {
-    sound.currentTime = 0;
-    sound.play().catch((err) => {
-      if (err.name !== "AbortError") {
-        console.warn(`Sound '${type}' failed to play:`, err);
-      }
-    });
+    if (sound.paused) {
+      sound.play().catch(() => {});
+    } else {
+      sound.currentTime = 0;
+    }
   }
 };

@@ -65,11 +65,13 @@ export const UI_CONSTANTS = {
   HEART_ICON_SIZE: 32,
   MENU_ICON_SIZE: 24,
   MOBILE_BREAKPOINT: 768,
+
   Z_INDEX: {
     TUTORIAL: 9999,
+    POPUP: 100,
     OVERLAY: 50,
     MENU: 60,
-    POPUP: 100,
+    CONTENT: 10,
   },
   COLORS: {
     PRIMARY: "#3b82f6",
@@ -91,19 +93,19 @@ export const TUTORIAL_STEPS = [
     target: "timer",
     title: "Hedefin: Zamanlama",
     text: "Gördüğün zaman çubuğu senin en büyük rakibin. Amacın süreyi mükemmel anda, yani 00ms'de yakalamak.",
-    position: "layout-timer", // Çubuğun altı
+    position: "layout-timer",
   },
   {
     target: "turn-info",
     title: "Sıra Süresi",
     text: "Hamle yapmak için 10 saniyen var. Eğer süre dolarsa sıranı kaybedersin.",
-    position: "layout-turn", // Sürenin altı
+    position: "layout-turn",
   },
   {
     target: "player-timers",
     title: "Oyuncu Süreleri",
     text: "Toplam maç süresi iki oyuncu arasında paylaştırılır. Düşünürken harcadığın zaman kendi bakiyenden düşer.",
-    position: "layout-player", // Sol oyuncunun altı
+    position: "layout-player",
   },
   {
     target: "help",
@@ -111,17 +113,16 @@ export const TUTORIAL_STEPS = [
     text: "Takıldığın yerde detaylı kurallar için ?(Soru işareti)'ne tıklayabilirsin.",
     position: "top-right",
   },
-  // YENİ ADIM: Oyun Modu Bilgilendirmesi
   {
     target: "mode-info",
     title: "Oyun Modu",
     text: "Şu an Klasik Mod'da, Orta Seviye Bot'a karşı oynamaktasın. Ana menüden farklı oyun modları ve varyasyonları seçerek yeni deneyimler elde edebilirsin.",
-    position: "layout-mode", // Üst kısma yakın, skor tabelasının altı
+    position: "layout-mode",
   },
   {
     target: "action-button",
     title: "Vuruş Anı",
     text: "Hazırsan başlayalım! Süre hedefe geldiğinde butona bas.",
-    position: "layout-action", // Butonun altı
+    position: "layout-action",
   },
 ];

@@ -21,9 +21,8 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
   const isLastStep = step === TUTORIAL_STEPS.length - 1;
   const isIntro = currentData.target === "intro";
 
-  // Konumlandırma Mantığı (Target'a özel)
   let positionClass = "";
-  let arrowClass = "";
+  let arrowClass = "hidden"; // Varsayılan gizli
 
   switch (currentData.position) {
     case "center":
@@ -31,49 +30,51 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
         "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md";
       break;
 
-    // Timer Çubuğunun Altı
     case "layout-timer":
-      positionClass = "top-[52%] left-1/2 -translate-x-1/2 w-80 md:w-96";
-      arrowClass = "-top-2 left-1/2 -translate-x-1/2";
+      // Timer  ekranın ortasında
+      positionClass =
+        "top-[10%] left-1/2 -translate-x-1/2 w-[90%] max-w-sm md:w-96";
+      arrowClass = "-bottom-2 left-1/2 -translate-x-1/2 rotate-45";
       break;
 
-    // Tur Süresinin Altı
     case "layout-turn":
-      positionClass = "top-[64%] left-1/2 -translate-x-1/2 w-80 md:w-96";
-      arrowClass = "-top-2 left-1/2 -translate-x-1/2";
+      // Tur bilgisi timer'ın altında
+      positionClass =
+        "top-[66%] left-1/2 -translate-x-1/2 w-[90%] max-w-sm md:w-96";
+      arrowClass = "-top-2 left-1/2 -translate-x-1/2 -rotate-135";
       break;
 
-    // Sol Oyuncu Süresinin Altı
     case "layout-player":
-      positionClass = "top-55 left-4 md:left-20 w-72 origin-top-left";
-      arrowClass = "-top-2 left-8";
+      // Sol üstteki oyuncu
+      positionClass = "top-55 left-5 w-72 origin-top-left";
+      arrowClass = "-top-2 left-25 -rotate-135";
       break;
 
-    // YENİ: Oyun Modu Bilgisi (Üst Skorun Altı)
     case "layout-mode":
-      positionClass = "top-24 left-1/2 -translate-x-1/2 w-80 md:w-96";
-      arrowClass = "-top-2 left-1/2 -translate-x-1/2";
+      // Üst orta kısım
+      positionClass =
+        "top-24 left-1/2 -translate-x-1/2 w-[90%] max-w-sm md:w-96";
+      arrowClass = "-top-2 left-1/2 -translate-x-1/2 -rotate-135";
       break;
 
-    // Action Butonunun Altı (En alt)
     case "layout-action":
-      positionClass = "bottom-1 left-1/2 -translate-x-1/2 w-80 md:w-96";
-      arrowClass = "-top-2 left-1/2 -translate-x-1/2 hidden";
+      // En alt buton
+      positionClass =
+        "bottom-5 left-1/2 -translate-x-1/2 w-[90%] max-w-sm md:w-96";
+      arrowClass = "-top-2 left-1/2 -translate-x-1/2 rotate-45";
       break;
 
     case "top-right":
       positionClass = "top-20 right-4 w-72 origin-top-right";
-      arrowClass = "-top-2 right-6";
+      arrowClass = "-top-2 right-6 -rotate-135";
       break;
 
     default:
-      positionClass = "bottom-32 left-1/2 -translate-x-1/2 w-80 md:w-96";
-      arrowClass = "-bottom-2 left-1/2 -translate-x-1/2";
+      positionClass = "bottom-10 left-1/2 -translate-x-1/2 w-[90%] max-w-md";
   }
 
   return (
     <>
-      {/* Sadece Intro adımında arka planı karart */}
       {isIntro && (
         <div
           className="fixed inset-0 bg-black/80 backdrop-blur-sm animate-fade-in"
@@ -82,7 +83,7 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
       )}
 
       <div
-        className={`fixed ${positionClass} animate-popup transition-all duration-300`}
+        className={`fixed ${positionClass} animate-popup transition-all duration-300 shadow-2xl`}
         style={{ zIndex: UI_CONSTANTS.Z_INDEX.TUTORIAL }}
       >
         <div
@@ -90,43 +91,43 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
             ${
               isIntro
                 ? "bg-neutral-900 border-yellow-500/30"
-                : "bg-blue-600/95 border-white/20"
+                : "bg-blue-600 border-white/20"
             }
-            text-white p-6 rounded-2xl shadow-[0_0_30px_rgba(0,0,0,0.5)] backdrop-blur-md border relative overflow-hidden
+            text-white p-6 rounded-2xl border relative overflow-visible
           `}
         >
-          {/* Intro için Dekoratif Arka Plan */}
-          {isIntro && (
-            <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 rounded-full blur-3xl -mr-10 -mt-10"></div>
+          {/* Tooltip Oku */}
+          {!isIntro && (
+            <div
+              className={`absolute w-4 h-4 bg-blue-600 border-l border-t border-white/20 ${arrowClass}`}
+            ></div>
           )}
 
           <button
             onClick={onSkip}
-            className="absolute top-3 right-3 text-white/50 hover:text-white transition-colors"
+            className="absolute top-2 right-2 p-2 text-white/50 hover:text-white transition-colors rounded-full hover:bg-white/10"
             aria-label="Eğitimi Kapat"
           >
-            <X size={20} />
+            <X size={18} />
           </button>
 
-          <div className="mb-4 relative z-10">
+          <div className="mb-3 flex items-center gap-3">
             {isIntro ? (
-              <div className="w-12 h-12 bg-yellow-500/20 rounded-full flex items-center justify-center mb-4">
-                <Zap size={24} className="text-yellow-400 fill-current" />
+              <div className="w-10 h-10 bg-yellow-500/20 rounded-full flex items-center justify-center shrink-0">
+                <Zap size={20} className="text-yellow-400 fill-current" />
               </div>
             ) : currentData.target === "help" ? (
-              <div className="mb-2">
-                <HelpCircle size={24} className="text-white" />
-              </div>
+              <HelpCircle size={24} className="text-white shrink-0" />
             ) : (
-              <span className="text-xs font-bold bg-black/30 px-2 py-1 rounded-full uppercase tracking-wider">
-                ADIM {step}/{TUTORIAL_STEPS.length - 1}
+              <span className="text-[10px] font-black bg-black/20 px-2 py-1 rounded-md uppercase tracking-wider shrink-0">
+                {step}/{TUTORIAL_STEPS.length - 1}
               </span>
             )}
 
             {currentData.title && (
               <h3
-                className={`font-black text-xl mb-2 ${
-                  isIntro ? "text-yellow-400 text-2xl" : "text-white"
+                className={`font-bold text-lg leading-tight ${
+                  isIntro ? "text-yellow-400" : "text-white"
                 }`}
               >
                 {currentData.title}
@@ -135,22 +136,20 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
           </div>
 
           <p
-            className={`${
-              isIntro
-                ? "text-gray-300 text-base"
-                : "text-white text-sm font-medium"
-            } leading-relaxed mb-6 relative z-10`}
+            className={`text-sm leading-relaxed mb-5 ${
+              isIntro ? "text-gray-300" : "text-blue-50"
+            }`}
           >
             {currentData.text}
           </p>
 
-          <div className="flex justify-between items-center relative z-10">
+          <div className="flex justify-end gap-3">
             {!isIntro && (
               <button
                 onClick={onSkip}
-                className="text-xs font-bold text-white/70 hover:text-white transition-colors uppercase tracking-wider"
+                className="px-3 py-2 text-xs font-bold text-white/70 hover:text-white transition-colors"
               >
-                Atla
+                ATLA
               </button>
             )}
 
@@ -159,31 +158,20 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
               className={`
                 ${
                   isIntro
-                    ? "w-full bg-yellow-500 hover:bg-yellow-400 text-black py-3 text-lg"
-                    : "bg-white text-blue-600 px-5 py-2 ml-auto text-sm"
+                    ? "bg-yellow-500 hover:bg-yellow-400 text-black w-full justify-center"
+                    : "bg-white text-blue-600"
                 }
-                rounded-xl font-bold flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-95 transition-all shadow-lg
+                px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 hover:scale-[1.02] active:scale-95 transition-all shadow-lg
               `}
             >
-              {isIntro
-                ? "HAZIRIM! BAŞLAYALIM"
-                : isLastStep
-                ? "OYUNA BAŞLA"
-                : "DEVAM"}
+              {isIntro ? "HAZIRIM!" : isLastStep ? "OYUNA BAŞLA" : "DEVAM"}
               {isLastStep || isIntro ? (
-                <Check size={18} />
+                <Check size={16} />
               ) : (
                 <ArrowRight size={16} />
               )}
             </button>
           </div>
-
-          {/* Tooltip Oku */}
-          {!isIntro && (
-            <div
-              className={`absolute w-4 h-4 bg-blue-600 rotate-45 ${arrowClass}`}
-            ></div>
-          )}
         </div>
       </div>
     </>

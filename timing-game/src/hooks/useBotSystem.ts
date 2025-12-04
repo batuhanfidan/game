@@ -49,6 +49,8 @@ export const useBotSystem = ({
   }, [playerTimes, botAccuracy, gameState, currentPlayer, isPaused]);
 
   useEffect(() => {
+    let isActive = true; // Flag to prevent race conditions
+
     if (
       gameMode !== "bot" ||
       gameState !== "playing" ||
@@ -61,6 +63,8 @@ export const useBotSystem = ({
     if (stateRef.current.playerTimes.p2 <= 0) return;
 
     const timer = setTimeout(() => {
+      if (!isActive) return;
+
       if (
         stateRef.current.gameState !== "playing" ||
         stateRef.current.isPaused ||
@@ -106,7 +110,10 @@ export const useBotSystem = ({
       handleTurnSwitch();
     }, botReactionTime);
 
-    return () => clearTimeout(timer);
+    return () => {
+      isActive = false;
+      clearTimeout(timer);
+    };
   }, [
     gameState,
     currentPlayer,

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import { useNavigate } from "react-router-dom";
 import TimerDisplay from "../../components/game/TimerDisplay";
 import ActionButton from "../../components/game/ActionButton";
@@ -17,6 +17,26 @@ import {
   AlertTriangle,
   Skull,
 } from "lucide-react";
+
+const LivesDisplay = memo(
+  ({ lives, maxLives }: { lives: number; maxLives: number }) => (
+    <div className="flex gap-1">
+      {Array.from({ length: maxLives }, (_, i) => (
+        <Heart
+          key={i}
+          size={UI_CONSTANTS.HEART_ICON_SIZE}
+          className={`transition-all duration-300 ${
+            i < lives
+              ? "fill-[#ef4444] text-[#ef4444] drop-shadow-[0_0_10px_rgba(239,68,68,0.6)]"
+              : "fill-[#27272a] text-[#27272a]"
+          }`}
+        />
+      ))}
+    </div>
+  )
+);
+
+LivesDisplay.displayName = "LivesDisplay";
 
 const SurvivalMode = () => {
   const navigate = useNavigate();
@@ -65,31 +85,15 @@ const SurvivalMode = () => {
     if (gameState === "idle") setPlayerReady(false);
   }, [gameState]);
 
-  // Can Göstergesi
-  const renderLives = () => {
-    return (
-      <div className="flex gap-1">
-        {[...Array(UI_CONSTANTS.MAX_LIVES_DISPLAY)].map((_, i) => (
-          <Heart
-            key={i}
-            size={UI_CONSTANTS.HEART_ICON_SIZE}
-            className={`${
-              i < lives
-                ? "fill-[#ef4444] text-[#ef4444] drop-shadow-[0_0_10px_rgba(239,68,68,0.6)]"
-                : "fill-[#27272a] text-[#27272a]"
-            } transition-all duration-300`}
-          />
-        ))}
-      </div>
-    );
-  };
-
   const scoreDisplay =
     gameState === "idle" && countdown === null ? null : (
       <div className="flex flex-col items-center gap-2 animate-fade-in">
         {/* Canlar */}
         <div className="mb-1 animate-pulse flex items-center gap-4">
-          {renderLives()}
+          <LivesDisplay
+            lives={lives}
+            maxLives={UI_CONSTANTS.MAX_LIVES_DISPLAY}
+          />
           {hasShield && (
             <div className="animate-bounce bg-[#1d4ed8]/20 p-1.5 rounded-full border border-[#1d4ed8]">
               <Shield size={24} className="text-[#3b82f6] fill-[#3b82f6]" />
@@ -143,17 +147,15 @@ const SurvivalMode = () => {
         </div>
       )}
 
-      {/* Hazırlık Ekranı */}
       {gameState === "idle" && !countdown && (
         <div className="flex flex-col items-center gap-6 z-20 bg-[#09090b]/90 p-8 rounded-3xl border border-[#ef4444]/30 shadow-2xl max-w-sm w-full mx-4 backdrop-blur-xl animate-popup">
+          {/* ... Hazırlık ekranı ... */}
           <div className="bg-[#ef4444]/10 p-4 rounded-full border border-[#ef4444]/20">
             <Skull size={48} className="text-[#ef4444]" />
           </div>
-
           <h2 className="text-2xl font-black text-[#e4e4e7] tracking-[0.2em] uppercase">
             HAYATTA KAL
           </h2>
-
           <div className="text-center text-[#a1a1aa] text-sm space-y-2 font-medium">
             <p className="flex items-center justify-center gap-2">
               <Heart size={14} className="text-[#ef4444]" /> 3 Canın var,
@@ -164,7 +166,6 @@ const SurvivalMode = () => {
               <span className="text-[#f59e0b] font-bold">LANET</span> başlar.
             </p>
           </div>
-
           <button
             onClick={() => setPlayerReady(true)}
             disabled={playerReady}
@@ -173,7 +174,6 @@ const SurvivalMode = () => {
             <Play size={20} className="fill-current" />
             {playerReady ? "HAZIRLANIYOR..." : "MEYDAN OKU"}
           </button>
-
           <button
             onClick={handleBackToMenu}
             className="text-[#71717a] hover:text-[#e4e4e7] text-xs tracking-widest uppercase mt-2 transition-colors flex items-center gap-1"
@@ -183,7 +183,6 @@ const SurvivalMode = () => {
         </div>
       )}
 
-      {/* Geri Sayım */}
       {countdown !== null && (
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/60 backdrop-blur-[2px]">
           <div className="text-9xl font-black text-[#ef4444] animate-ping drop-shadow-[0_0_30px_rgba(239,68,68,0.8)] font-mono">
@@ -192,7 +191,6 @@ const SurvivalMode = () => {
         </div>
       )}
 
-      {/* Oyun Alanı */}
       {gameState === "playing" && (
         <>
           <div className="mt-24 relative w-full max-w-lg flex flex-col items-center z-10">
@@ -235,7 +233,6 @@ const SurvivalMode = () => {
               redTarget={redTarget}
               disableTransition={activeCurse === "MOVING_TARGET"}
             />
-
             {/* Lanet Uyarısı */}
             {activeCurse && (
               <div
@@ -265,7 +262,6 @@ const SurvivalMode = () => {
             {actionMessage}
           </div>
 
-          {/* Custom Turn Info (Icons) */}
           <div className="flex items-center justify-center gap-6 mt-6 text-[#a1a1aa] text-sm font-mono">
             <div className="flex items-center gap-2">
               <Shield size={16} /> <span>HAYATTA KAL</span>

@@ -1,33 +1,48 @@
 @import "tailwindcss";
 
 .h-screen-safe {
-  height: 100vh;
-  height: 100dvh;
+  min-height: 100vh;
+  min-height: 100dvh;
 
-  padding: env(safe-area-inset-top, 0) env(safe-area-inset-right, 0)
-    env(safe-area-inset-bottom, 0) env(safe-area-inset-left, 0);
+  padding-top: env(safe-area-inset-top, 20px);
+  padding-right: env(safe-area-inset-right, 0);
+  padding-bottom: env(safe-area-inset-bottom, 20px);
+  padding-left: env(safe-area-inset-left, 0);
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  display: flex;
+  flex-direction: column;
 }
 
-/* Fallback for older browsers */
-@supports not (height: 100dvh) {
-  .h-screen-safe {
-    height: calc(100vh - env(safe-area-inset-bottom));
-  }
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
 }
 
-/* PERFORMANS VE RESET */
 * {
   -webkit-tap-highlight-color: transparent;
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .optimize-gpu {
   transform: translateZ(0);
   backface-visibility: hidden;
-  contain: layout paint;
   will-change: transform, opacity;
 }
 
-/* Erişilebilirlik: Hareketi Azalt */
 @media (prefers-reduced-motion: reduce) {
   *,
   ::before,
@@ -38,23 +53,6 @@
     scroll-behavior: auto !important;
   }
 }
-
-/* Scrollbar Düzenlemesi */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 8px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.2);
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.3);
-}
-
-/* --- ANİMASYONLAR --- */
 
 @keyframes popup {
   from {
@@ -85,16 +83,13 @@
 @keyframes shake {
   0%,
   100% {
-    transform: translateX(0) translateY(0);
+    transform: translateX(0);
   }
   25% {
-    transform: translateX(-2px) translateY(-1px);
-  }
-  50% {
-    transform: translateX(2px) translateY(1px);
+    transform: translateX(-4px) rotate(-2deg);
   }
   75% {
-    transform: translateX(-1px) translateY(-2px);
+    transform: translateX(4px) rotate(2deg);
   }
 }
 .animate-shake {
@@ -106,77 +101,57 @@
     transform: scale(0) rotate(-45deg);
     opacity: 0;
   }
-  70% {
-    transform: scale(1.5) rotate(15deg);
+  60% {
+    transform: scale(1.3) rotate(10deg);
     opacity: 1;
   }
   100% {
     transform: scale(1) rotate(0deg);
-    opacity: 0.9;
+    opacity: 1;
   }
 }
 .animate-goal {
-  animation: goal-pop 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: goal-pop 0.1s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @keyframes post-hit {
   0% {
     transform: scale(1);
-    opacity: 0.8;
   }
   50% {
-    transform: scale(1.3) rotate(7deg);
-    opacity: 1;
+    transform: scale(1.2) rotate(5deg);
   }
   100% {
     transform: scale(1);
-    opacity: 0.8;
   }
 }
 .animate-post {
-  animation: post-hit 0.4s ease-in-out;
+  animation: post-hit 0.3s ease-in-out;
 }
 
 @keyframes miss-fade {
   0% {
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
     opacity: 1;
   }
   100% {
-    transform: translateY(-70px) scale(0.7);
+    transform: translateY(-50px);
     opacity: 0;
   }
 }
 .animate-miss {
-  animation: miss-fade 0.9s ease-out forwards;
-}
-
-/* Yeni UI Animasyonları */
-@keyframes score-pop {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.5);
-    color: #4ade80;
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-.animate-score-pop {
-  animation: score-pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  animation: miss-fade 0.8s ease-out forwards;
 }
 
 @keyframes pulse-ring {
   0% {
-    box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.7);
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
   }
   70% {
-    box-shadow: 0 0 0 15px rgba(234, 179, 8, 0);
+    box-shadow: 0 0 0 15px rgba(59, 130, 246, 0);
   }
   100% {
-    box-shadow: 0 0 0 0 rgba(234, 179, 8, 0);
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
   }
 }
 .animate-pulse-ring {
@@ -186,11 +161,11 @@
 @keyframes float-up {
   0% {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
   }
   100% {
     opacity: 0;
-    transform: translateY(-20px) scale(1.2);
+    transform: translateY(-30px);
   }
 }
 .animate-float-up {
@@ -198,8 +173,7 @@
 }
 
 .effect-item {
-  position: absolute;
-  font-size: 5rem;
   pointer-events: none;
-  text-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  font-weight: 900;
+  text-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
 }

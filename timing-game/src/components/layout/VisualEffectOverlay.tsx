@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useMemo, memo } from "react";
 import type { VisualEffectData } from "../../types";
 import { useMediaQuery } from "../../hooks/useMediaQuery";
 import { UI_CONSTANTS } from "../../utils/constants";
@@ -13,53 +13,40 @@ const VisualEffectOverlay: React.FC<VisualEffectOverlayProps> = ({
   effect,
   isTwoPlayerMode,
 }) => {
-  const [key, setKey] = useState(0);
-  const [position, setPosition] = useState<{
-    top: string;
-    left: string;
-    transform: string;
-  }>({
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-  });
-
   const isMobile = useMediaQuery(
     `(max-width: ${UI_CONSTANTS.MOBILE_BREAKPOINT}px)`
   );
 
-  useEffect(() => {
-    if (effect) {
-      setKey((prev) => prev + 1);
+  const position = useMemo(() => {
+    if (!effect) return {};
 
-      if (isTwoPlayerMode) {
-        if (effect.player === "p1") {
-          setPosition({
-            top: isMobile ? "85%" : "70%",
-            left: isMobile ? "25%" : "30%",
-            transform: "translate(-50%, -50%)",
-          });
-        } else {
-          setPosition({
-            top: isMobile ? "85%" : "70%",
-            left: isMobile ? "75%" : "70%",
-            transform: "translate(-50%, -50%)",
-          });
-        }
-      } else {
-        setPosition({
-          top: "25%",
-          left: "50%",
+    if (isTwoPlayerMode) {
+      if (effect.player === "p1") {
+        return {
+          top: isMobile ? "85%" : "70%",
+          left: isMobile ? "25%" : "30%",
           transform: "translate(-50%, -50%)",
-        });
+        };
+      } else {
+        return {
+          top: isMobile ? "85%" : "70%",
+          left: isMobile ? "75%" : "70%",
+          transform: "translate(-50%, -50%)",
+        };
       }
+    } else {
+      return {
+        top: "25%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+      };
     }
   }, [effect, isTwoPlayerMode, isMobile]);
 
   if (!effect) return null;
 
   return (
-    <div key={key} className="effect-item fixed z-100" style={position}>
+    <div className="effect-item fixed z-100" style={position}>
       {effect.type === "goal" && (
         <div className="animate-goal text-7xl sm:text-9xl drop-shadow-[0_0_30px_rgba(34,197,94,0.8)]">
           ⚽
@@ -84,4 +71,4 @@ const VisualEffectOverlay: React.FC<VisualEffectOverlayProps> = ({
   );
 };
 
-export default VisualEffectOverlay;
+export default memo(VisualEffectOverlay);
