@@ -3,7 +3,7 @@ import { renderHook, act } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { useGameLogic } from "../hooks/useGameLogic";
 import { calculateShotResult } from "../shared/utils/calculateShotResult";
-import { SHOT_ZONES } from "../shared/utils/constants";
+import { SHOT_ZONES } from "../shared/constants/game";
 
 // --- MOCKLAR ---
 vi.mock("../utils/sound", () => ({
