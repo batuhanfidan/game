@@ -43,4 +43,20 @@ export const storage = {
     }
     return false;
   },
+
+  getTutorialStatus: (mode: string): boolean => {
+    try {
+      return localStorage.getItem(`tutorial_seen_${mode}`) === "true";
+    } catch {
+      return false;
+    }
+  },
+
+  setTutorialSeen: (mode: string) => {
+    try {
+      localStorage.setItem(`tutorial_seen_${mode}`, "true");
+    } catch (e) {
+      console.warn("Storage error:", e);
+    }
+  },
 };
