@@ -1,22 +1,27 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { calculateShotResult } from "../utils/calculateShotResult";
-import { triggerWinConfetti } from "../utils/confetti";
-import { playSound } from "../utils/sound";
-import { SURVIVAL_CONSTANTS, GAMEPLAY_CONSTANTS } from "../utils/constants";
+import { calculateShotResult } from "../shared/utils/calculateShotResult";
+import { triggerWinConfetti } from "../shared/utils/confetti";
+import { playSound } from "../shared/utils/sound";
+import { GAMEPLAY_CONSTANTS } from "../shared/constants/game";
 import type {
   GameMode,
-  GameState,
-  Player,
-  VisualEffectData,
   GameVariant,
-} from "../types";
+  VisualEffectData,
+  TimeChangePopup,
+  SoundType,
+} from "../shared/types";
 
-import { useSurvivalSystem } from "./useSurvivalSystem";
-import { useGameTimer } from "./useGameTimer";
-import { useBotSystem } from "./useBotSystem";
-import { useTimeAttackSystem } from "./useTimeAttackSystem";
-import { useInterval } from "./useInterval";
-import type { CurseType } from "./useSurvivalSystem";
+// Core Hooks
+import { useGameState } from "./core/useGameState";
+import { useGameTimer } from "./core/useGameTimer";
+import { usePlayerSystem } from "./core/usePlayerSystem";
+import { useScoring } from "./core/useScoring";
+import { useInterval } from "./core/useInterval";
+
+// Mode Hooks
+import { useSurvivalSystem } from "./modes/useSurvivalSystem";
+import { useTimeAttackSystem } from "./modes/useTimeAttackSystem";
+import { useBotSystem } from "./modes/useBotSystem";
 
 interface UseGameLogicProps {
   initialTime?: number;
@@ -26,12 +31,6 @@ interface UseGameLogicProps {
   botAccuracy?: number;
 }
 
-interface TimeChangePopup {
-  id: number;
-  value: number;
-  type: "positive" | "negative";
-}
-
 export const useGameLogic = ({
   initialTime = 60,
   gameMode = "classic",
@@ -39,7 +38,6 @@ export const useGameLogic = ({
   botReactionTime = 2000,
   botAccuracy = 0.5,
 }: UseGameLogicProps = {}) => {
-  // MEMORY LEAK GUARD
   const isMounted = useRef(true);
   useEffect(() => {
     isMounted.current = true;
@@ -48,70 +46,94 @@ export const useGameLogic = ({
     };
   }, []);
 
-  const [gameState, setGameState] = useState<GameState>("idle");
-  const [turnTimeLeft, setTurnTimeLeft] = useState<number>(
-    GAMEPLAY_CONSTANTS.TURN_TIME_LIMIT
-  );
-  const [currentPlayer, setCurrentPlayer] = useState<Player>("p1");
-  const currentPlayerRef = useRef<Player>(currentPlayer);
-
-  useEffect(() => {
-    currentPlayerRef.current = currentPlayer;
-  }, [currentPlayer]);
-
-  const [targetOffset, setTargetOffset] = useState(0);
-  const [roundOffset, setRoundOffset] = useState(0);
-
-  const [playerNames, setPlayerNames] = useState({
-    p1: "Oyuncu 1",
-    p2: gameMode === "bot" ? "Bot" : "Oyuncu 2",
-  });
-
-  const [scores, setScores] = useState({ p1: 0, p2: 0 });
+  const { gameState, setGameState } = useGameState("idle");
   const [actionMessage, setActionMessage] = useState("");
   const [winner, setWinner] = useState("");
   const [finalScore, setFinalScore] = useState("");
   const [visualEffect, setVisualEffect] = useState<VisualEffectData | null>(
     null
   );
+  const [targetOffset, setTargetOffset] = useState(0);
+  const [roundOffset, setRoundOffset] = useState(0);
   const [timeChangePopup, setTimeChangePopup] =
     useState<TimeChangePopup | null>(null);
 
-  // --- ALT SİSTEMLER ---
-  const survival = useSurvivalSystem();
+  const playSoundSafe = useCallback((sound: SoundType) => playSound(sound), []);
+
+  const survival = useSurvivalSystem(() => playSoundSafe("whistle"));
   const timeAttack = useTimeAttackSystem();
 
   const {
-    spawnBoss,
-    checkHitAccuracy,
+    spawnBoss: timeAttackSpawnBoss,
+    handleTimeAttackShot,
+    resetSystem: resetTimeAttack,
     isFever: timeFeverActive,
-    combo,
-    multiplier,
     targetWidth,
     isBossActive,
     bossPosition,
   } = timeAttack;
 
+  const {
+    streak: survivalStreak,
+    lives: survivalLives,
+    setLives: setSurvivalLives,
+    speedMultiplier,
+    isFeverActive: isSurvivalFever,
+    activeCurse,
+    resetSurvivalState,
+    handleSurvivalShot,
+    GOLDEN_THRESHOLD,
+  } = survival;
+
+  const timer = useGameTimer({
+    gameState,
+    setGameState,
+    gameVariant,
+    roundOffset,
+    speedMultiplier,
+    isFeverActive: isSurvivalFever,
+    activeCurse,
+    onGameStart: () => handleGameStartLogic(),
+    onUpdate: () => {
+      if (activeCurse === "MOVING_TARGET") {
+        const now = Date.now();
+        setTargetOffset(500 + 350 * Math.sin(now / 500));
+      }
+    },
+  });
+
+  const {
+    currentPlayer,
+    setCurrentPlayer,
+    playerNames,
+    setPlayerNames,
+    switchTurn,
+    resetPlayers,
+    turnTimeLeft,
+    setTurnTimeLeft,
+    playerTimes,
+    setPlayerTimes,
+    isSharedTimeMode,
+    currentPlayerRef,
+  } = usePlayerSystem(initialTime, gameMode);
+
+  const { scores, setScores, highScore, updateHighScore, resetScores } =
+    useScoring(gameMode, gameVariant);
+
   const randomizeRound = useCallback(() => {
     if (gameMode === "time_attack") {
       const nextTarget = Math.floor(Math.random() * 800) + 100;
       setTargetOffset(nextTarget);
-      spawnBoss(nextTarget);
+      timeAttackSpawnBoss(nextTarget);
       return;
     }
-
-    if (gameVariant === "random") {
+    if (gameVariant === "random")
       setRoundOffset(Math.floor(Math.random() * 800));
-    } else {
-      setRoundOffset(0);
-    }
-
-    if (gameVariant === "moving") {
+    else setRoundOffset(0);
+    if (gameVariant === "moving")
       setTargetOffset(Math.floor(Math.random() * 800) + 100);
-    } else {
-      setTargetOffset(0);
-    }
-  }, [gameVariant, gameMode, spawnBoss]);
+    else setTargetOffset(0);
+  }, [gameVariant, gameMode, timeAttackSpawnBoss]);
 
   const handleGameStartLogic = useCallback(() => {
     if (gameMode === "survival" || gameMode === "time_attack") {
@@ -123,102 +145,51 @@ export const useGameLogic = ({
       setActionMessage(`🎲 ${playerNames[startPlayer]} başlıyor!`);
     }
     randomizeRound();
-  }, [gameMode, playerNames, randomizeRound]);
+  }, [gameMode, playerNames, randomizeRound, setCurrentPlayer]);
 
-  const handleTimerUpdate = useCallback(() => {
-    if (survival.activeCurse === "MOVING_TARGET") {
-      const now = Date.now();
-      const newTarget = 500 + 350 * Math.sin(now / 500);
-      setTargetOffset(newTarget);
-    }
-  }, [survival.activeCurse]);
-
-  const timer = useGameTimer({
-    gameState,
-    setGameState,
-    gameVariant,
-    roundOffset,
-    speedMultiplier: survival.speedMultiplier,
-    isFeverActive: survival.isFeverActive,
-    activeCurse: survival.activeCurse,
-    onGameStart: handleGameStartLogic,
-    onUpdate: handleTimerUpdate,
-  });
-
-  const getHighScoreKey = useCallback(
-    () => `timing-game-highscore-${gameMode}-${gameVariant}`,
-    [gameMode, gameVariant]
-  );
-
-  const [highScore, setHighScore] = useState(() => {
-    if (gameMode === "classic" && gameVariant === "classic") return 0;
-    try {
-      const saved = localStorage.getItem(getHighScoreKey());
-      return saved ? parseInt(saved, 10) : 0;
-    } catch {
-      return 0;
-    }
-  });
-
-  const updateHighScore = useCallback(
-    (score: number) => {
-      setHighScore((prevHighScore) => {
-        if (score > prevHighScore) {
-          localStorage.setItem(getHighScoreKey(), score.toString());
-          return score;
-        }
-        return prevHighScore;
-      });
-    },
-    [getHighScoreKey]
-  );
-
-  const isSharedTimeMode = gameMode === "classic" || gameMode === "bot";
-  const startDuration = isSharedTimeMode
-    ? Math.ceil(initialTime / 2)
-    : initialTime;
-
-  const [playerTimes, setPlayerTimes] = useState({
-    p1: startDuration,
-    p2: startDuration,
-  });
-
-  useEffect(() => {
-    if (gameState === "idle") {
-      setPlayerTimes({ p1: startDuration, p2: startDuration });
-    }
-  }, [startDuration, gameState]);
+  const handleTurnSwitch = useCallback(() => {
+    if (!isMounted.current) return;
+    switchTurn();
+    randomizeRound();
+  }, [switchTurn, randomizeRound]);
 
   const resetGame = useCallback(() => {
     timer.resetTimer();
+    resetPlayers();
+    resetScores();
     setGameState("idle");
     setTargetOffset(0);
-    setScores({ p1: 0, p2: 0 });
-    setPlayerTimes({ p1: startDuration, p2: startDuration });
-    setTurnTimeLeft(GAMEPLAY_CONSTANTS.TURN_TIME_LIMIT);
     setActionMessage("");
     setVisualEffect(null);
+    setWinner("");
+    setFinalScore("");
     setTimeChangePopup(null);
-
-    survival.resetSurvivalState();
-    timeAttack.resetSystem();
-  }, [startDuration, timer, survival, timeAttack]);
+    resetSurvivalState();
+    resetTimeAttack();
+  }, [
+    timer,
+    resetPlayers,
+    resetScores,
+    resetSurvivalState,
+    resetTimeAttack,
+    setGameState,
+  ]);
 
   const finishGame = useCallback(() => {
     if (!isMounted.current) return;
     setGameState("finished");
     timer.setIsPaused(false);
-    playSound("whistle");
+    playSoundSafe("whistle");
 
     if (gameMode === "survival") {
       setFinalScore(
-        `Seri: ${survival.streak} | En İyi: ${Math.max(
-          survival.streak,
+        `Seri: ${survivalStreak} | En İyi: ${Math.max(
+          survivalStreak,
           highScore
         )}`
       );
       setWinner("💀 OYUN BİTTİ");
-      updateHighScore(survival.streak);
+      updateHighScore(survivalStreak);
     } else if (gameMode === "time_attack") {
       setFinalScore(`Toplam Puan: ${scores.p1}`);
       setWinner("⏱️ SÜRE DOLDU!");
@@ -239,37 +210,27 @@ export const useGameLogic = ({
       }
     }
   }, [
-    scores,
     gameMode,
+    survivalStreak,
     highScore,
+    scores,
     playerNames,
     updateHighScore,
+    setGameState,
     timer,
-    survival.streak,
+    playSoundSafe,
   ]);
-
-  const handleTurnSwitch = useCallback(() => {
-    if (!isMounted.current) return;
-    if (gameMode === "survival" || gameMode === "time_attack") {
-      setTurnTimeLeft(GAMEPLAY_CONSTANTS.TURN_TIME_LIMIT);
-    } else {
-      setCurrentPlayer((prev) => (prev === "p1" ? "p2" : "p1"));
-      setTurnTimeLeft(GAMEPLAY_CONSTANTS.TURN_TIME_LIMIT);
-    }
-    randomizeRound();
-  }, [gameMode, randomizeRound]);
 
   useInterval(
     () => {
       setTurnTimeLeft((prev) => (prev <= 0 ? 0 : prev - 1));
-
       setPlayerTimes((prev) => {
         const newTimes = { ...prev };
-        const player = currentPlayerRef.current;
+        const p = currentPlayerRef.current;
         if (gameMode === "time_attack" || gameMode === "survival") {
           if (newTimes.p1 > 0) newTimes.p1 -= 1;
         } else {
-          if (newTimes[player] > 0) newTimes[player] -= 1;
+          if (newTimes[p] > 0) newTimes[p] -= 1;
         }
         return newTimes;
       });
@@ -283,16 +244,17 @@ export const useGameLogic = ({
 
   useEffect(() => {
     if (gameState !== "playing" || timer.isPaused) return;
-
     if (isSharedTimeMode && timer.gameTimeMs >= initialTime * 1000) {
       finishGame();
       return;
     }
-
+    if (gameMode === "time_attack" && playerTimes.p1 === 0) {
+      finishGame();
+    }
     if (turnTimeLeft === 0) {
       if (gameMode === "survival") {
-        if (survival.lives > 1) {
-          survival.setLives((l) => l - 1);
+        if (survivalLives > 1) {
+          setSurvivalLives((l) => l - 1);
           setActionMessage("⏰ SÜRE DOLDU! (-1 Can)");
           setTurnTimeLeft(GAMEPLAY_CONSTANTS.TURN_TIME_LIMIT);
         } else {
@@ -301,31 +263,29 @@ export const useGameLogic = ({
         }
       } else if (gameMode !== "time_attack") {
         setActionMessage(`${playerNames[currentPlayer]} süresini doldurdu!`);
-        playSound("miss");
+        playSoundSafe("miss");
         if (isMounted.current)
           setVisualEffect({ type: "miss", player: currentPlayer });
         handleTurnSwitch();
       }
     }
-
-    if (gameMode === "time_attack" && playerTimes.p1 === 0) {
-      finishGame();
-    }
   }, [
     turnTimeLeft,
     playerTimes,
-    currentPlayer,
+    timer.gameTimeMs,
     gameState,
     timer.isPaused,
-    timer.gameTimeMs,
     gameMode,
     initialTime,
     isSharedTimeMode,
-    survival.lives,
+    survivalLives,
     handleTurnSwitch,
     finishGame,
     playerNames,
-    survival,
+    currentPlayer,
+    setSurvivalLives,
+    setTurnTimeLeft,
+    playSoundSafe,
   ]);
 
   useEffect(() => {
@@ -346,11 +306,6 @@ export const useGameLogic = ({
     }
   }, [timeChangePopup]);
 
-  const getCurrentPlayerName = useCallback(
-    () => playerNames[currentPlayer],
-    [currentPlayer, playerNames]
-  );
-
   const handleAction = useCallback(() => {
     if (gameState !== "playing" || timer.isPaused) return;
     if (gameMode === "bot" && currentPlayer === "p2") return;
@@ -359,248 +314,79 @@ export const useGameLogic = ({
       (gameMode === "classic" || gameMode === "bot") &&
       playerTimes[currentPlayer] <= 0
     ) {
-      playSound("miss");
+      playSoundSafe("miss");
       setActionMessage("⏰ Süren bitti! Sıra karşı oyuncuda.");
       return;
     }
 
-    playSound("kick");
+    playSoundSafe("kick");
     const currentMs = timer.gameTimeMs % 1000;
 
     if (gameMode === "time_attack") {
-      const result = checkHitAccuracy(currentMs, targetOffset);
-
-      setActionMessage(result.message);
-      setScores((s) => ({ ...s, p1: s.p1 + result.scoreBonus }));
-
-      if (result.timeBonus !== 0) {
-        setPlayerTimes((prev) => ({
-          ...prev,
-          p1: Math.max(0, prev.p1 + result.timeBonus),
-        }));
-
-        setTimeChangePopup({
-          id: Date.now(),
-          value: result.timeBonus,
-          type: result.timeBonus > 0 ? "positive" : "negative",
-        });
-      }
-
-      if (result.isGoal) {
-        playSound("goal");
-        setVisualEffect({ type: "goal", player: currentPlayer });
-        if (result.isGolden) triggerWinConfetti();
-      } else {
-        playSound("miss");
-        const effectType = result.message.includes("KIRMIZI") ? "save" : "miss";
-        setVisualEffect({ type: effectType, player: currentPlayer });
-      }
-
-      if (result.shouldTriggerFever) playSound("whistle");
-
-      handleTurnSwitch();
+      handleTimeAttackShot(currentMs, targetOffset, {
+        setActionMessage,
+        setScores,
+        setPlayerTimes,
+        setTimeChangePopup,
+        setVisualEffect,
+        playSound: playSoundSafe,
+        triggerWinConfetti,
+        handleTurnSwitch,
+        currentPlayer,
+      });
       return;
     }
 
     if (gameMode === "survival") {
-      const isReverseCurse = survival.activeCurse === "REVERSE";
-
-      let effectiveTarget = targetOffset;
-      if (survival.activeCurse === "MOVING_TARGET") {
-        const now = Date.now();
-        effectiveTarget = 500 + 350 * Math.sin(now / 500);
-      } else if (isReverseCurse) {
-        effectiveTarget = 1000 - targetOffset;
-      }
-
-      const distance = Math.abs(currentMs - effectiveTarget);
-      const redDistance =
-        survival.redTarget !== null
-          ? isReverseCurse
-            ? Math.abs(currentMs - (1000 - survival.redTarget))
-            : Math.abs(currentMs - survival.redTarget)
-          : Infinity;
-
-      const isRedHit = redDistance <= survival.survivalThreshold / 2;
-      const isGreenHit = distance <= survival.survivalThreshold;
-      const isCritical = distance <= survival.GOLDEN_THRESHOLD;
-
-      let successMessage = "";
-
-      if (isRedHit) {
-        playSound("goal");
-        setVisualEffect({ type: "goal", player: currentPlayer });
-        successMessage = "🍎 ELMA VURULDU! (+10 SERİ)";
-        survival.setStreak((prev) => prev + 9);
-      } else if (!isGreenHit) {
-        if (survival.isFeverActive) {
-          playSound("miss");
-          setActionMessage("FEVER KORUMASI!");
-          return;
-        }
-        if (survival.hasShield) {
-          survival.setHasShield(false);
-          setVisualEffect({ type: "save", player: currentPlayer });
-          setActionMessage("🛡️ KALKAN KIRILDI! (Hayattasın)");
-          return;
-        }
-
-        survival.setAdrenaline((prev) => Math.floor(prev / 2));
-
-        if (survival.lives > 1) {
-          survival.setLives((l) => l - 1);
-          playSound("miss");
-          setVisualEffect({ type: "post", player: currentPlayer });
-          setActionMessage(`⚠️ DİKKAT! (${survival.lives - 1} Can Kaldı)`);
-        } else {
-          playSound("miss");
-          setVisualEffect({ type: "miss", player: currentPlayer });
-          setActionMessage(`💀 ÖLDÜN!`);
-          finishGame();
-        }
-        return;
-      } else {
-        if (isCritical && !survival.isFeverActive) {
-          playSound("goal");
-          setVisualEffect({ type: "goal", player: currentPlayer });
-          survival.setAdrenaline((prev) => {
-            const newValue = Math.min(prev + 35, 100);
-            if (newValue >= 100) {
-              survival.setIsFeverActive(true);
-              playSound("whistle");
-            }
-            return newValue;
-          });
-        } else {
-          playSound("goal");
-          setVisualEffect({ type: "goal", player: currentPlayer });
-        }
-      }
-
-      survival.setStreak((prevStreak) => {
-        const bonus = survival.isFeverActive && isCritical ? 3 : 1;
-        const newStreak = prevStreak + bonus;
-
-        if (newStreak % SURVIVAL_CONSTANTS.SPEED_INCREASE_INTERVAL === 0) {
-          survival.setSpeedMultiplier((s) => Math.min(s + 0.05, 2.5));
-          survival.setSurvivalThreshold((t) => Math.max(30, t * 0.95));
-        }
-
-        if (
-          newStreak > 0 &&
-          newStreak % SURVIVAL_CONSTANTS.CURSE_INTERVAL === 0
-        ) {
-          survival.setCursedRemaining(3);
-          const rand = Math.random();
-          let nextCurse: CurseType = "REVERSE";
-          if (rand < 0.33) nextCurse = "REVERSE";
-          else if (rand < 0.66) nextCurse = "UNSTABLE";
-          else nextCurse = "MOVING_TARGET";
-
-          survival.setActiveCurse(nextCurse);
-
-          let curseName = "";
-          if (nextCurse === "REVERSE") curseName = "TERS AKINTI";
-          else if (nextCurse === "UNSTABLE") curseName = "DENGESİZ HIZ";
-          else curseName = "GEZİCİ HEDEF";
-
-          setActionMessage(`⚠️ LANET BAŞLIYOR: ${curseName}!`);
-        } else if (survival.cursedRemaining > 0) {
-          const nextRemaining = Math.max(0, survival.cursedRemaining - 1);
-          survival.setCursedRemaining(nextRemaining);
-          if (nextRemaining === 0) {
-            survival.setActiveCurse(null);
-            setActionMessage("Lanet Kalktı!");
-          }
-        }
-
-        if (survival.activeCurse !== "MOVING_TARGET") {
-          const nextGreenTarget =
-            newStreak > 5 ? Math.floor(Math.random() * 800) + 100 : 0;
-          setTargetOffset(nextGreenTarget);
-
-          const newRed = survival.generateRedTarget(nextGreenTarget);
-          survival.setRedTarget(newRed);
-        }
-
-        if (successMessage) {
-          setActionMessage(successMessage);
-        } else if (newStreak % SURVIVAL_CONSTANTS.LIFE_BONUS_INTERVAL === 0) {
-          survival.setLives((l) =>
-            Math.min(l + 1, SURVIVAL_CONSTANTS.MAX_LIVES)
-          );
-          setActionMessage(
-            `💖 +1 CAN! | Hız: ${survival.speedMultiplier.toFixed(1)}x`
-          );
-        } else if (survival.isFeverActive) {
-          setActionMessage(`🔥 FEVER MODU!`);
-        } else if (isCritical) {
-          setActionMessage(`🔥 KRİTİK! (+%35 Adrenalin)`);
-        } else {
-          setActionMessage(`GÜZEL! (Seri: ${newStreak})`);
-        }
-
-        return newStreak;
+      handleSurvivalShot(currentMs, targetOffset, {
+        playSound: playSoundSafe,
+        setVisualEffect,
+        setActionMessage,
+        finishGame,
+        setTurnTimeLeft,
+        setTargetOffset,
+        currentPlayer,
       });
-
-      setTurnTimeLeft(GAMEPLAY_CONSTANTS.TURN_TIME_LIMIT);
       return;
     }
 
     const distance = Math.abs(currentMs - targetOffset);
     const displayMs = String(Math.floor(distance / 10)).padStart(2, "0");
-
     const { result, message, isGoal } = calculateShotResult(distance);
     setActionMessage(
       `${playerNames[currentPlayer]}: ${message} (${displayMs}ms)`
     );
 
     if (isGoal || result === "GOL") {
-      playSound("goal");
+      playSoundSafe("goal");
       setVisualEffect({ type: "goal", player: currentPlayer });
       setScores((s) => ({ ...s, [currentPlayer]: s[currentPlayer] + 1 }));
     } else if (result === "DİREK") {
-      playSound("miss");
+      playSoundSafe("miss");
       setVisualEffect({ type: "post", player: currentPlayer });
     } else {
-      playSound("miss");
+      playSoundSafe("miss");
       setVisualEffect({ type: "miss", player: currentPlayer });
     }
     handleTurnSwitch();
   }, [
     gameState,
-    gameMode,
-    currentPlayer,
     timer.isPaused,
     timer.gameTimeMs,
-    handleTurnSwitch,
-    finishGame,
-    targetOffset,
+    gameMode,
+    currentPlayer,
     playerTimes,
+    playSoundSafe,
+    targetOffset,
     playerNames,
-    survival,
-    checkHitAccuracy,
+    handleTurnSwitch,
+    handleTimeAttackShot,
+    setScores,
+    setPlayerTimes,
+    handleSurvivalShot,
+    finishGame,
+    setTurnTimeLeft,
   ]);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (
-        ["INPUT", "TEXTAREA", "SELECT"].includes(
-          (e.target as HTMLElement).tagName
-        )
-      ) {
-        return;
-      }
-
-      if (e.code === "Space") {
-        e.preventDefault();
-        if (gameState === "playing" && !timer.isPaused) handleAction();
-      }
-      if (e.code === "Escape" && gameState === "playing") timer.togglePause();
-    };
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleAction, gameState, timer.isPaused, timer.togglePause, timer]);
 
   useBotSystem({
     gameMode,
@@ -624,37 +410,28 @@ export const useGameLogic = ({
     playerTimes,
     scores,
     highScore,
-    streak: survival.streak,
     actionMessage,
     winner,
     finalScore,
     countdown: timer.countdown,
-    isPaused: timer.isPaused,
-    togglePause: timer.togglePause,
     startGame: timer.startGame,
     handleAction,
     restartGame: resetGame,
-    getCurrentPlayerName,
-    setPlayerNames,
-    playerNames,
+    isPaused: timer.isPaused,
+    togglePause: timer.togglePause,
     visualEffect,
     targetOffset,
-    gameVariant,
-    lives: survival.lives,
-    speedMultiplier: survival.speedMultiplier,
-    survivalThreshold: survival.survivalThreshold,
-    adrenaline: survival.adrenaline,
-    isSurvivalFever: survival.isFeverActive,
-    goldenThreshold: survival.GOLDEN_THRESHOLD,
-    hasShield: survival.hasShield,
-    activeCurse: survival.activeCurse,
-    redTarget: survival.redTarget,
-    combo,
-    multiplier,
+    getCurrentPlayerName: () => playerNames[currentPlayer],
+    setPlayerNames,
+    playerNames,
+    ...survival,
+    ...timeAttack,
     timeTargetWidth: targetWidth,
     timeBossActive: isBossActive,
     timeBossPosition: bossPosition,
     isTimeAttackFever: timeFeverActive,
     timeChangePopup,
+    isSurvivalFever: isSurvivalFever,
+    goldenThreshold: GOLDEN_THRESHOLD,
   };
 };

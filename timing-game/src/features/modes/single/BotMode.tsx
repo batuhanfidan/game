@@ -1,19 +1,19 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import TimerDisplay from "../../components/game/TimerDisplay";
-import PlayerTimer from "../../components/layout/PlayerTimer";
-import ActionButton from "../../components/common/ActionButton";
-import TurnInfo from "../../components/layout/TurnInfo";
-import GameOverModal from "../../components/common/GameOverModal";
-import RulesModal from "../../components/layout/RulesModel";
-import VisualEffectOverlay from "../../components/game/VisualEffectOverlay";
-import PauseMenu from "../../components/layout/PauseMenu";
-import VariantIcon from "../../components/game/VariantIcon";
-import { useGameLogic } from "../../hooks/useGameLogic";
-import { useTheme } from "../../hooks/core/useTheme";
-import { toggleMute, getMuteStatus } from "../../shared/utils/sound";
-import { DIFFICULTIES, VARIANTS } from "../../shared/constants/game";
-import type { GameVariant } from "../../shared/types";
+import TimerDisplay from "../../../components/game/TimerDisplay";
+import PlayerTimer from "../../../components/layout/PlayerTimer";
+import ActionButton from "../../../components/common/ActionButton";
+import TurnInfo from "../../../components/layout/TurnInfo";
+import GameOverModal from "../../../components/common/GameOverModal";
+import RulesModal from "../../../components/layout/RulesModel";
+import VisualEffectOverlay from "../../../components/game/VisualEffectOverlay";
+import PauseMenu from "../../../components/layout/PauseMenu";
+import VariantIcon from "../../../components/game/VariantIcon";
+import { useGameLogic } from "../../../hooks/useGameLogic";
+import { useTheme } from "../../../hooks/core/useTheme";
+import { toggleMute, getMuteStatus } from "../../../shared/utils/sound";
+import { DIFFICULTIES, VARIANTS } from "../../../shared/constants/game";
+import type { GameVariant } from "../../../shared/types";
 import {
   Menu,
   Volume2,

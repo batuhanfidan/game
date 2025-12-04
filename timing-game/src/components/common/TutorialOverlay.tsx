@@ -1,6 +1,6 @@
 import React from "react";
 import { X, ArrowRight, Check, Zap, HelpCircle } from "lucide-react";
-import { UI_CONSTANTS, TUTORIAL_STEPS } from "../../utils/constants";
+import { UI_CONSTANTS, TUTORIAL_STEPS } from "../../shared//constants/ui";
 
 interface TutorialOverlayProps {
   step: number;

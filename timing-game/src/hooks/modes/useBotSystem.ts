@@ -1,7 +1,12 @@
 import { useEffect, useRef } from "react";
-import { calculateShotResult } from "../utils/calculateShotResult";
-import { playSound } from "../utils/sound";
-import type { GameMode, GameState, Player, VisualEffectData } from "../types";
+import { calculateShotResult } from "../../shared/utils/calculateShotResult";
+import { playSound } from "../../shared/utils/sound";
+import type {
+  GameMode,
+  GameState,
+  Player,
+  VisualEffectData,
+} from "../../shared/types";
 
 interface UseBotSystemProps {
   gameMode: GameMode;

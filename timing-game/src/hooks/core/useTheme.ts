@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { THEMES } from "../utils/constants";
+import { THEMES } from "../../shared/constants/ui";
 
 export const useTheme = (initialTheme = 0) => {
   const [currentTheme, setCurrentTheme] = useState(initialTheme);

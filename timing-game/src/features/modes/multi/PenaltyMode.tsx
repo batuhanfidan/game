@@ -1,16 +1,20 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import TimerDisplay from "../../components/game/TimerDisplay";
-import ActionButton from "../../components/game/ActionButton";
-import GameOverModal from "../../components/common/GameOverModal";
-import VisualEffectOverlay from "../../components/layout/VisualEffectOverlay";
+import TimerDisplay from "../../../components/game/TimerDisplay";
+import ActionButton from "../../../components/common/ActionButton";
+import GameOverModal from "../../../components/common/GameOverModal";
+import VisualEffectOverlay from "../../../components/game/VisualEffectOverlay";
 
-import { calculateShotResult } from "../../utils/calculateShotResult";
-import { playSound, toggleMute, getMuteStatus } from "../../utils/sound";
-import { triggerWinConfetti } from "../../utils/confetti";
-import type { VisualEffectData } from "../../types";
+import { calculateShotResult } from "../../../shared/utils/calculateShotResult";
+import {
+  playSound,
+  toggleMute,
+  getMuteStatus,
+} from "../../../shared/utils/sound";
+
+import type { VisualEffectData } from "../../../shared/types";
 import { Volume2, VolumeX, ArrowLeft, User } from "lucide-react";
-import { GAME_DELAYS } from "../../utils/constants";
+import { GAME_DELAYS } from "../../../shared/constants/game";
 
 type Player = "p1" | "p2";
 
@@ -102,10 +106,8 @@ const PenaltyMode = () => {
       let winnerMsg = "";
       if (currentScores.p1 > currentScores.p2) {
         winnerMsg = "🏆 Oyuncu 1 Kazandı!";
-        triggerWinConfetti();
       } else if (currentScores.p2 > currentScores.p1) {
         winnerMsg = "🏆 Oyuncu 2 Kazandı!";
-        triggerWinConfetti();
       } else {
         winnerMsg = "🤝 Berabere!";
       }

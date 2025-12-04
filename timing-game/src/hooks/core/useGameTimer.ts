@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import type { GameState, GameVariant } from "../types";
-import { playSound } from "../utils/sound";
-import type { CurseType } from "./useSurvivalSystem";
+import type { GameState, GameVariant, CurseType } from "../../shared/types";
+import { playSound } from "../../shared/utils/sound";
 
 interface UseGameTimerProps {
   gameState: GameState;
@@ -48,10 +47,12 @@ export const useGameTimer = ({
   };
 
   const startGame = useCallback(() => {
-    clearCountdown(); // Eski sayacı temizle
+    clearCountdown();
     let count = 3;
     setCountdown(count);
     setIsPaused(false);
+    // Geri sayım başladığında state'i countdown yapalım ki arayüzde doğru gözüksün
+    setGameState("countdown");
 
     countdownIntervalRef.current = setInterval(() => {
       count--;
@@ -98,7 +99,7 @@ export const useGameTimer = ({
     }
   }, [isPaused]);
 
-  // --- RAF ZAMANLAYICI & FEVER  ---
+  // --- RAF ZAMANLAYICI & FEVER ---
   useEffect(() => {
     if (gameState !== "playing" || isPaused) {
       if (animationFrameRef.current)
@@ -121,6 +122,7 @@ export const useGameTimer = ({
 
       const newSpeed = isFeverActive ? speedMultiplier * 0.5 : speedMultiplier;
 
+      // Hız 0 olmamalı
       if (newSpeed > 0.01) {
         const newElapsed = currentVisualTime / newSpeed;
         startTimeRef.current = now - newElapsed;

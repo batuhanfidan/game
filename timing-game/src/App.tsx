@@ -1,14 +1,14 @@
 import { useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
-import MainMenu from "./pages/MainMenu";
+import MainMenu from "./features/menu/MainMenu";
 import TwoPlayerMode from "./modes/multi/TwoPlayerMode";
-import BotMode from "./modes/single/BotMode";
-import PenaltyMode from "./modes/multi/PenaltyMode";
-import SurvivalMode from "./modes/single/SurvivalMode";
-import TimeAttackMode from "./modes/single/TimeAttackMode";
-import TutorialMode from "./modes/single/TutorialMode"; // YENİ IMPORT
+import BotMode from "./features/modes/single/BotMode";
+import SurvivalMode from "./features/modes/single/SurvivalMode";
+import TimeAttackMode from "./features/modes/single/TimeAttackMode";
+import TutorialMode from "./features/modes/single/TutorialMode";
 import ErrorBoundary from "./components/ErrorBoundary";
-import { soundsReady } from "./utils/sound";
+import { soundsReady } from "./shared/utils/sound";
+import PenaltyMode from "./features/modes/multi/PenaltyMode";
 
 function App() {
   useEffect(() => {

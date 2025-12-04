@@ -50,7 +50,7 @@ const RulesModal: React.FC<RulesModalProps> = ({ showRules, onClose }) => {
             <div className="bg-yellow-500/20 p-2 rounded-lg">
               <Trophy className="text-yellow-500" size={24} />
             </div>
-            <h2 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 tracking-tight">
+            <h2 className="text-2xl font-black text-transparent bg-clip-text bg-linear-to-r from-yellow-400 to-orange-500 tracking-tight">
               OYUN KILAVUZU v2.0
             </h2>
           </div>
@@ -297,7 +297,7 @@ const RulesModal: React.FC<RulesModalProps> = ({ showRules, onClose }) => {
         <div className="p-6 border-t border-neutral-800 bg-neutral-900 sticky bottom-0 z-10 backdrop-blur-xl">
           <button
             onClick={onClose}
-            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white py-4 rounded-xl font-black text-lg tracking-widest transition-all transform active:scale-[0.98] shadow-lg hover:shadow-blue-900/30 flex items-center justify-center gap-2"
+            className="w-full bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white py-4 rounded-xl font-black text-lg tracking-widest transition-all transform active:scale-[0.98] shadow-lg hover:shadow-blue-900/30 flex items-center justify-center gap-2"
           >
             HAZIRIM! <Zap size={20} className="fill-white" />
           </button>

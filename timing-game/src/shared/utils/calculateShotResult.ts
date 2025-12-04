@@ -1,5 +1,5 @@
 import type { ShotOutcome, ShotResult } from "../types";
-import { SHOT_ZONES } from "./constants";
+import { SHOT_ZONES } from "../constants/game";
 
 export function calculateShotResult(ms: number): ShotOutcome {
   let result: ShotResult = "OFSAYT";

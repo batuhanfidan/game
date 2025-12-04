@@ -30,3 +30,14 @@ export interface ShotOutcome {
   message: string;
   isGoal: boolean;
 }
+
+export type CurseType = "REVERSE" | "UNSTABLE" | "MOVING_TARGET";
+
+export interface TimeChangePopup {
+  id: number;
+  value: number;
+  type: "positive" | "negative";
+}
+
+// SoundType sadece var olan ses dosyalarını içermeli
+export type SoundType = "goal" | "whistle" | "kick" | "miss";

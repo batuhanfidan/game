@@ -1,6 +1,6 @@
 import React, { useMemo, memo } from "react";
-import { formatTime } from "../../utils/formatTime";
-import type { GameVariant } from "../../types";
+import { formatTime } from "../../shared/utils/formatTime";
+import type { GameVariant } from "../../shared/types";
 import { Apple, ShieldAlert, Hand } from "lucide-react";
 
 interface TimerDisplayProps {

@@ -1,7 +1,7 @@
 import React, { useMemo, memo } from "react";
-import type { VisualEffectData } from "../../types";
-import { useMediaQuery } from "../../hooks/useMediaQuery";
-import { UI_CONSTANTS } from "../../utils/constants";
+import type { VisualEffectData } from "../../shared/types";
+import { useMediaQuery } from "../../hooks/core/useMediaQuery";
+import { UI_CONSTANTS } from "../../shared/constants/ui";
 
 interface VisualEffectOverlayProps {
   effect: VisualEffectData | null;

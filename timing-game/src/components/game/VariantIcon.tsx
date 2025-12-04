@@ -1,6 +1,6 @@
 import React, { memo } from "react";
 import { Circle, Ghost, Activity, Shuffle, Target } from "lucide-react";
-import type { GameVariant } from "../../types";
+import type { GameVariant } from "../../shared/types";
 
 interface VariantIconProps {
   variant: GameVariant;

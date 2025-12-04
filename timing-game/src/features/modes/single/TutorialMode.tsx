@@ -1,16 +1,16 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import TimerDisplay from "../../components/game/TimerDisplay";
-import PlayerTimer from "../../components/layout/PlayerTimer";
-import ActionButton from "../../components/common/ActionButton";
-import TurnInfo from "../../components/layout/TurnInfo";
-import VisualEffectOverlay from "../../components/game/VisualEffectOverlay";
-import PauseMenu from "../../components/layout/PauseMenu";
-import RulesModal from "../../components/layout/RulesModel";
-import { useGameLogic } from "../../hooks/useGameLogic";
-import { useTheme } from "../../hooks/core/useTheme";
-import { TUTORIAL_STEPS } from "../../shared/constants/ui";
-import { toggleMute, getMuteStatus } from "../../shared/utils/sound";
+import TimerDisplay from "../../../components/game/TimerDisplay";
+import PlayerTimer from "../../../components/layout/PlayerTimer";
+import ActionButton from "../../../components/common/ActionButton";
+import TurnInfo from "../../../components/layout/TurnInfo";
+import VisualEffectOverlay from "../../../components/game/VisualEffectOverlay";
+import PauseMenu from "../../../components/layout/PauseMenu";
+import RulesModal from "../../../components/layout/RulesModel";
+import { useGameLogic } from "../../../hooks/useGameLogic";
+import { useTheme } from "../../../hooks/core/useTheme";
+import { TUTORIAL_STEPS } from "../../../shared/constants/ui";
+import { toggleMute, getMuteStatus } from "../../../shared/utils/sound";
 import {
   User,
   Bot,
@@ -24,7 +24,7 @@ import {
   Palette,
   CircleHelp,
 } from "lucide-react";
-import TutorialOverlay from "../../components/common/TutorialOverlay";
+import TutorialOverlay from "../../../components/common/TutorialOverlay";
 
 const TutorialMode = () => {
   const navigate = useNavigate();
