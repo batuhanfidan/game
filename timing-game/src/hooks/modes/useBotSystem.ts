@@ -54,7 +54,7 @@ export const useBotSystem = ({
   }, [playerTimes, botAccuracy, gameState, currentPlayer, isPaused]);
 
   useEffect(() => {
-    let isActive = true; // Flag to prevent race conditions
+    const abortController = new AbortController(); // Flag to prevent race conditions
 
     if (
       gameMode !== "bot" ||
@@ -68,7 +68,7 @@ export const useBotSystem = ({
     if (stateRef.current.playerTimes.p2 <= 0) return;
 
     const timer = setTimeout(() => {
-      if (!isActive) return;
+      if (abortController.signal.aborted) return;
 
       if (
         stateRef.current.gameState !== "playing" ||
@@ -116,7 +116,7 @@ export const useBotSystem = ({
     }, botReactionTime);
 
     return () => {
-      isActive = false;
+      abortController.abort();
       clearTimeout(timer);
     };
   }, [

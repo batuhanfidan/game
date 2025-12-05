@@ -30,7 +30,7 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({
   showHint = false,
   isPenaltyMode = false,
 }) => {
-  const ms = useMemo(() => totalMs % 1000, [totalMs]);
+  const ms = totalMs % 1000;
   const percentage = (ms / 1000) * 100;
 
   const targetPos = useMemo(() => {
