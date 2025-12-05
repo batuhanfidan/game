@@ -6,6 +6,7 @@ interface ActionButtonProps {
   customText?: string;
   customColor?: string;
   isFirstTurn?: boolean;
+  className?: string;
 }
 
 const ActionButton: React.FC<ActionButtonProps> = memo(
@@ -15,6 +16,7 @@ const ActionButton: React.FC<ActionButtonProps> = memo(
     customText = "BAS!",
     customColor,
     isFirstTurn = false,
+    className = "",
   }) => {
     const baseColor = customColor || "bg-blue-600 hover:bg-blue-500";
 
@@ -45,6 +47,7 @@ const ActionButton: React.FC<ActionButtonProps> = memo(
                 ? "bg-neutral-800 text-neutral-600 cursor-not-allowed border border-neutral-700 translate-y-1"
                 : `${baseColor} cursor-pointer shadow-[0_8px_0_rgba(0,0,0,0.4)] active:shadow-none active:translate-y-2 hover:-translate-y-1 ${pulseEffect}`
             }
+            ${className} 
           `}
         >
           <span className="drop-shadow-md">{customText}</span>
