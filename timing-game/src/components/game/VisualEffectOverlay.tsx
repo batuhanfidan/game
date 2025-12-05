@@ -46,12 +46,18 @@ const VisualEffectOverlay: React.FC<VisualEffectOverlayProps> = ({
   if (!effect) return null;
 
   return (
-    <div className="effect-item fixed z-100" style={position}>
+    <div
+      className="effect-item fixed z-100 flex flex-col items-center justify-center"
+      style={position}
+    >
       {effect.type === "goal" && (
-        <div className="animate-goal text-7xl sm:text-9xl drop-shadow-[0_0_30px_rgba(34,197,94,0.8)]">
-          ⚽
-        </div>
+        <>
+          <div className="animate-success-burst text-8xl sm:text-9xl drop-shadow-[0_0_50px_rgba(34,197,94,1)]">
+            ⚽
+          </div>
+        </>
       )}
+
       {effect.type === "post" && (
         <div className="animate-post text-7xl sm:text-9xl drop-shadow-[0_0_30px_rgba(234,179,8,0.8)]">
           🥅
