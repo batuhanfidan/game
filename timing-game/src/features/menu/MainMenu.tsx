@@ -10,6 +10,7 @@ import {
   Lock,
   MousePointer2,
 } from "lucide-react";
+import { WelcomeModal } from "../../components/common/WelcomeModal";
 
 const MainMenu = () => {
   const navigate = useNavigate();
@@ -258,6 +259,7 @@ const MainMenu = () => {
           <span>OYUNU ÖĞREN</span>
         </button>
       </div>
+      <WelcomeModal />
     </div>
   );
 };
