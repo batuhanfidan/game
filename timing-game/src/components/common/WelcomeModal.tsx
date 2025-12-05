@@ -2,17 +2,23 @@ import { useState } from "react";
 import { Zap, BookOpen, Play } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
+let hasSeenSession = false;
+
 export const WelcomeModal = () => {
-  // DEV MODU: Her zaman true olarak başla
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(!hasSeenSession);
   const navigate = useNavigate();
 
-  const handleStart = () => {
+  const handleClose = () => {
+    hasSeenSession = true;
     setIsOpen(false);
   };
 
+  const handleStart = () => {
+    handleClose();
+  };
+
   const handleTutorial = () => {
-    setIsOpen(false);
+    handleClose();
     navigate("/game/tutorial");
   };
 
@@ -21,6 +27,7 @@ export const WelcomeModal = () => {
   return (
     <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 animate-fade-in">
       <div className="bg-neutral-900 border border-yellow-500/30 rounded-2xl max-w-md w-full p-6 shadow-2xl relative overflow-hidden">
+        {/* Dekoratif Arkaplan */}
         <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
 
         <div className="text-center space-y-4 relative z-10">
