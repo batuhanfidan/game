@@ -4,6 +4,8 @@ import VisualEffectOverlay from "../game/VisualEffectOverlay";
 import PauseMenu from "./PauseMenu";
 import RulesModal from "./RulesModel";
 import { THEMES } from "../../shared/constants/ui";
+// EKLENEN SATIR: Ses kontrol fonksiyonlarını import et
+import { toggleMute, getMuteStatus } from "../../shared/utils/sound";
 
 import { Volume2, VolumeX, Menu, X } from "lucide-react";
 
@@ -27,7 +29,14 @@ const GameLayout: React.FC<{ children: React.ReactNode }> = memo(
     const [isMenuOpen, setIsMenuOpen] = React.useState(false);
     const [showRules, setShowRules] = React.useState(false);
 
-    const [isMuted, setIsMuted] = React.useState(false);
+    // GÜNCELLENEN SATIR: Başlangıç değerini gerçek ses durumundan al
+    const [isMuted, setIsMuted] = React.useState(getMuteStatus());
+
+    // EKLENEN FONKSİYON: Sesi hem sistemde hem de arayüzde değiştir
+    const handleToggleMute = () => {
+      const newStatus = toggleMute();
+      setIsMuted(newStatus);
+    };
 
     return (
       <div
@@ -82,7 +91,7 @@ const GameLayout: React.FC<{ children: React.ReactNode }> = memo(
             } md:flex transition-all duration-300 ease-in-out z-60 relative`}
           >
             <button
-              onClick={() => setIsMuted(!isMuted)}
+              onClick={handleToggleMute} // GÜNCELLENEN SATIR: Yeni fonksiyon bağlandı
               className="bg-gray-700 hover:bg-gray-600 text-white rounded-full w-10 h-10 flex items-center justify-center text-xl font-bold shadow-md focus-visible:ring-2 focus-visible:ring-blue-500"
             >
               {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
