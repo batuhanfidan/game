@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Gamepad2, Timer } from "lucide-react";
 
 interface TurnInfoProps {
@@ -7,15 +8,35 @@ interface TurnInfoProps {
 
 const TurnInfo: React.FC<TurnInfoProps> = ({ currentPlayer, turnTimeLeft }) => {
   return (
-    <div className="text-center mt-4 text-lg flex flex-col items-center gap-1">
-      <p className="flex items-center gap-2">
-        <Gamepad2 size={20} /> Sıra: <strong>{currentPlayer}</strong>
-      </p>
-      <p className="flex items-center gap-2 text-sm opacity-80">
-        <Timer size={16} /> {turnTimeLeft}s
-      </p>
+    <div className="flex flex-col items-center gap-1.5 mt-4 animate-fade-in px-4 w-full">
+      <div className="flex items-center justify-center gap-2 text-lg sm:text-xl text-white">
+        <Gamepad2 size={20} className="shrink-0 text-blue-400" />
+        <span className="opacity-80 text-sm sm:text-base font-medium">
+          Sıra:
+        </span>
+        <strong
+          className="truncate max-w-[150px] sm:max-w-[200px] block text-center"
+          title={currentPlayer}
+        >
+          {currentPlayer}
+        </strong>
+      </div>
+
+      <div
+        className={`
+        flex items-center gap-2 text-sm font-mono font-bold px-3 py-1 rounded-full border transition-colors
+        ${
+          turnTimeLeft <= 3
+            ? "bg-red-500/20 text-red-400 border-red-500/50 animate-pulse"
+            : "bg-neutral-800 text-gray-400 border-neutral-700"
+        }
+      `}
+      >
+        <Timer size={14} />
+        <span>{turnTimeLeft}s</span>
+      </div>
     </div>
   );
 };
 
-export default TurnInfo;
+export default memo(TurnInfo);
