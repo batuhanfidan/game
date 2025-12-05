@@ -14,6 +14,7 @@ interface TimerDisplayProps {
   redTarget?: number | null;
   disableTransition?: boolean;
   showHint?: boolean;
+  isPenaltyMode?: boolean;
 }
 
 const TimerDisplay: React.FC<TimerDisplayProps> = ({
@@ -27,15 +28,18 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({
   redTarget = null,
   disableTransition = false,
   showHint = false,
+  isPenaltyMode = false,
 }) => {
   const ms = useMemo(() => totalMs % 1000, [totalMs]);
   const percentage = (ms / 1000) * 100;
 
-  const visualTargetOffset = useMemo(
-    () => (isCursed ? 1000 - targetOffset : targetOffset),
-    [isCursed, targetOffset]
-  );
-  const targetPos = (visualTargetOffset / 1000) * 100;
+  const targetPos = useMemo(() => {
+    if (isPenaltyMode) {
+      return (targetOffset / 1000) * 100;
+    }
+    const visualTargetOffset = isCursed ? 1000 - targetOffset : targetOffset;
+    return (visualTargetOffset / 1000) * 100;
+  }, [targetOffset, isCursed, isPenaltyMode]);
 
   const redPos = useMemo(() => {
     if (redTarget === null) return 0;
@@ -58,18 +62,9 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({
     [threshold]
   );
 
-  const goldenWidthPercent = useMemo(() => {
-    const effectiveGolden = goldenThreshold > 0 ? goldenThreshold : 10;
-    return (effectiveGolden / 1000) * 100;
-  }, [goldenThreshold]);
-
-  const goldenLeft = useMemo(
-    () => (goldenWidthPercent / thresholdWidthPercent) * 100,
-    [goldenWidthPercent, thresholdWidthPercent]
-  );
-
   return (
     <div className="flex flex-col items-center w-full max-w-lg px-4">
+      {/* Büyük Sayaç */}
       <div
         className={`text-5xl sm:text-7xl md:text-8xl font-black text-center my-6 font-mono tracking-widest text-[#e4e4e7] drop-shadow-[0_0_15px_rgba(255,255,255,0.1)] transition-opacity duration-300 ${
           isGhostHidden ? "opacity-0" : "opacity-100"
@@ -82,10 +77,6 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({
         <>
           <div
             role="progressbar"
-            aria-valuenow={Math.round(percentage)}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-label="Zamanlama Çubuğu"
             className={`w-full h-10 md:h-12 bg-[#27272a] rounded-full overflow-hidden relative border-2 border-[#09090b] shadow-[inset_0_2px_8px_rgba(0,0,0,0.6)] mt-2 transition-opacity duration-300 ${
               isGhostHidden ? "opacity-0" : "opacity-100"
             }`}
@@ -93,7 +84,8 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({
               transform: isCursed ? "scaleX(-1)" : "none",
             }}
           >
-            {redTarget !== null && (
+            {/* Kırmızı Hedef (Survival) */}
+            {redTarget !== null && !isPenaltyMode && (
               <div
                 className="absolute top-0 h-full bg-[#ef4444] z-40 border-x border-white/50 animate-pulse shadow-[0_0_15px_rgba(239,68,68,0.8)] flex items-center justify-center"
                 style={{
@@ -102,14 +94,7 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({
                   transform: "translateX(-50%)",
                 }}
               >
-                <div
-                  className="absolute -top-6 left-1/2 text-[#ef4444]"
-                  style={{
-                    transform: isCursed
-                      ? "scaleX(-1) translateX(50%)"
-                      : "translateX(-50%)",
-                  }}
-                >
+                <div className="absolute -top-6 left-1/2 text-[#ef4444] -translate-x-1/2">
                   {threshold < 150 ? (
                     <ShieldAlert size={20} fill="#ef4444" />
                   ) : (
@@ -119,10 +104,11 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({
               </div>
             )}
 
+            {/* HEDEF ÇUBUĞU - ORİJİNAL YEŞİL RENK KORUNDU */}
             <div
               className={`absolute top-0 h-full bg-[#10b981] z-20 border-x-2 border-white/50 shadow-[0_0_15px_rgba(16,185,129,0.6)] 
                 ${
-                  disableTransition
+                  disableTransition || isPenaltyMode
                     ? ""
                     : "transition-all duration-300 ease-out"
                 }`}
@@ -132,16 +118,20 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({
                 transform: "translateX(-50%)",
               }}
             >
-              <div
-                className="absolute top-0 h-full bg-[#f59e0b] z-30 opacity-80"
-                style={{
-                  left: "50%",
-                  width: `${goldenLeft}%`,
-                  transform: "translateX(-50%)",
-                }}
-              />
+              {/* Altın Bölge */}
+              {!isPenaltyMode && goldenThreshold > 0 && (
+                <div
+                  className="absolute top-0 h-full bg-[#f59e0b] z-30 opacity-80"
+                  style={{
+                    left: "50%",
+                    width: `${(goldenThreshold / threshold) * 100}%`,
+                    transform: "translateX(-50%)",
+                  }}
+                />
+              )}
             </div>
 
+            {/* İlerleme Çubuğu */}
             <div
               className="absolute top-0 left-0 h-full bg-linear-to-r from-blue-900 via-blue-600 to-cyan-400 opacity-90 z-10 shadow-[0_0_10px_rgba(34,211,238,0.5)]"
               style={{ width: `${percentage}%` }}
@@ -152,7 +142,7 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({
               style={{ left: `${percentage}%` }}
             />
 
-            {showHint && (
+            {showHint && !isPenaltyMode && (
               <div
                 className="absolute -top-12 left-1/2 -translate-x-1/2 flex flex-col items-center animate-bounce z-50 pointer-events-none"
                 style={{
@@ -170,31 +160,34 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({
             )}
           </div>
 
-          <div className="flex justify-between w-full text-[10px] sm:text-xs text-[#71717a] mt-2 font-mono uppercase tracking-wider font-bold px-1">
-            {isCursed ? (
-              <>
-                <span className="text-[#10b981]">1000ms</span>
-                <span>500ms</span>
-                <span>0ms</span>
-              </>
-            ) : (
-              <>
-                <span
-                  className={
-                    variant === "moving" ? "text-[#71717a]" : "text-[#10b981]"
-                  }
-                >
-                  0ms
-                </span>
-                <span>500ms</span>
-                <span>1000ms</span>
-              </>
-            )}
-          </div>
+          {/* Alt Metinler */}
+          {!isPenaltyMode && (
+            <div className="flex justify-between w-full text-[10px] sm:text-xs text-[#71717a] mt-2 font-mono uppercase tracking-wider font-bold px-1">
+              {isCursed ? (
+                <>
+                  <span className="text-[#10b981]">1000ms</span>
+                  <span>500ms</span>
+                  <span>0ms</span>
+                </>
+              ) : (
+                <>
+                  <span
+                    className={
+                      variant === "moving" ? "text-[#71717a]" : "text-[#10b981]"
+                    }
+                  >
+                    0ms
+                  </span>
+                  <span>500ms</span>
+                  <span>1000ms</span>
+                </>
+              )}
+            </div>
+          )}
         </>
       )}
 
-      {variant === "moving" && (
+      {variant === "moving" && !isPenaltyMode && (
         <div className="text-[#10b981] text-xs font-bold mt-1 animate-pulse">
           HEDEF: {targetOffset}ms
         </div>
