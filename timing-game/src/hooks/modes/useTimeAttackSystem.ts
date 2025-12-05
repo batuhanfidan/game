@@ -24,7 +24,7 @@ interface TimeAttackHandlers {
   setTimeChangePopup: (popup: TimeChangePopup) => void;
   setVisualEffect: (effect: VisualEffectData | null) => void;
   playSound: (sound: SoundType) => void; // Fix: Explicit SoundType
-  triggerWinConfetti: () => void;
+
   handleTurnSwitch: () => void;
   currentPlayer: Player;
 }
@@ -191,7 +191,6 @@ export const useTimeAttackSystem = () => {
           type: "goal",
           player: handlers.currentPlayer,
         });
-        if (result.isGolden) handlers.triggerWinConfetti();
       } else {
         handlers.playSound("miss");
         const effectType = result.message.includes("KIRMIZI") ? "save" : "miss";

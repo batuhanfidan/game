@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { calculateShotResult } from "../shared/utils/calculateShotResult";
-import { triggerWinConfetti } from "../shared/utils/confetti";
+
 import { playSound } from "../shared/utils/sound";
 
 import { GAMEPLAY_CONSTANTS, GAME_DELAYS } from "../shared/constants/game";
@@ -196,7 +196,7 @@ export const useGameLogic = ({
     } else if (gameMode === "time_attack") {
       setFinalScore(`Toplam Puan: ${scores.p1}`);
       setWinner("⏱️ SÜRE DOLDU!");
-      triggerWinConfetti();
+
       updateHighScore(scores.p1);
     } else {
       setFinalScore(
@@ -204,7 +204,7 @@ export const useGameLogic = ({
       );
       if (scores.p1 > scores.p2) {
         setWinner(`🏆 ${playerNames.p1} kazandı!`);
-        triggerWinConfetti();
+
         if (gameMode === "bot") updateHighScore(scores.p1);
       } else if (scores.p2 > scores.p1) {
         setWinner(`🏆 ${playerNames.p2} kazandı!`);
@@ -333,7 +333,7 @@ export const useGameLogic = ({
         setTimeChangePopup,
         setVisualEffect,
         playSound: playSoundSafe,
-        triggerWinConfetti,
+
         handleTurnSwitch,
         currentPlayer,
       });
