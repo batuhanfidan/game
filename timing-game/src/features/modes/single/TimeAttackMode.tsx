@@ -8,7 +8,7 @@ import GameLayout from "../../../components/layout/GameLayout";
 import { useGameLogic } from "../../../hooks/useGameLogic";
 import { THEMES } from "../../../shared/constants/ui";
 import { GameProvider } from "../../../context/GameContext";
-import { Timer, ArrowLeft, Trophy, Flame } from "lucide-react";
+import { Timer, ArrowLeft, Trophy, Flame, Zap } from "lucide-react";
 
 const TimeAttackMode = () => {
   const navigate = useNavigate();
@@ -52,6 +52,8 @@ const TimeAttackMode = () => {
   const isLowTime = playerTimes.p1 <= 10;
   const isFever = isTimeAttackFever;
 
+  const feverProgress = isFever ? 100 : (combo % 10) * 10;
+
   useEffect(() => {
     if (playerReady && gameState === "idle") startGame();
   }, [playerReady, gameState, startGame]);
@@ -65,8 +67,8 @@ const TimeAttackMode = () => {
       <div className="text-5xl font-black text-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.4)] tracking-tighter flex items-center gap-3">
         <Trophy size={48} /> {scores.p1}
       </div>
-
       {/* Kombo Göstergesi */}
+
       {combo > 1 && (
         <div className={`mt-2 ${isTimeAttackFever ? "animate-bounce" : ""}`}>
           <div
@@ -205,17 +207,58 @@ const TimeAttackMode = () => {
               </div>
             </div>
 
-            <div className="mt-32 w-full flex justify-center">
+            <div className="mt-32 w-full flex flex-col items-center justify-center max-w-lg mx-auto">
+              <div className="w-full px-4 mb-2 flex items-center gap-3">
+                <span
+                  className={`text-[10px] font-black w-12 tracking-widest ${
+                    isFever ? "text-yellow-400 animate-pulse" : "text-cyan-600"
+                  }`}
+                >
+                  FEVER
+                </span>
+                <div
+                  className={`flex-1 h-1.5 bg-gray-800 rounded-full overflow-hidden border ${
+                    isFever
+                      ? "border-yellow-500/50 shadow-[0_0_10px_rgba(234,179,8,0.3)]"
+                      : "border-cyan-900/30"
+                  }`}
+                >
+                  <div
+                    className={`h-full transition-all duration-300 ease-out ${
+                      isFever
+                        ? "bg-yellow-400 w-full animate-pulse"
+                        : "bg-cyan-500"
+                    }`}
+                    style={{ width: `${feverProgress}%` }}
+                  />
+                </div>
+                {isFever && (
+                  <Zap
+                    size={14}
+                    className="text-yellow-400 animate-bounce"
+                    fill="currentColor"
+                  />
+                )}
+              </div>
+
               <TimerDisplay
                 totalMs={gameTimeMs}
                 targetOffset={targetOffset}
                 threshold={timeTargetWidth}
                 redTarget={timeBossActive ? timeBossPosition : null}
+                goldenThreshold={20}
               />
             </div>
 
-            <div className="text-lg md:text-2xl mt-8 text-center font-medium px-4 h-8 text-cyan-300 tracking-wide drop-shadow-sm truncate w-full">
-              {actionMessage}
+            <div
+              className={`text-lg md:text-2xl mt-8 text-center font-medium px-4 h-8 tracking-wide drop-shadow-sm truncate w-full flex items-center justify-center gap-2 ${
+                actionMessage.className || "text-cyan-300"
+              }`}
+            >
+              {actionMessage.icon && (
+                <actionMessage.icon size={24} className="inline-block" />
+              )}
+              {actionMessage.text}
             </div>
 
             <div className="flex justify-center w-full px-4 mt-8 md:mt-12">

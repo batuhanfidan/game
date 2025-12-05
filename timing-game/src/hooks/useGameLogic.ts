@@ -1,8 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { calculateShotResult } from "../shared/utils/calculateShotResult";
-
 import { playSound } from "../shared/utils/sound";
-
 import { GAMEPLAY_CONSTANTS, GAME_DELAYS } from "../shared/constants/game";
 import type {
   GameMode,
@@ -10,7 +8,10 @@ import type {
   VisualEffectData,
   TimeChangePopup,
   SoundType,
+  ActionMessage,
 } from "../shared/types";
+
+import { CheckCircle, XCircle, Goal, AlertCircle } from "lucide-react";
 
 // Core Hooks
 import { useGameState } from "./core/useGameState";
@@ -48,7 +49,11 @@ export const useGameLogic = ({
   }, []);
 
   const { gameState, setGameState } = useGameState("idle");
-  const [actionMessage, setActionMessage] = useState("");
+
+  const [actionMessage, setActionMessage] = useState<ActionMessage>({
+    text: "",
+  });
+
   const [winner, setWinner] = useState("");
   const [finalScore, setFinalScore] = useState("");
   const [visualEffect, setVisualEffect] = useState<VisualEffectData | null>(
@@ -58,6 +63,8 @@ export const useGameLogic = ({
   const [roundOffset, setRoundOffset] = useState(0);
   const [timeChangePopup, setTimeChangePopup] =
     useState<TimeChangePopup | null>(null);
+
+  const [showHint, setShowHint] = useState(false);
 
   const playSoundSafe = useCallback((sound: SoundType) => playSound(sound), []);
 
@@ -122,11 +129,19 @@ export const useGameLogic = ({
   const handleGameStartLogic = useCallback(() => {
     if (gameMode === "survival" || gameMode === "time_attack") {
       setCurrentPlayer("p1");
-      setActionMessage("Başarılar!");
+      setActionMessage({
+        text: "Başarılar!",
+        icon: CheckCircle,
+        className: "text-white",
+      });
     } else {
       const startPlayer = Math.random() < 0.5 ? "p1" : "p2";
       setCurrentPlayer(startPlayer);
-      setActionMessage(`🎲 ${playerNames[startPlayer]} başlıyor!`);
+      setActionMessage({
+        text: `${playerNames[startPlayer]} başlıyor!`,
+        icon: AlertCircle,
+        className: "text-blue-400",
+      });
     }
     randomizeRound();
   }, [gameMode, playerNames, randomizeRound, setCurrentPlayer]);
@@ -162,7 +177,7 @@ export const useGameLogic = ({
     resetScores();
     setGameState("idle");
     setTargetOffset(0);
-    setActionMessage("");
+    setActionMessage({ text: "" });
     setVisualEffect(null);
     setWinner("");
     setFinalScore("");
@@ -196,7 +211,6 @@ export const useGameLogic = ({
     } else if (gameMode === "time_attack") {
       setFinalScore(`Toplam Puan: ${scores.p1}`);
       setWinner("⏱️ SÜRE DOLDU!");
-
       updateHighScore(scores.p1);
     } else {
       setFinalScore(
@@ -204,7 +218,6 @@ export const useGameLogic = ({
       );
       if (scores.p1 > scores.p2) {
         setWinner(`🏆 ${playerNames.p1} kazandı!`);
-
         if (gameMode === "bot") updateHighScore(scores.p1);
       } else if (scores.p2 > scores.p1) {
         setWinner(`🏆 ${playerNames.p2} kazandı!`);
@@ -212,6 +225,12 @@ export const useGameLogic = ({
         setWinner("🤝 Berabere!");
       }
     }
+
+    // Oyun sayısını artır
+    const currentCount = parseInt(
+      localStorage.getItem("games_played_count") || "0"
+    );
+    localStorage.setItem("games_played_count", (currentCount + 1).toString());
   }, [
     gameMode,
     survivalStreak,
@@ -258,14 +277,27 @@ export const useGameLogic = ({
       if (gameMode === "survival") {
         if (survivalLives > 1) {
           setSurvivalLives((l) => l - 1);
-          setActionMessage("⏰ SÜRE DOLDU! (-1 Can)");
+          // İkonlu mesaj
+          setActionMessage({
+            text: "SÜRE DOLDU! (-1 Can)",
+            icon: AlertCircle,
+            className: "text-red-500 font-bold",
+          });
           setTurnTimeLeft(GAMEPLAY_CONSTANTS.TURN_TIME_LIMIT);
         } else {
-          setActionMessage("⏰ SÜRE DOLDU! Elendin.");
+          setActionMessage({
+            text: "SÜRE DOLDU! Elendin.",
+            icon: XCircle,
+            className: "text-red-600 font-black",
+          });
           finishGame();
         }
       } else if (gameMode !== "time_attack") {
-        setActionMessage(`${playerNames[currentPlayer]} süresini doldurdu!`);
+        setActionMessage({
+          text: `${playerNames[currentPlayer]} süresini doldurdu!`,
+          icon: XCircle,
+          className: "text-gray-400",
+        });
         playSoundSafe("miss");
         if (isMounted.current)
           setVisualEffect({ type: "miss", player: currentPlayer });
@@ -291,6 +323,18 @@ export const useGameLogic = ({
     playSoundSafe,
   ]);
 
+  // Hint mantığı
+  useEffect(() => {
+    const gamesPlayed = parseInt(
+      localStorage.getItem("games_played_count") || "0"
+    );
+    if (gamesPlayed < 25) {
+      setShowHint(true);
+    } else {
+      setShowHint(false);
+    }
+  }, [gameMode]);
+
   useEffect(() => {
     if (visualEffect) {
       const t = setTimeout(() => {
@@ -299,7 +343,6 @@ export const useGameLogic = ({
       return () => clearTimeout(t);
     }
   }, [visualEffect]);
-
   useEffect(() => {
     if (timeChangePopup) {
       const t = setTimeout(() => {
@@ -318,7 +361,11 @@ export const useGameLogic = ({
       playerTimes[currentPlayer] <= 0
     ) {
       playSoundSafe("miss");
-      setActionMessage("⏰ Süren bitti! Sıra karşı oyuncuda.");
+      setActionMessage({
+        text: "Süren bitti! Sıra karşı oyuncuda.",
+        icon: AlertCircle,
+        className: "text-red-400",
+      });
       return;
     }
 
@@ -333,7 +380,6 @@ export const useGameLogic = ({
         setTimeChangePopup,
         setVisualEffect,
         playSound: playSoundSafe,
-
         handleTurnSwitch,
         currentPlayer,
       });
@@ -353,12 +399,21 @@ export const useGameLogic = ({
       return;
     }
 
+    // Klasik Mod Mantığı
     const distance = Math.abs(currentMs - targetOffset);
     const displayMs = String(Math.floor(distance / 10)).padStart(2, "0");
     const { result, message, isGoal } = calculateShotResult(distance);
-    setActionMessage(
-      `${playerNames[currentPlayer]}: ${message} (${displayMs}ms)`
-    );
+
+    // Mesaj objesi oluştur
+    setActionMessage({
+      text: `${playerNames[currentPlayer]}: ${message} (${displayMs}ms)`,
+      icon: isGoal ? CheckCircle : result === "DİREK" ? Goal : XCircle,
+      className: isGoal
+        ? "text-green-400"
+        : result === "DİREK"
+        ? "text-orange-400"
+        : "text-red-400",
+    });
 
     if (isGoal || result === "GOL") {
       playSoundSafe("goal");
@@ -436,5 +491,6 @@ export const useGameLogic = ({
     timeChangePopup,
     isSurvivalFever: isSurvivalFever,
     goldenThreshold: GOLDEN_THRESHOLD,
+    showHint,
   };
 };

@@ -1,11 +1,13 @@
 import { useEffect, useRef } from "react";
 import { calculateShotResult } from "../../shared/utils/calculateShotResult";
 import { playSound } from "../../shared/utils/sound";
+import { CheckCircle, XCircle } from "lucide-react";
 import type {
   GameMode,
   GameState,
   Player,
   VisualEffectData,
+  ActionMessage,
 } from "../../shared/types";
 
 interface UseBotSystemProps {
@@ -19,7 +21,7 @@ interface UseBotSystemProps {
   handleTurnSwitch: () => void;
   setScores: React.Dispatch<React.SetStateAction<{ p1: number; p2: number }>>;
   setVisualEffect: (effect: VisualEffectData | null) => void;
-  setActionMessage: (msg: string) => void;
+  setActionMessage: (msg: ActionMessage) => void;
 }
 
 export const useBotSystem = ({
@@ -54,7 +56,7 @@ export const useBotSystem = ({
   }, [playerTimes, botAccuracy, gameState, currentPlayer, isPaused]);
 
   useEffect(() => {
-    const abortController = new AbortController(); // Flag to prevent race conditions
+    const abortController = new AbortController();
 
     if (
       gameMode !== "bot" ||
@@ -97,7 +99,11 @@ export const useBotSystem = ({
       if (isGoal) {
         playSound("goal");
         setVisualEffect({ type: "goal", player: "p2" });
-        setActionMessage(`🤖 Bot: ${message} (${displayMs}ms)`);
+        setActionMessage({
+          text: `Bot: ${message} (${displayMs}ms)`,
+          icon: CheckCircle,
+          className: "text-green-400",
+        });
         setScores((s) => ({ ...s, p2: s.p2 + 1 }));
       } else {
         playSound("miss");
@@ -105,11 +111,13 @@ export const useBotSystem = ({
           type: result === "DİREK" ? "post" : "miss",
           player: "p2",
         });
-        setActionMessage(
-          `🤖 Bot: ${
+        setActionMessage({
+          text: `Bot: ${
             result === "GOL" ? "Golü kaçırdı!" : message
-          } (${displayMs}ms)`
-        );
+          } (${displayMs}ms)`,
+          icon: XCircle,
+          className: "text-red-400",
+        });
       }
 
       handleTurnSwitch();

@@ -9,12 +9,25 @@ import type {
   VisualEffectData,
   Player,
   SoundType,
+  ActionMessage,
 } from "../../shared/types";
+import {
+  Apple,
+  ShieldAlert,
+  Shield,
+  Skull,
+  Flame,
+  Zap,
+  Ghost,
+  Activity,
+  AlertTriangle,
+  Heart,
+} from "lucide-react";
 
 interface SurvivalActionHandlers {
   playSound: (sound: SoundType) => void;
   setVisualEffect: (effect: VisualEffectData | null) => void;
-  setActionMessage: (msg: string) => void;
+  setActionMessage: (msg: ActionMessage) => void;
   finishGame: () => void;
   setTurnTimeLeft: (time: number) => void;
   setTargetOffset: (offset: number) => void;
@@ -58,7 +71,6 @@ const useSurvivalState = () => {
   };
 };
 
-// Efekt hook'u
 const useSurvivalEffects = (isFeverActive: boolean, onFeverEnd: () => void) => {
   const savedCallback = useRef(onFeverEnd);
 
@@ -175,23 +187,35 @@ export const useSurvivalSystem = (onFeverEndCallback?: () => void) => {
       const isGreenHit = distance <= survivalThreshold;
       const isCritical = distance <= GOLDEN_THRESHOLD;
 
-      let successMessage = "";
+      let successMessage: ActionMessage | null = null;
 
       if (isRedHit) {
         playSound("goal");
         setVisualEffect({ type: "goal", player: currentPlayer });
-        successMessage = "🍎 ELMA VURULDU! (+10 SERİ)";
+        successMessage = {
+          text: "ELMA VURULDU! (+10 SERİ)",
+          icon: Apple,
+          className: "text-green-400",
+        };
         setStreak((prev) => prev + 9);
       } else if (!isGreenHit) {
         if (isFeverActive) {
           playSound("miss");
-          setActionMessage("FEVER KORUMASI!");
+          setActionMessage({
+            text: "FEVER KORUMASI!",
+            icon: Flame,
+            className: "text-yellow-400",
+          });
           return;
         }
         if (hasShield) {
           setHasShield(false);
           setVisualEffect({ type: "save", player: currentPlayer });
-          setActionMessage("🛡️ KALKAN KIRILDI! (Hayattasın)");
+          setActionMessage({
+            text: "KALKAN KIRILDI! (Hayattasın)",
+            icon: ShieldAlert,
+            className: "text-blue-400",
+          });
           return;
         }
 
@@ -201,11 +225,19 @@ export const useSurvivalSystem = (onFeverEndCallback?: () => void) => {
           setLives((l) => l - 1);
           playSound("miss");
           setVisualEffect({ type: "post", player: currentPlayer });
-          setActionMessage(`⚠️ DİKKAT! (${lives - 1} Can Kaldı)`);
+          setActionMessage({
+            text: `DİKKAT! (${lives - 1} Can Kaldı)`,
+            icon: AlertTriangle,
+            className: "text-red-500 font-bold",
+          });
         } else {
           playSound("miss");
           setVisualEffect({ type: "miss", player: currentPlayer });
-          setActionMessage(`💀 ÖLDÜN!`);
+          setActionMessage({
+            text: "ÖLDÜN!",
+            icon: Skull,
+            className: "text-red-600 font-black",
+          });
           finishGame();
         }
         return;
@@ -253,13 +285,28 @@ export const useSurvivalSystem = (onFeverEndCallback?: () => void) => {
             UNSTABLE: "DENGESİZ HIZ",
             MOVING_TARGET: "GEZİCİ HEDEF",
           };
-          setActionMessage(`⚠️ LANET BAŞLIYOR: ${curseNames[nextCurse]}!`);
+
+          const curseIcon =
+            nextCurse === "REVERSE"
+              ? Ghost
+              : nextCurse === "UNSTABLE"
+              ? Activity
+              : Zap;
+          setActionMessage({
+            text: `LANET BAŞLIYOR: ${curseNames[nextCurse]}!`,
+            icon: curseIcon,
+            className: "text-purple-400 font-bold",
+          });
         } else if (cursedRemaining > 0) {
           const nextRemaining = Math.max(0, cursedRemaining - 1);
           setCursedRemaining(nextRemaining);
           if (nextRemaining === 0) {
             setActiveCurse(null);
-            setActionMessage("Lanet Kalktı!");
+            setActionMessage({
+              text: "Lanet Kalktı!",
+              icon: Shield,
+              className: "text-green-300",
+            });
           }
         }
 
@@ -275,13 +322,28 @@ export const useSurvivalSystem = (onFeverEndCallback?: () => void) => {
           setActionMessage(successMessage);
         } else if (newStreak % SURVIVAL_CONSTANTS.LIFE_BONUS_INTERVAL === 0) {
           setLives((l) => Math.min(l + 1, SURVIVAL_CONSTANTS.MAX_LIVES));
-          setActionMessage(`💖 +1 CAN! | Hız: ${speedMultiplier.toFixed(1)}x`);
+          setActionMessage({
+            text: `+1 CAN! | Hız: ${speedMultiplier.toFixed(1)}x`,
+            icon: Heart,
+            className: "text-pink-500",
+          });
         } else if (isFeverActive) {
-          setActionMessage(`🔥 FEVER MODU!`);
+          setActionMessage({
+            text: "FEVER MODU!",
+            icon: Flame,
+            className: "text-yellow-400",
+          });
         } else if (isCritical) {
-          setActionMessage(`🔥 KRİTİK! (+%35 Adrenalin)`);
+          setActionMessage({
+            text: "KRİTİK! (+%35 Adrenalin)",
+            icon: Zap,
+            className: "text-yellow-300",
+          });
         } else {
-          setActionMessage(`GÜZEL! (Seri: ${newStreak})`);
+          setActionMessage({
+            text: `GÜZEL! (Seri: ${newStreak})`,
+            className: "text-white",
+          });
         }
         return newStreak;
       });

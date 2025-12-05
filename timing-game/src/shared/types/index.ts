@@ -1,6 +1,13 @@
 export type Player = "p1" | "p2";
 export type GameState = "idle" | "countdown" | "playing" | "finished";
 export type GameMode = "classic" | "bot" | "survival" | "time_attack";
+import type { ElementType } from "react";
+
+export interface ActionMessage {
+  text: string;
+  icon?: ElementType;
+  className?: string;
+}
 
 export type GameVariant =
   | "classic"
@@ -39,5 +46,4 @@ export interface TimeChangePopup {
   type: "positive" | "negative";
 }
 
-// SoundType sadece var olan ses dosyalarını içermeli
 export type SoundType = "goal" | "whistle" | "kick" | "miss";

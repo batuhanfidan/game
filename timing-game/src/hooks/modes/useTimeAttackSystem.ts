@@ -4,7 +4,9 @@ import type {
   Player,
   TimeChangePopup,
   SoundType,
+  ActionMessage,
 } from "../../shared/types";
+import { Flame, ShieldAlert, Snowflake, Star, X, Shield } from "lucide-react";
 
 const INITIAL_TARGET_WIDTH = 150;
 const MIN_TARGET_WIDTH = 30;
@@ -14,7 +16,7 @@ const FEVER_DURATION_MS = 5000;
 const BOSS_WIDTH = 50;
 
 interface TimeAttackHandlers {
-  setActionMessage: (msg: string) => void;
+  setActionMessage: (msg: ActionMessage) => void;
   setScores: (
     callback: (prev: { p1: number; p2: number }) => { p1: number; p2: number }
   ) => void;
@@ -23,7 +25,7 @@ interface TimeAttackHandlers {
   ) => void;
   setTimeChangePopup: (popup: TimeChangePopup) => void;
   setVisualEffect: (effect: VisualEffectData | null) => void;
-  playSound: (sound: SoundType) => void; // Fix: Explicit SoundType
+  playSound: (sound: SoundType) => void;
 
   handleTurnSwitch: () => void;
   currentPlayer: Player;
@@ -98,13 +100,17 @@ export const useTimeAttackSystem = () => {
         isGolden: false,
         timeBonus: 0,
         scoreBonus: 0,
-        message: "",
+        message: { text: "", icon: undefined } as unknown as ActionMessage,
         shouldTriggerFever: false,
       };
 
       if (isFever) {
         if (isBlocked) {
-          result.message = "🛡️ FEVER KALKANI KIRILDI!";
+          result.message = {
+            text: "FEVER KALKANI KIRILDI!",
+            icon: Shield,
+            className: "text-blue-400",
+          };
           setIsFever(false);
           setFeverEndTime(null);
           setIsBossActive(false);
@@ -112,7 +118,11 @@ export const useTimeAttackSystem = () => {
         }
       }
       if (isBlocked && !isFever) {
-        result.message = "🟥 DİREK KIRMIZI! (-10sn)";
+        result.message = {
+          text: "DİREK KIRMIZI! (-10sn)",
+          icon: ShieldAlert,
+          className: "text-red-500 font-bold",
+        };
         result.timeBonus = -10;
         setCombo(0);
         setMultiplier(1);
@@ -122,9 +132,17 @@ export const useTimeAttackSystem = () => {
       }
       if (diff > halfWidth) {
         if (isFever) {
-          result.message = "❄️ ISKA (Fever Aktif)";
+          result.message = {
+            text: "ISKA (Fever Aktif)",
+            icon: Snowflake,
+            className: "text-cyan-300",
+          };
         } else {
-          result.message = "❌ ISKA! (-2sn)";
+          result.message = {
+            text: "ISKA! (-2sn)",
+            icon: X,
+            className: "text-gray-400",
+          };
           result.timeBonus = -2;
           setCombo(0);
           setMultiplier(1);
@@ -145,12 +163,20 @@ export const useTimeAttackSystem = () => {
 
       if (result.isGolden) {
         result.timeBonus = 2;
-        result.message = "🌟 MÜKEMMEL! (+2sn)";
+        result.message = {
+          text: "MÜKEMMEL! (+2sn)",
+          icon: Star,
+          className: "text-yellow-300",
+        };
       } else if (newCombo % 5 === 0) {
         result.timeBonus = 2;
-        result.message = `🔥 KOMBO! (+2sn)`;
+        result.message = {
+          text: `KOMBO! (+2sn)`,
+          icon: Flame,
+          className: "text-orange-400",
+        };
       } else {
-        result.message = "GOL!";
+        result.message = { text: "GOL!", className: "text-green-400" };
       }
 
       setTargetWidth((prev) => Math.max(MIN_TARGET_WIDTH, prev * SHRINK_RATE));
@@ -159,7 +185,11 @@ export const useTimeAttackSystem = () => {
         setIsFever(true);
         setFeverEndTime(Date.now() + FEVER_DURATION_MS);
         result.shouldTriggerFever = true;
-        result.message = "❄️ ZAMAN DONDU!";
+        result.message = {
+          text: "ZAMAN DONDU!",
+          icon: Snowflake,
+          className: "text-cyan-300 font-bold",
+        };
       }
       return result;
     },
@@ -193,7 +223,9 @@ export const useTimeAttackSystem = () => {
         });
       } else {
         handlers.playSound("miss");
-        const effectType = result.message.includes("KIRMIZI") ? "save" : "miss";
+        const effectType = result.message?.text?.includes("KIRMIZI")
+          ? "save"
+          : "miss";
         handlers.setVisualEffect({
           type: effectType,
           player: handlers.currentPlayer,

@@ -16,8 +16,6 @@ import {
   ArrowLeft,
 } from "lucide-react";
 import TutorialOverlay from "../../../components/common/TutorialOverlay";
-
-// Layout & Context
 import GameLayout from "../../../components/layout/GameLayout";
 import { GameProvider } from "../../../context/GameContext";
 
@@ -131,8 +129,15 @@ const TutorialMode = () => {
             <TimerDisplay totalMs={gameTimeMs} showProgressBar={true} />
           </div>
 
-          <div className="text-xl md:text-2xl mt-6 text-center font-bold px-4 h-8 text-green-400 drop-shadow-sm">
-            {actionMessage || "Hazır ol..."}
+          <div
+            className={`text-xl md:text-2xl mt-6 text-center font-bold px-4 h-8 drop-shadow-sm flex items-center justify-center gap-2 ${
+              actionMessage.className || "text-green-400"
+            }`}
+          >
+            {actionMessage.icon && (
+              <actionMessage.icon size={24} className="inline-block" />
+            )}
+            {actionMessage.text || "Hazır ol..."}
           </div>
 
           <TurnInfo

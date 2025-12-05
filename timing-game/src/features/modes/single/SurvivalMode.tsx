@@ -103,7 +103,6 @@ const SurvivalMode = () => {
             </div>
           )}
         </div>
-
         {/* Seri Bilgisi */}
         <div className="text-4xl font-black text-[#ef4444] drop-shadow-[0_0_15px_rgba(239,68,68,0.4)] tracking-tighter flex items-center gap-2">
           <Flame
@@ -116,7 +115,6 @@ const SurvivalMode = () => {
           />
           SERİ: {streak}
         </div>
-
         {/* Detay Bilgi */}
         <div className="flex gap-2 mt-1 text-xs font-mono font-bold">
           <span className="bg-[#27272a] px-2 py-1 rounded text-[#f59e0b] border border-[#f59e0b]/30 flex items-center gap-1">
@@ -139,6 +137,10 @@ const SurvivalMode = () => {
       showThemeButton={false}
     >
       <GameLayout>
+        {lives === 1 && gameState === "playing" && (
+          <div className="animate-vignette-danger"></div>
+        )}
+
         {/* FEVER EFEKT KATMANI */}
         {isSurvivalFever && (
           <div className="fixed inset-0 z-0 pointer-events-none animate-pulse">
@@ -149,7 +151,6 @@ const SurvivalMode = () => {
 
         {gameState === "idle" && !countdown && (
           <div className="flex flex-col items-center gap-6 z-20 bg-[#09090b]/90 p-8 rounded-3xl border border-[#ef4444]/30 shadow-2xl max-w-sm w-full mx-4 backdrop-blur-xl animate-popup">
-            {/* ... Hazırlık ekranı ... */}
             <div className="bg-[#ef4444]/10 p-4 rounded-full border border-[#ef4444]/20">
               <Skull size={48} className="text-[#ef4444]" />
             </div>
@@ -257,11 +258,17 @@ const SurvivalMode = () => {
             </div>
 
             <div
-              className={`text-xl mt-8 text-center font-bold px-4 h-8 tracking-wide drop-shadow-sm transition-colors ${
-                lives === 1 ? "text-[#ef4444] animate-ping" : "text-[#e4e4e7]"
-              }`}
+              className={`text-xl mt-8 text-center font-bold px-4 h-8 tracking-wide drop-shadow-sm transition-colors flex items-center justify-center gap-2 ${
+                actionMessage.text.includes("DİKKAT") ||
+                actionMessage.text.includes("ÖLDÜN")
+                  ? "animate-ping scale-105"
+                  : ""
+              } ${actionMessage.className || "text-[#e4e4e7]"}`}
             >
-              {actionMessage}
+              {actionMessage.icon && (
+                <actionMessage.icon size={24} className="inline-block" />
+              )}
+              {actionMessage.text}
             </div>
 
             <div className="flex items-center justify-center gap-6 mt-6 text-[#a1a1aa] text-sm font-mono">

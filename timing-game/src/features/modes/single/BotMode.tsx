@@ -77,7 +77,7 @@ const BotMode = () => {
     <GameProvider
       {...gameLogic}
       currentTheme={currentTheme}
-      isTwoPlayerMode={false}
+      isTwoPlayerMode={true}
       scoreDisplay={scoreDisplay}
       bottomInfo={`🎯 Tema: ${theme.name}`}
       onThemeChange={nextTheme}
@@ -253,8 +253,15 @@ const BotMode = () => {
               showProgressBar={showProgressBar}
             />
 
-            <div className="text-xl md:text-2xl mt-6 text-center font-bold px-4 h-8 text-green-400 drop-shadow-sm">
-              {actionMessage}
+            <div
+              className={`text-xl md:text-2xl mt-6 text-center font-bold px-4 h-8 drop-shadow-sm flex items-center justify-center gap-2 ${
+                actionMessage.className || "text-green-400"
+              }`}
+            >
+              {actionMessage.icon && (
+                <actionMessage.icon size={24} className="inline-block" />
+              )}
+              {actionMessage.text}
             </div>
             <TurnInfo
               currentPlayer={getCurrentPlayerName()}
@@ -273,7 +280,7 @@ const BotMode = () => {
               />
             </div>
             <div className="mt-6 text-gray-500 text-sm animate-pulse font-semibold hidden md:block">
-              [SPACE] tuşuna basarak da oynayabilirsin
+              {/* [SPACE] tuşuna basarak da oynayabilirsin */}
             </div>
           </>
         )}

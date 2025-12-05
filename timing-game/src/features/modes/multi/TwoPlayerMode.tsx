@@ -9,7 +9,6 @@ import { useGameLogic } from "../../../hooks/useGameLogic";
 import { VARIANTS } from "../../../shared/constants/game";
 import type { GameVariant } from "../../../shared/types";
 import { Trophy, User, ArrowLeft } from "lucide-react";
-// GameLayout ve Context
 import GameLayout from "../../../components/layout/GameLayout";
 import { GameProvider } from "../../../context/GameContext";
 import { useTheme } from "../../../hooks/core/useTheme";
@@ -106,7 +105,6 @@ const TwoPlayerMode = () => {
             seconds={playerTimes.p2 % 60}
           />
         </div>
-
         {/* Hazırlık Ekranı */}
         {gameState === "idle" && !countdown && (
           <div className="flex flex-col items-center gap-6 z-10 bg-neutral-900 p-8 rounded-2xl border border-gray-700 shadow-2xl max-w-2xl w-full mx-4 overflow-y-auto max-h-[95vh] animate-popup">
@@ -259,14 +257,12 @@ const TwoPlayerMode = () => {
             </button>
           </div>
         )}
-
         {/* Geri Sayım */}
         {countdown !== null && (
           <div className="text-7xl font-bold text-yellow-400 animate-pulse z-10 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
             {countdown}
           </div>
         )}
-
         {/* Oyun Alanı */}
         {gameState === "playing" && (
           <>
@@ -277,8 +273,11 @@ const TwoPlayerMode = () => {
               showProgressBar={showProgressBar}
             />
 
-            <div className="text-xl md:text-2xl mt-4 text-center text-green-400 font-semibold px-4 h-8">
-              {actionMessage}
+            <div className="text-xl md:text-2xl mt-4 text-center text-green-400 font-semibold px-4 h-8 flex items-center justify-center gap-2">
+              {actionMessage.icon && (
+                <actionMessage.icon size={24} className="inline-block" />
+              )}
+              {actionMessage.text}
             </div>
             <TurnInfo
               currentPlayer={getCurrentPlayerName()}
@@ -317,7 +316,6 @@ const TwoPlayerMode = () => {
             </div>
           </>
         )}
-
         {/* Bitiş Ekranı */}
         {gameState === "finished" && (
           <GameOverModal
