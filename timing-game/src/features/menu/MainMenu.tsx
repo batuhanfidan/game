@@ -17,7 +17,7 @@ const MainMenu = () => {
 
   return (
     <div className="min-h-screen w-screen bg-[#0f0f11] text-white font-mono flex flex-col items-center py-12 px-4 relative overflow-hidden selection:bg-cyan-500/30">
-      {/* --- ARKA PLAN (Glass Ambiyansı) --- */}
+      {/* --- ARKA PLAN --- */}
       <div className="fixed top-1/4 left-1/4 w-96 h-96 bg-purple-600/20 rounded-full blur-[120px] animate-pulse pointer-events-none" />
       <div className="fixed bottom-1/4 right-1/4 w-96 h-96 bg-blue-600/15 rounded-full blur-[120px] pointer-events-none" />
       <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-cyan-900/10 rounded-full blur-[150px] pointer-events-none" />
@@ -32,7 +32,7 @@ const MainMenu = () => {
         </div>
 
         <h1 className="text-7xl md:text-9xl font-black tracking-tighter text-transparent bg-clip-text bg-linear-to-b from-white via-gray-200 to-gray-500 drop-shadow-[0_0_30px_rgba(255,255,255,0.1)] relative z-10">
-          HiT Ms!
+          Time iT!
         </h1>
 
         <div className="flex items-center justify-center gap-3 mt-4 opacity-40">
@@ -247,8 +247,8 @@ const MainMenu = () => {
           onClick={() => navigate("/game/tutorial")}
           className="
             flex items-center gap-3 px-8 py-3.5 rounded-full 
-            bg-[#15151a]/80 backdrop-blur-2xl border border-white/10 
-            text-xs font-bold text-white/70 hover:text-white hover:bg-white/10 
+            bg-gray-500 backdrop-blur-2xl border border-white/10 
+            text-xs font-bold text-white hover:text-white hover:bg-white/10 
             transition-all hover:scale-105 shadow-2xl group
           "
         >
