@@ -301,7 +301,9 @@ const TwoPlayerMode = () => {
                   className="sm:w-6 sm:h-6 inline-block"
                 />
               )}
-              <span className="truncate">{actionMessage.text}</span>
+              <span className="whitespace-normal leading-tight">
+                {actionMessage.text}
+              </span>
             </div>
 
             <TurnInfo
@@ -320,7 +322,7 @@ const TwoPlayerMode = () => {
                   disabled={currentPlayer !== "p1" || isPaused}
                   customText={t("survival.buttons.hit")}
                 />
-                <p className="mt-2 text-xs sm:text-sm text-gray-400 text-center w-full truncate px-1 sm:px-2 max-w-[120px] sm:max-w-none">
+                <p className="mt-2 text-xs sm:text-sm text-gray-400 text-center w-full px-1 sm:px-2 max-w-[120px] sm:max-w-none">
                   {playerNames.p1}
                 </p>
               </div>
@@ -334,7 +336,7 @@ const TwoPlayerMode = () => {
                   disabled={currentPlayer !== "p2" || isPaused}
                   customText={t("survival.buttons.hit")}
                 />
-                <p className="mt-2 text-xs sm:text-sm text-gray-400 text-center w-full truncate px-1 sm:px-2 max-w-[120px] sm:max-w-none">
+                <p className="mt-2 text-xs sm:text-sm text-gray-400 text-center w-full whitespace-normal px-1 sm:px-2 max-w-[120px] sm:max-w-none">
                   {playerNames.p2}
                 </p>
               </div>

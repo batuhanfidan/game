@@ -158,7 +158,7 @@ const TutorialMode = () => {
             {actionMessage.icon && (
               <actionMessage.icon className="w-6 h-6 inline-block shrink-0" />
             )}
-            <span className="truncate max-w-[90%]">
+            <span className="whitespace-normal max-w-[90%]">
               {actionMessage.text || t("tutorial.labels.get_ready")}
             </span>
           </div>

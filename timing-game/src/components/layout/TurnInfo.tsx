@@ -18,7 +18,7 @@ const TurnInfo: React.FC<TurnInfoProps> = ({ currentPlayer, turnTimeLeft }) => {
           {t("components.turn_info.turn")}
         </span>
         <strong
-          className="truncate max-w-[150px] sm:max-w-[200px] block text-center"
+          className="whitespace-normal max-w-[150px] sm:max-w-[200px] block text-center"
           title={currentPlayer}
         >
           {currentPlayer}
