@@ -191,7 +191,7 @@ const TimeAttackMode = () => {
                           : "text-white"
                       }
                     >
-                      ⏱️ {t("time_attack.labels.remaining_time")}
+                      {t("time_attack.labels.remaining_time")}
                     </span>
                   }
                   minutes={Math.floor(playerTimes.p1 / 60)}

@@ -65,10 +65,10 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({
   );
 
   return (
-    <div className="flex flex-col items-center w-full max-w-lg px-4">
+    <div className="flex flex-col items-center w-full max-w-lg px-4 mb-8">
       {/* Büyük Sayaç */}
       <div
-        className={`text-5xl sm:text-7xl md:text-8xl font-black text-center my-6 font-mono tracking-widest text-[#e4e4e7] drop-shadow-[0_0_15px_rgba(255,255,255,0.1)] transition-opacity duration-300 ${
+        className={`text-4xl sm:text-5xl md:text-8xl font-black text-center my-6 font-mono tracking-widest text-[#e4e4e7] drop-shadow-[0_0_15px_rgba(255,255,255,0.1)] transition-opacity duration-300 ${
           isGhostHidden ? "opacity-0" : "opacity-100"
         }`}
       >

@@ -28,8 +28,7 @@ export const WelcomeModal = () => {
 
   return (
     <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 animate-fade-in">
-      <div className="bg-neutral-900 border border-yellow-500/30 rounded-2xl max-w-md w-full p-6 shadow-2xl relative overflow-hidden">
-        {/* Dekoratif Arkaplan */}
+      <div className="bg-neutral-900 border border-yellow-500/30 rounded-2xl max-w-md w-full p-4 sm:p-6 shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-yellow-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
 
         <div className="text-center space-y-4 relative z-10">
