@@ -42,7 +42,7 @@ const RulesModal: React.FC<RulesModalProps> = ({ showRules, onClose }) => {
           bg-[#09090b] text-gray-200
           rounded-2xl shadow-[0_0_50px_rgba(0,0,0,0.8)]
           border border-neutral-700
-          w-[95vw] max-w-3xl max-h-[90vh]
+          w-[95vw] max-w-3xl max-h-[85vh] sm:max-h-[90vh]
           z-100 overflow-hidden flex flex-col
           animate-popup font-mono
         "

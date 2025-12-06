@@ -67,10 +67,13 @@ const BotMode = () => {
     if (gameState === "idle") setPlayerReady(false);
   }, [gameState]);
 
-  // Skor göstergesi (GameLayout'a prop olarak gidecek)
+  // Skor göstergesi
   const scoreDisplay = gameState !== "idle" && (
-    <div className="text-3xl font-extrabold text-yellow-400 drop-shadow-lg flex items-center gap-3">
-      <Trophy size={32} /> {scores.p1} - {scores.p2}
+    <div className="text-xl sm:text-2xl md:text-3xl font-extrabold text-yellow-400 drop-shadow-lg flex items-center gap-2 sm:gap-3 px-2">
+      <Trophy size={24} className="sm:w-7 sm:h-7 md:w-8 md:h-8" />
+      <span>
+        {scores.p1} - {scores.p2}
+      </span>
     </div>
   );
 
@@ -84,14 +87,18 @@ const BotMode = () => {
       onThemeChange={nextTheme}
     >
       <GameLayout>
-        {/* OYUN ALANI (Timerlar ve Butonlar) */}
-
         {/* Oyuncu Süreleri */}
-        <div className="absolute top-32 flex justify-between w-full px-4 md:px-20 text-xl">
+        <div className="absolute top-16 sm:top-20 md:top-32 flex justify-between w-full px-2 sm:px-4 md:px-20 text-xs sm:text-sm md:text-xl font-bold text-gray-300">
           <PlayerTimer
             player={
-              <span className="flex items-center gap-2">
-                <User size={20} /> {playerNames.p1}
+              <span className="flex items-center gap-1 sm:gap-2">
+                <User size={16} className="sm:w-5 sm:h-5" />
+                <span className="hidden xs:inline sm:inline">
+                  {playerNames.p1}
+                </span>
+                <span className="inline xs:hidden sm:hidden truncate max-w-[60px]">
+                  {playerNames.p1}
+                </span>
               </span>
             }
             minutes={Math.floor(playerTimes.p1 / 60)}
@@ -99,8 +106,12 @@ const BotMode = () => {
           />
           <PlayerTimer
             player={
-              <span className="flex items-center gap-2">
-                <Bot size={20} /> Bot ({t(DIFFICULTIES[difficulty].labelKey)})
+              <span className="flex items-center gap-1 sm:gap-2">
+                <Bot size={16} className="sm:w-5 sm:h-5" />
+                <span className="hidden sm:inline">
+                  Bot ({t(DIFFICULTIES[difficulty].labelKey)})
+                </span>
+                <span className="inline sm:hidden">Bot</span>
               </span>
             }
             minutes={Math.floor(playerTimes.p2 / 60)}
@@ -110,9 +121,10 @@ const BotMode = () => {
 
         {/* Hazırlık Menüsü */}
         {gameState === "idle" && !countdown && (
-          <div className="flex flex-col items-center gap-4 z-20 bg-neutral-900 p-6 rounded-2xl border border-gray-700 shadow-2xl max-w-2xl w-full mx-4 overflow-y-auto max-h-[95vh] animate-popup">
+          <div className="flex flex-col items-center gap-3 sm:gap-4 z-20 bg-neutral-900 p-4 sm:p-6 rounded-xl sm:rounded-2xl border border-gray-700 shadow-2xl max-w-2xl w-full mx-2 sm:mx-4 overflow-y-auto max-h-[90vh] sm:max-h-[95vh] animate-popup">
+            {/* Zorluk Seçimi */}
             <div className="w-full">
-              <h2 className="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">
+              <h2 className="text-xs sm:text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">
                 {t("setup.difficulty")}
               </h2>
               <div className="flex flex-wrap gap-2">
@@ -120,7 +132,7 @@ const BotMode = () => {
                   <button
                     key={key}
                     onClick={() => setDifficulty(key)}
-                    className={`flex-1 px-2 py-2 rounded text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-blue-500 ${
+                    className={`flex-1 min-w-[70px] px-2 py-2 rounded text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-blue-500 ${
                       difficulty === key
                         ? "bg-blue-600 text-white"
                         : "bg-gray-800 text-gray-400 hover:bg-gray-700"
@@ -132,23 +144,24 @@ const BotMode = () => {
               </div>
             </div>
 
+            {/* Oyun Türü Seçimi */}
             <div className="w-full">
-              <h2 className="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">
+              <h2 className="text-xs sm:text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">
                 {t("setup.game_type")}
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {VARIANTS.map((v) => (
                   <button
                     key={v.key}
                     onClick={() => setSelectedVariant(v.key)}
-                    className={`px-4 py-3 rounded-lg text-left flex flex-col transition-all border focus-visible:ring-2 focus-visible:ring-green-500 ${
+                    className={`px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-left flex flex-col transition-all border focus-visible:ring-2 focus-visible:ring-green-500 ${
                       selectedVariant === v.key
                         ? "bg-gray-800 border-green-500 shadow-lg shadow-green-900/20"
                         : "bg-gray-800/50 border-transparent hover:bg-gray-800"
                     }`}
                   >
                     <span
-                      className={`font-bold text-sm flex items-center gap-2 ${
+                      className={`font-bold text-xs sm:text-sm flex items-center gap-2 ${
                         selectedVariant === v.key
                           ? "text-green-400"
                           : "text-gray-300"
@@ -156,7 +169,7 @@ const BotMode = () => {
                     >
                       <VariantIcon variant={v.key} /> {t(v.labelKey)}
                     </span>
-                    <span className="text-xs text-gray-500 mt-0.5">
+                    <span className="text-[10px] sm:text-xs text-gray-500 mt-0.5">
                       {t(v.descKey)}
                     </span>
                   </button>
@@ -164,9 +177,10 @@ const BotMode = () => {
               </div>
             </div>
 
-            <div className="w-full flex flex-col gap-4">
+            {/* Süre ve Yardımcı Bar */}
+            <div className="w-full flex flex-col gap-3 sm:gap-4">
               <div>
-                <h2 className="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">
+                <h2 className="text-xs sm:text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">
                   {t("setup.duration")}
                 </h2>
                 <div className="flex gap-2 w-full">
@@ -174,7 +188,7 @@ const BotMode = () => {
                     <button
                       key={duration}
                       onClick={() => setGameDuration(duration)}
-                      className={`flex-1 px-2 py-3 rounded text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-blue-500 ${
+                      className={`flex-1 px-2 py-2 sm:py-3 rounded text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-blue-500 ${
                         gameDuration === duration
                           ? "bg-blue-600 text-white"
                           : "bg-gray-800 text-gray-400 hover:bg-gray-700"
@@ -187,13 +201,13 @@ const BotMode = () => {
               </div>
 
               <div>
-                <h2 className="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">
+                <h2 className="text-xs sm:text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">
                   {t("setup.helper_bar")}
                 </h2>
                 <div className="flex gap-2 w-full">
                   <button
                     onClick={() => setShowProgressBar(true)}
-                    className={`flex-1 py-3 rounded-lg border transition-all font-bold text-sm focus-visible:ring-2 focus-visible:ring-green-500 ${
+                    className={`flex-1 py-2 sm:py-3 rounded-lg border transition-all font-bold text-xs sm:text-sm focus-visible:ring-2 focus-visible:ring-green-500 ${
                       showProgressBar
                         ? "bg-green-900/30 border-green-500 text-green-400 shadow-[0_0_10px_rgba(34,197,94,0.2)]"
                         : "bg-gray-800 border-transparent text-gray-500 hover:bg-gray-700"
@@ -205,7 +219,7 @@ const BotMode = () => {
                   <button
                     onClick={() => setShowProgressBar(false)}
                     disabled={selectedVariant === "moving"}
-                    className={`flex-1 py-3 rounded-lg border transition-all font-bold text-sm focus-visible:ring-2 focus-visible:ring-red-500 ${
+                    className={`flex-1 py-2 sm:py-3 rounded-lg border transition-all font-bold text-xs sm:text-sm focus-visible:ring-2 focus-visible:ring-red-500 ${
                       selectedVariant === "moving"
                         ? "bg-gray-900/50 border-gray-800 text-gray-700 opacity-50 cursor-not-allowed"
                         : !showProgressBar
@@ -219,27 +233,31 @@ const BotMode = () => {
               </div>
             </div>
 
-            <div className="w-full h-px bg-gray-700 my-2"></div>
+            <div className="w-full h-px bg-gray-700 my-1 sm:my-2"></div>
 
+            {/* Başla Butonu */}
             <button
               onClick={() => setPlayerReady(true)}
               disabled={playerReady}
-              className="px-10 py-4 rounded-xl text-xl font-bold transition w-full bg-green-600 hover:bg-green-500 cursor-pointer hover:scale-105 shadow-lg shadow-green-500/20 focus-visible:ring-4 focus-visible:ring-green-300"
+              className="px-8 sm:px-10 py-3 sm:py-4 rounded-lg sm:rounded-xl text-lg sm:text-xl font-bold transition w-full bg-green-600 hover:bg-green-500 cursor-pointer hover:scale-105 shadow-lg shadow-green-500/20 focus-visible:ring-4 focus-visible:ring-green-300"
             >
               {playerReady ? t("setup.starting") : t("setup.start_game")}
             </button>
+
+            {/* Ana Menü Butonu */}
             <button
               onClick={() => (window.location.href = "/")}
-              className="text-gray-500 hover:text-white text-sm underline cursor-pointer flex items-center justify-center gap-1 focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
+              className="text-gray-500 hover:text-white text-xs sm:text-sm underline cursor-pointer flex items-center justify-center gap-1 focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
             >
-              <ArrowLeft size={16} /> {t("components.pause.menu")}
+              <ArrowLeft size={14} className="sm:w-4 sm:h-4" />
+              <span>{t("components.pause.menu")}</span>
             </button>
           </div>
         )}
 
         {/* Geri Sayım */}
         {countdown !== null && (
-          <div className="text-8xl font-black text-yellow-400 animate-ping z-30 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <div className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-yellow-400 animate-ping z-30 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
             {countdown}
           </div>
         )}
@@ -255,21 +273,28 @@ const BotMode = () => {
             />
 
             <div
-              className={`text-xl md:text-2xl mt-6 text-center font-bold px-4 h-8 drop-shadow-sm flex items-center justify-center gap-2 ${
+              className={`text-base sm:text-xl md:text-2xl mt-3 sm:mt-4 md:mt-6 text-center font-bold px-2 sm:px-4 h-6 sm:h-8 drop-shadow-sm flex items-center justify-center gap-1 sm:gap-2 ${
                 actionMessage.className || "text-green-400"
               }`}
             >
               {actionMessage.icon && (
-                <actionMessage.icon size={24} className="inline-block" />
+                <actionMessage.icon
+                  size={20}
+                  className="sm:w-6 sm:h-6 inline-block"
+                />
               )}
-              {actionMessage.text}
+              <span className="truncate max-w-[280px] sm:max-w-none">
+                {actionMessage.text}
+              </span>
             </div>
+
             <TurnInfo
               currentPlayer={getCurrentPlayerName()}
               turnTimeLeft={turnTimeLeft}
             />
+
             <div
-              className={`flex justify-center w-full px-4 mt-10 transition-all duration-300 ${
+              className={`flex justify-center w-full px-2 sm:px-4 mt-6 sm:mt-8 md:mt-10 transition-all duration-300 ${
                 currentPlayer !== "p1"
                   ? "opacity-40 grayscale pointer-events-none scale-95"
                   : "scale-100"
@@ -281,7 +306,8 @@ const BotMode = () => {
                 customText={t("survival.buttons.hit")}
               />
             </div>
-            <div className="mt-6 text-gray-500 text-sm animate-pulse font-semibold hidden md:block">
+
+            <div className="mt-4 sm:mt-6 text-gray-500 text-xs sm:text-sm animate-pulse font-semibold hidden md:block">
               {/* [SPACE] tuşuna basarak da oynayabilirsin */}
             </div>
           </>

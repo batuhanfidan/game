@@ -68,8 +68,8 @@ const TwoPlayerMode = () => {
   }, [gameState]);
 
   const scoreDisplay = gameState !== "idle" && (
-    <div className="text-2xl md:text-3xl font-extrabold text-center text-yellow-400 drop-shadow-lg px-4 pointer-events-none flex items-center gap-3 justify-center w-full">
-      <Trophy size={32} />
+    <div className="text-xl sm:text-2xl md:text-3xl font-extrabold text-center text-yellow-400 drop-shadow-lg px-2 sm:px-4 pointer-events-none flex items-center gap-2 sm:gap-3 justify-center w-full">
+      <Trophy size={24} className="sm:w-8 sm:h-8" />
       <span>
         Skor: {scores.p1} - {scores.p2}
       </span>
@@ -87,11 +87,17 @@ const TwoPlayerMode = () => {
     >
       <GameLayout>
         {/* Oyuncu Timerları */}
-        <div className="absolute top-28 flex justify-between w-full px-4 md:px-20 text-xl">
+        <div className="absolute top-16 sm:top-20 md:top-32 flex justify-between w-full px-2 sm:px-4 md:px-20 text-xs sm:text-sm md:text-xl font-bold text-gray-300">
           <PlayerTimer
             player={
-              <span className="flex items-center gap-2">
-                <User size={20} /> {playerNames.p1}
+              <span className="flex items-center gap-1 sm:gap-2">
+                <User size={16} className="sm:w-5 sm:h-5" />
+                <span className="hidden xs:inline sm:inline">
+                  {playerNames.p1}
+                </span>
+                <span className="inline xs:hidden sm:hidden">
+                  {playerNames.p1.slice(0, 8)}
+                </span>
               </span>
             }
             minutes={Math.floor(playerTimes.p1 / 60)}
@@ -99,34 +105,41 @@ const TwoPlayerMode = () => {
           />
           <PlayerTimer
             player={
-              <span className="flex items-center gap-2">
-                <User size={20} /> {playerNames.p2}
+              <span className="flex items-center gap-1 sm:gap-2">
+                <User size={16} className="sm:w-5 sm:h-5" />
+                <span className="hidden xs:inline sm:inline">
+                  {playerNames.p2}
+                </span>
+                <span className="inline xs:hidden sm:hidden">
+                  {playerNames.p2.slice(0, 8)}
+                </span>
               </span>
             }
             minutes={Math.floor(playerTimes.p2 / 60)}
             seconds={playerTimes.p2 % 60}
           />
         </div>
+
         {/* Hazırlık Ekranı */}
         {gameState === "idle" && !countdown && (
-          <div className="flex flex-col items-center gap-6 z-10 bg-neutral-900 p-8 rounded-2xl border border-gray-700 shadow-2xl max-w-2xl w-full mx-4 overflow-y-auto max-h-[95vh] animate-popup">
+          <div className="flex flex-col items-center gap-4 sm:gap-6 z-10 bg-neutral-900 p-4 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl border border-gray-700 shadow-2xl max-w-2xl w-full mx-2 sm:mx-4 overflow-y-auto max-h-[90vh] sm:max-h-[95vh] animate-popup">
             <div className="w-full">
-              <h2 className="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">
+              <h2 className="text-xs sm:text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">
                 {t("setup.game_type")}
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {VARIANTS.map((v) => (
                   <button
                     key={v.key}
                     onClick={() => setSelectedVariant(v.key)}
-                    className={`px-4 py-3 rounded-lg text-left flex flex-col transition-all border ${
+                    className={`px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-left flex flex-col transition-all border ${
                       selectedVariant === v.key
                         ? "bg-gray-800 border-green-500 shadow-lg shadow-green-900/20"
                         : "bg-gray-800/50 border-transparent hover:bg-gray-800"
                     }`}
                   >
                     <span
-                      className={`font-bold text-sm flex items-center gap-2 ${
+                      className={`font-bold text-xs sm:text-sm flex items-center gap-2 ${
                         selectedVariant === v.key
                           ? "text-green-400"
                           : "text-gray-300"
@@ -134,7 +147,7 @@ const TwoPlayerMode = () => {
                     >
                       <VariantIcon variant={v.key} /> {t(v.labelKey)}
                     </span>
-                    <span className="text-xs text-gray-500 mt-0.5">
+                    <span className="text-[10px] sm:text-xs text-gray-500 mt-0.5">
                       {t(v.descKey)}
                     </span>
                   </button>
@@ -142,9 +155,9 @@ const TwoPlayerMode = () => {
               </div>
             </div>
 
-            <div className="w-full flex flex-col gap-4">
+            <div className="w-full flex flex-col gap-3 sm:gap-4">
               <div>
-                <h2 className="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">
+                <h2 className="text-xs sm:text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">
                   {t("setup.duration")}
                 </h2>
                 <div className="flex gap-2 w-full">
@@ -152,26 +165,26 @@ const TwoPlayerMode = () => {
                     <button
                       key={duration}
                       onClick={() => setGameDuration(duration)}
-                      className={`flex-1 px-2 py-3 rounded text-xs font-bold transition-all ${
+                      className={`flex-1 px-2 py-2 sm:py-3 rounded text-xs font-bold transition-all ${
                         gameDuration === duration
                           ? "bg-blue-600 text-white"
                           : "bg-gray-800 text-gray-400 hover:bg-gray-700"
                       }`}
                     >
-                      {duration / 60} {t("setup.minute")},
+                      {duration / 60} {t("setup.minute")}
                     </button>
                   ))}
                 </div>
               </div>
 
               <div>
-                <h2 className="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">
+                <h2 className="text-xs sm:text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">
                   {t("setup.helper_bar")}
                 </h2>
                 <div className="flex gap-2 w-full">
                   <button
                     onClick={() => setShowProgressBar(true)}
-                    className={`flex-1 py-3 rounded-lg border transition-all font-bold text-sm ${
+                    className={`flex-1 py-2 sm:py-3 rounded-lg border transition-all font-bold text-xs sm:text-sm ${
                       showProgressBar
                         ? "bg-green-900/30 border-green-500 text-green-400 shadow-[0_0_10px_rgba(34,197,94,0.2)]"
                         : "bg-gray-800 border-transparent text-gray-500 hover:bg-gray-700"
@@ -183,7 +196,7 @@ const TwoPlayerMode = () => {
                   <button
                     onClick={() => setShowProgressBar(false)}
                     disabled={selectedVariant === "moving"}
-                    className={`flex-1 py-3 rounded-lg border transition-all font-bold text-sm ${
+                    className={`flex-1 py-2 sm:py-3 rounded-lg border transition-all font-bold text-xs sm:text-sm ${
                       selectedVariant === "moving"
                         ? "bg-gray-900/50 border-gray-800 text-gray-700 opacity-50 cursor-not-allowed"
                         : !showProgressBar
@@ -197,10 +210,10 @@ const TwoPlayerMode = () => {
               </div>
             </div>
 
-            <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider w-full mt-2">
+            <h2 className="text-xs sm:text-sm font-bold text-gray-400 uppercase tracking-wider w-full mt-2">
               {t("setup.players")}
             </h2>
-            <div className="flex flex-col sm:flex-row gap-4 w-full">
+            <div className="flex flex-col gap-3 sm:gap-4 w-full">
               <input
                 type="text"
                 value={playerNames.p1}
@@ -208,7 +221,7 @@ const TwoPlayerMode = () => {
                 onChange={(e) =>
                   setPlayerNames((prev) => ({ ...prev, p1: e.target.value }))
                 }
-                className="bg-gray-800 border border-gray-600 rounded px-3 py-2 text-center w-full text-white"
+                className="bg-gray-800 border border-gray-600 rounded px-3 py-2 text-center w-full text-white text-sm sm:text-base"
                 placeholder={t("setup.player_1_placeholder")}
               />
               <input
@@ -218,16 +231,16 @@ const TwoPlayerMode = () => {
                 onChange={(e) =>
                   setPlayerNames((prev) => ({ ...prev, p2: e.target.value }))
                 }
-                className="bg-gray-800 border border-gray-600 rounded px-3 py-2 text-center w-full text-white"
+                className="bg-gray-800 border border-gray-600 rounded px-3 py-2 text-center w-full text-white text-sm sm:text-base"
                 placeholder={t("setup.player_2_placeholder")}
               />
             </div>
 
-            <div className="flex gap-4 mt-4 w-full justify-center">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-2 sm:mt-4 w-full">
               <button
                 onClick={() => setP1Ready(true)}
                 disabled={p1Ready || playerNames.p1.trim().length === 0}
-                className={`px-4 py-3 rounded-lg text-lg font-bold transition w-full ${
+                className={`px-4 py-2.5 sm:py-3 rounded-lg text-base sm:text-lg font-bold transition w-full ${
                   p1Ready
                     ? "bg-green-600 cursor-default"
                     : playerNames.p1.trim().length === 0
@@ -242,7 +255,7 @@ const TwoPlayerMode = () => {
               <button
                 onClick={() => setP2Ready(true)}
                 disabled={p2Ready || playerNames.p2.trim().length === 0}
-                className={`px-4 py-3 rounded-lg text-lg font-bold transition w-full ${
+                className={`px-4 py-2.5 sm:py-3 rounded-lg text-base sm:text-lg font-bold transition w-full ${
                   p2Ready
                     ? "bg-green-600 cursor-default"
                     : playerNames.p2.trim().length === 0
@@ -257,18 +270,20 @@ const TwoPlayerMode = () => {
             </div>
             <button
               onClick={() => (window.location.href = "/")}
-              className="mt-2 text-gray-400 hover:text-white underline text-sm flex items-center gap-1"
+              className="mt-1 sm:mt-2 text-gray-400 hover:text-white underline text-xs sm:text-sm flex items-center gap-1"
             >
               <ArrowLeft size={14} /> {t("components.pause.menu")}
             </button>
           </div>
         )}
+
         {/* Geri Sayım */}
         {countdown !== null && (
-          <div className="text-7xl font-bold text-yellow-400 animate-pulse z-10 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
+          <div className="text-5xl sm:text-6xl md:text-7xl font-bold text-yellow-400 animate-pulse z-10 absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
             {countdown}
           </div>
         )}
+
         {/* Oyun Alanı */}
         {gameState === "playing" && (
           <>
@@ -279,17 +294,22 @@ const TwoPlayerMode = () => {
               showProgressBar={showProgressBar}
             />
 
-            <div className="text-xl md:text-2xl mt-4 text-center text-green-400 font-semibold px-4 h-8 flex items-center justify-center gap-2">
+            <div className="text-base sm:text-xl md:text-2xl mt-2 sm:mt-4 text-center text-green-400 font-semibold px-2 sm:px-4 h-6 sm:h-8 flex items-center justify-center gap-1 sm:gap-2">
               {actionMessage.icon && (
-                <actionMessage.icon size={24} className="inline-block" />
+                <actionMessage.icon
+                  size={20}
+                  className="sm:w-6 sm:h-6 inline-block"
+                />
               )}
-              {actionMessage.text}
+              <span className="truncate">{actionMessage.text}</span>
             </div>
+
             <TurnInfo
               currentPlayer={getCurrentPlayerName()}
               turnTimeLeft={turnTimeLeft}
             />
-            <div className="flex justify-center w-full gap-4 sm:gap-10 px-4 mt-8">
+
+            <div className="flex justify-center w-full gap-3 sm:gap-6 md:gap-10 px-2 sm:px-4 mt-4 sm:mt-8">
               <div
                 className={`flex flex-col items-center transition-opacity duration-200 ${
                   currentPlayer !== "p1" ? "opacity-30 pointer-events-none" : ""
@@ -300,7 +320,7 @@ const TwoPlayerMode = () => {
                   disabled={currentPlayer !== "p1" || isPaused}
                   customText={t("survival.buttons.hit")}
                 />
-                <p className="mt-2 text-sm text-gray-400 text-center w-full truncate px-2">
+                <p className="mt-2 text-xs sm:text-sm text-gray-400 text-center w-full truncate px-1 sm:px-2 max-w-[120px] sm:max-w-none">
                   {playerNames.p1}
                 </p>
               </div>
@@ -314,16 +334,18 @@ const TwoPlayerMode = () => {
                   disabled={currentPlayer !== "p2" || isPaused}
                   customText={t("survival.buttons.hit")}
                 />
-                <p className="mt-2 text-sm text-gray-400 text-center w-full truncate px-2">
+                <p className="mt-2 text-xs sm:text-sm text-gray-400 text-center w-full truncate px-1 sm:px-2 max-w-[120px] sm:max-w-none">
                   {playerNames.p2}
                 </p>
               </div>
             </div>
-            <div className="mt-4 text-gray-500 text-sm animate-pulse hidden md:block">
+
+            <div className="mt-3 sm:mt-4 text-gray-500 text-xs sm:text-sm animate-pulse hidden md:block">
               (İpucu: Sırası gelen SPACE tuşunu kullanabilir)
             </div>
           </>
         )}
+
         {/* Bitiş Ekranı */}
         {gameState === "finished" && (
           <GameOverModal
@@ -336,4 +358,5 @@ const TwoPlayerMode = () => {
     </GameProvider>
   );
 };
+
 export default TwoPlayerMode;

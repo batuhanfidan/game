@@ -36,9 +36,9 @@ const ActionButton: React.FC<ActionButtonProps> = memo(
           aria-label={customText}
           className={`
             relative z-10
-            min-w-40 md:min-w-[220px]
-            px-8 py-6 md:px-10 md:py-8
-            text-2xl md:text-3xl font-black tracking-widest text-white uppercase 
+            min-w-32 sm:min-w-40 md:min-w-[220px]
+            px-6 py-4 sm:px-8 sm:py-6 md:px-10 md:py-8
+            text-xl sm:text-2xl md:text-3xl font-black tracking-widest text-white uppercase 
             rounded-2xl transition-all duration-150 transform
             focus:outline-none focus-visible:ring-4 focus-visible:ring-white/50
             active:scale-95

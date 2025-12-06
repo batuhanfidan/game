@@ -207,7 +207,7 @@ const SurvivalMode = () => {
               {/* ADRENALİN BARI */}
               <div className="w-full flex items-center gap-3 mb-3 px-4">
                 <span
-                  className={`text-[10px] font-black w-16 tracking-widest ${
+                  className={`text-[10px] font-black w-12 sm:w-16 tracking-widest${
                     isSurvivalFever
                       ? "text-[#f59e0b] animate-bounce"
                       : "text-[#71717a]"
