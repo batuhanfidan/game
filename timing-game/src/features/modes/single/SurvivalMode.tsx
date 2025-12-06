@@ -7,6 +7,7 @@ import GameLayout from "../../../components/layout/GameLayout";
 import { useGameLogic } from "../../../hooks/useGameLogic";
 import { THEMES, UI_CONSTANTS } from "../../../shared/constants/ui";
 import { GameProvider } from "../../../context/GameContext";
+import { useTranslation, Trans } from "react-i18next";
 import {
   Heart,
   Shield,
@@ -41,6 +42,7 @@ LivesDisplay.displayName = "LivesDisplay";
 
 const SurvivalMode = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [playerReady, setPlayerReady] = useState(false);
 
   const themeIndex = THEMES.findIndex((t) => t.name === "Hayatta Kalma");
@@ -113,7 +115,7 @@ const SurvivalMode = () => {
                 : "text-[#ef4444]"
             }
           />
-          SERİ: {streak}
+          {t("survival.labels.streak")}: {streak}
         </div>
         {/* Detay Bilgi */}
         <div className="flex gap-2 mt-1 text-xs font-mono font-bold">
@@ -133,7 +135,7 @@ const SurvivalMode = () => {
       currentTheme={currentTheme}
       isTwoPlayerMode={false}
       scoreDisplay={scoreDisplay}
-      bottomInfo="SURVIVAL MODE"
+      bottomInfo={t("survival.title")}
       showThemeButton={false}
     >
       <GameLayout>
@@ -155,16 +157,21 @@ const SurvivalMode = () => {
               <Skull size={48} className="text-[#ef4444]" />
             </div>
             <h2 className="text-2xl font-black text-[#e4e4e7] tracking-[0.2em] uppercase">
-              HAYATTA KAL
+              {t("survival.title")}
             </h2>
             <div className="text-center text-[#a1a1aa] text-sm space-y-2 font-medium">
               <p className="flex items-center justify-center gap-2">
-                <Heart size={14} className="text-[#ef4444]" /> 3 Canın var,
-                dikkatli ol.
+                <Heart size={14} className="text-[#ef4444]" />
+                {t("survival.labels.lives_warning")}
               </p>
               <p className="flex items-center justify-center gap-2">
-                <Flame size={14} className="text-[#f59e0b]" /> Her 15 turda bir{" "}
-                <span className="text-[#f59e0b] font-bold">LANET</span> başlar.
+                <Flame size={14} className="text-[#f59e0b]" />
+                <Trans
+                  i18nKey="survival.labels.curse_warning"
+                  components={{
+                    0: <span className="text-[#f59e0b] font-bold" />,
+                  }}
+                />
               </p>
             </div>
             <button
@@ -173,13 +180,15 @@ const SurvivalMode = () => {
               className="group w-full py-4 rounded-xl text-lg font-bold transition-all bg-[#ef4444] text-white hover:bg-[#dc2626] shadow-[0_0_20px_rgba(239,68,68,0.4)] cursor-pointer active:scale-95 flex items-center justify-center gap-2"
             >
               <Play size={20} className="fill-current" />
-              {playerReady ? "HAZIRLANIYOR..." : "MEYDAN OKU"}
+              {playerReady
+                ? t("survival.buttons.prepare")
+                : t("survival.buttons.challenge")}
             </button>
             <button
               onClick={handleBackToMenu}
               className="text-[#71717a] hover:text-[#e4e4e7] text-xs tracking-widest uppercase mt-2 transition-colors flex items-center gap-1"
             >
-              <ArrowLeft size={12} /> Menüye Dön
+              <ArrowLeft size={12} /> {t("components.pause.menu")}
             </button>
           </div>
         )}
@@ -248,11 +257,14 @@ const SurvivalMode = () => {
                   }`}
                 >
                   <AlertTriangle size={18} />
-                  {activeCurse === "REVERSE"
-                    ? "LANET: TERS AKINTI"
-                    : activeCurse === "UNSTABLE"
-                    ? "LANET: DENGESİZ HIZ"
-                    : "LANET: GEZİCİ HEDEF"}
+                  {t("survival.labels.curse_active", {
+                    name:
+                      activeCurse === "REVERSE"
+                        ? t("survival.curses.reverse")
+                        : activeCurse === "UNSTABLE"
+                        ? t("survival.curses.unstable")
+                        : t("survival.curses.moving"),
+                  })}
                 </div>
               )}
             </div>
@@ -273,7 +285,7 @@ const SurvivalMode = () => {
 
             <div className="flex items-center justify-center gap-6 mt-6 text-[#a1a1aa] text-sm font-mono">
               <div className="flex items-center gap-2">
-                <Shield size={16} /> <span>HAYATTA KAL</span>
+                <Shield size={16} /> <span>{t("survival.title")}</span>
               </div>
               <div className="w-px h-4 bg-[#3f3f46]"></div>
               <div className="flex items-center gap-2">
@@ -285,13 +297,13 @@ const SurvivalMode = () => {
               <ActionButton
                 onClick={handleAction}
                 disabled={isPaused}
-                customText="VUR!"
+                customText={t("survival.buttons.hit")}
                 customColor="bg-[#27272a] border border-[#ef4444]/50 text-[#ef4444] hover:bg-[#ef4444] hover:text-white shadow-[0_0_30px_rgba(239,68,68,0.15)] transition-all duration-200"
               />
             </div>
 
             <div className="mt-6 text-[#52525b] text-[10px] uppercase tracking-[0.3em] animate-pulse hidden md:block">
-              [SPACE] TUŞU İLE OYNA
+              {/* {t("survival.buttons.space_hint")} */}
             </div>
           </>
         )}

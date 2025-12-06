@@ -12,10 +12,12 @@ import { User, Bot, ArrowLeft, Trophy } from "lucide-react";
 import GameLayout from "../../../components/layout/GameLayout";
 import { GameProvider } from "../../../context/GameContext";
 import { useTheme } from "../../../hooks/core/useTheme";
+import { useTranslation } from "react-i18next";
 
 type DifficultyKey = keyof typeof DIFFICULTIES;
 
 const BotMode = () => {
+  const { t } = useTranslation();
   const [difficulty, setDifficulty] = useState<DifficultyKey>("MEDIUM");
   const [selectedVariant, setSelectedVariant] =
     useState<GameVariant>("classic");
@@ -23,7 +25,6 @@ const BotMode = () => {
   const [showProgressBar, setShowProgressBar] = useState(true);
   const [playerReady, setPlayerReady] = useState(false);
 
-  // Theme hook'u burada çağrılmaya devam ediyor, layout'a paslanacak
   const { currentTheme, nextTheme, theme } = useTheme(0);
 
   useEffect(() => {
@@ -99,7 +100,7 @@ const BotMode = () => {
           <PlayerTimer
             player={
               <span className="flex items-center gap-2">
-                <Bot size={20} /> Bot ({DIFFICULTIES[difficulty].label})
+                <Bot size={20} /> Bot ({t(DIFFICULTIES[difficulty].labelKey)})
               </span>
             }
             minutes={Math.floor(playerTimes.p2 / 60)}
@@ -112,7 +113,7 @@ const BotMode = () => {
           <div className="flex flex-col items-center gap-4 z-20 bg-neutral-900 p-6 rounded-2xl border border-gray-700 shadow-2xl max-w-2xl w-full mx-4 overflow-y-auto max-h-[95vh] animate-popup">
             <div className="w-full">
               <h2 className="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">
-                Zorluk
+                {t("setup.difficulty")}
               </h2>
               <div className="flex flex-wrap gap-2">
                 {(Object.keys(DIFFICULTIES) as DifficultyKey[]).map((key) => (
@@ -125,7 +126,7 @@ const BotMode = () => {
                         : "bg-gray-800 text-gray-400 hover:bg-gray-700"
                     }`}
                   >
-                    {DIFFICULTIES[key].label}
+                    {t(DIFFICULTIES[key].labelKey)}
                   </button>
                 ))}
               </div>
@@ -133,7 +134,7 @@ const BotMode = () => {
 
             <div className="w-full">
               <h2 className="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">
-                Oyun Tipi
+                {t("setup.game_type")}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {VARIANTS.map((v) => (
@@ -153,10 +154,10 @@ const BotMode = () => {
                           : "text-gray-300"
                       }`}
                     >
-                      <VariantIcon variant={v.key} /> {v.label}
+                      <VariantIcon variant={v.key} /> {t(v.labelKey)}
                     </span>
                     <span className="text-xs text-gray-500 mt-0.5">
-                      {v.desc}
+                      {t(v.descKey)}
                     </span>
                   </button>
                 ))}
@@ -166,20 +167,20 @@ const BotMode = () => {
             <div className="w-full flex flex-col gap-4">
               <div>
                 <h2 className="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">
-                  Süre
+                  {t("setup.duration")}
                 </h2>
                 <div className="flex gap-2 w-full">
-                  {[60, 180, 300].map((t) => (
+                  {[60, 180, 300].map((duration) => (
                     <button
-                      key={t}
-                      onClick={() => setGameDuration(t)}
+                      key={duration}
+                      onClick={() => setGameDuration(duration)}
                       className={`flex-1 px-2 py-3 rounded text-xs font-bold transition-all focus-visible:ring-2 focus-visible:ring-blue-500 ${
-                        gameDuration === t
+                        gameDuration === duration
                           ? "bg-blue-600 text-white"
                           : "bg-gray-800 text-gray-400 hover:bg-gray-700"
                       }`}
                     >
-                      {t / 60} Dakika
+                      {duration / 60} {t("setup.minute")}
                     </button>
                   ))}
                 </div>
@@ -187,7 +188,7 @@ const BotMode = () => {
 
               <div>
                 <h2 className="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">
-                  Yardımcı Bar
+                  {t("setup.helper_bar")}
                 </h2>
                 <div className="flex gap-2 w-full">
                   <button
@@ -198,7 +199,7 @@ const BotMode = () => {
                         : "bg-gray-800 border-transparent text-gray-500 hover:bg-gray-700"
                     }`}
                   >
-                    AÇIK
+                    {t("setup.on")}
                   </button>
 
                   <button
@@ -212,7 +213,7 @@ const BotMode = () => {
                         : "bg-gray-800 border-transparent text-gray-500 hover:bg-gray-700"
                     }`}
                   >
-                    KAPALI
+                    {t("setup.off")}
                   </button>
                 </div>
               </div>
@@ -225,13 +226,13 @@ const BotMode = () => {
               disabled={playerReady}
               className="px-10 py-4 rounded-xl text-xl font-bold transition w-full bg-green-600 hover:bg-green-500 cursor-pointer hover:scale-105 shadow-lg shadow-green-500/20 focus-visible:ring-4 focus-visible:ring-green-300"
             >
-              {playerReady ? "Başlatılıyor..." : "OYUNU BAŞLAT"}
+              {playerReady ? t("setup.starting") : t("setup.start_game")}
             </button>
             <button
               onClick={() => (window.location.href = "/")}
               className="text-gray-500 hover:text-white text-sm underline cursor-pointer flex items-center justify-center gap-1 focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
             >
-              <ArrowLeft size={16} /> Menüye Dön
+              <ArrowLeft size={16} /> {t("components.pause.menu")}
             </button>
           </div>
         )}
@@ -277,6 +278,7 @@ const BotMode = () => {
               <ActionButton
                 onClick={handleAction}
                 disabled={currentPlayer !== "p1" || isPaused}
+                customText={t("survival.buttons.hit")}
               />
             </div>
             <div className="mt-6 text-gray-500 text-sm animate-pulse font-semibold hidden md:block">

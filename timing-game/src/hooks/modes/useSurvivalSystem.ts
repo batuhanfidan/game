@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import {
   SURVIVAL_CONSTANTS,
   GAME_DELAYS,
@@ -89,6 +90,7 @@ const useSurvivalEffects = (isFeverActive: boolean, onFeverEnd: () => void) => {
 };
 
 export const useSurvivalSystem = (onFeverEndCallback?: () => void) => {
+  const { t } = useTranslation();
   const state = useSurvivalState();
   const {
     lives,
@@ -193,7 +195,7 @@ export const useSurvivalSystem = (onFeverEndCallback?: () => void) => {
         playSound("goal");
         setVisualEffect({ type: "goal", player: currentPlayer });
         successMessage = {
-          text: "ELMA VURULDU! (+10 SERİ)",
+          text: t("survival.messages.apple_hit"),
           icon: Apple,
           className: "text-green-400",
         };
@@ -202,7 +204,7 @@ export const useSurvivalSystem = (onFeverEndCallback?: () => void) => {
         if (isFeverActive) {
           playSound("miss");
           setActionMessage({
-            text: "FEVER KORUMASI!",
+            text: t("survival.messages.fever_protect"),
             icon: Flame,
             className: "text-yellow-400",
           });
@@ -212,7 +214,7 @@ export const useSurvivalSystem = (onFeverEndCallback?: () => void) => {
           setHasShield(false);
           setVisualEffect({ type: "save", player: currentPlayer });
           setActionMessage({
-            text: "KALKAN KIRILDI! (Hayattasın)",
+            text: t("survival.messages.shield_break"),
             icon: ShieldAlert,
             className: "text-blue-400",
           });
@@ -226,7 +228,7 @@ export const useSurvivalSystem = (onFeverEndCallback?: () => void) => {
           playSound("miss");
           setVisualEffect({ type: "post", player: currentPlayer });
           setActionMessage({
-            text: `DİKKAT! (${lives - 1} Can Kaldı)`,
+            text: t("survival.messages.life_lost", { lives: lives - 1 }),
             icon: AlertTriangle,
             className: "text-red-500 font-bold",
           });
@@ -234,7 +236,7 @@ export const useSurvivalSystem = (onFeverEndCallback?: () => void) => {
           playSound("miss");
           setVisualEffect({ type: "miss", player: currentPlayer });
           setActionMessage({
-            text: "ÖLDÜN!",
+            text: t("survival.messages.dead"),
             icon: Skull,
             className: "text-red-600 font-black",
           });
@@ -280,11 +282,12 @@ export const useSurvivalSystem = (onFeverEndCallback?: () => void) => {
           else nextCurse = "MOVING_TARGET";
 
           setActiveCurse(nextCurse);
-          const curseNames = {
-            REVERSE: "TERS AKINTI",
-            UNSTABLE: "DENGESİZ HIZ",
-            MOVING_TARGET: "GEZİCİ HEDEF",
-          };
+          const curseNameKey =
+            nextCurse === "REVERSE"
+              ? "survival.curses.reverse"
+              : nextCurse === "UNSTABLE"
+              ? "survival.curses.unstable"
+              : "survival.curses.moving";
 
           const curseIcon =
             nextCurse === "REVERSE"
@@ -293,7 +296,7 @@ export const useSurvivalSystem = (onFeverEndCallback?: () => void) => {
               ? Activity
               : Zap;
           setActionMessage({
-            text: `LANET BAŞLIYOR: ${curseNames[nextCurse]}!`,
+            text: t("survival.messages.curse_start", { name: t(curseNameKey) }),
             icon: curseIcon,
             className: "text-purple-400 font-bold",
           });
@@ -303,7 +306,7 @@ export const useSurvivalSystem = (onFeverEndCallback?: () => void) => {
           if (nextRemaining === 0) {
             setActiveCurse(null);
             setActionMessage({
-              text: "Lanet Kalktı!",
+              text: t("survival.messages.curse_end"),
               icon: Shield,
               className: "text-green-300",
             });
@@ -323,25 +326,27 @@ export const useSurvivalSystem = (onFeverEndCallback?: () => void) => {
         } else if (newStreak % SURVIVAL_CONSTANTS.LIFE_BONUS_INTERVAL === 0) {
           setLives((l) => Math.min(l + 1, SURVIVAL_CONSTANTS.MAX_LIVES));
           setActionMessage({
-            text: `+1 CAN! | Hız: ${speedMultiplier.toFixed(1)}x`,
+            text: t("survival.messages.life_bonus", {
+              speed: speedMultiplier.toFixed(1),
+            }),
             icon: Heart,
             className: "text-pink-500",
           });
         } else if (isFeverActive) {
           setActionMessage({
-            text: "FEVER MODU!",
+            text: t("survival.messages.fever_mode"),
             icon: Flame,
             className: "text-yellow-400",
           });
         } else if (isCritical) {
           setActionMessage({
-            text: "KRİTİK! (+%35 Adrenalin)",
+            text: t("survival.messages.critical"),
             icon: Zap,
             className: "text-yellow-300",
           });
         } else {
           setActionMessage({
-            text: `GÜZEL! (Seri: ${newStreak})`,
+            text: t("survival.messages.nice", { streak: newStreak }),
             className: "text-white",
           });
         }
@@ -370,6 +375,7 @@ export const useSurvivalSystem = (onFeverEndCallback?: () => void) => {
       generateRedTarget,
       setRedTarget,
       speedMultiplier,
+      t,
     ]
   );
 

@@ -1,0 +1,317 @@
+{
+  "menu": {
+    "title": "TIME iT!",
+    "subtitle": "Race with Milliseconds",
+    "tutorial_btn": "TUTORIAL",
+    "modes": {
+      "survival": {
+        "title": "SURVIVAL",
+        "desc": "Start with 3 lives, go as far as you can."
+      },
+      "time_attack": {
+        "title": "TIME ATTACK",
+        "desc": "Reach the highest score within 60 seconds."
+      },
+      "bot": {
+        "title": "VS BOT",
+        "desc": "Play against Artificial Intelligence."
+      },
+      "multiplayer": {
+        "title": "1 vs 1",
+        "desc": "Play locally with friends."
+      },
+      "penalty": {
+        "title": "PENALTY",
+        "desc": "Penalty shots."
+      }
+    }
+  },
+  "game": {
+    "result": {
+      "perfect": "PERFECT! You hit zero, GOAL!",
+      "penalty_goal": "Penalty goal! ⚽",
+      "penalty_miss": "Penalty missed! 😬",
+      "penalty_save": "Keeper saved it! 🧤",
+      "shot_goal": "Goal from the box! ⚽",
+      "shot_save": "Long range shot, keeper controlled.",
+      "cross_goal": "Great cross and GOAL! ⚽",
+      "cross_miss": "Cross failed.",
+      "freekick_goal": "Amazing freekick goal! 🎯",
+      "freekick_post": "Freekick hit the post!",
+      "freekick_miss": "Freekick went out.",
+      "offside": "Offside flag is up. ❌"
+    },
+    "turn_message": "{{player}}: {{result}} ({{ms}}ms)"
+  },
+  "difficulty": {
+    "easy": "Easy",
+    "medium": "Medium",
+    "hard": "Hard",
+    "impossible": "Impossible"
+  },
+  "variant": {
+    "classic": { "label": "Classic", "desc": "Standard game. Target 00ms." },
+    "ghost": { "label": "Ghost", "desc": "Timer vanishes after 500ms." },
+    "unstable": {
+      "label": "Unstable",
+      "desc": "Time speed changes constantly."
+    },
+    "random": { "label": "Random", "desc": "Starts from random offset." },
+    "moving": { "label": "Moving", "desc": "Target moves constantly." }
+  },
+  "tutorial": {
+    "intro": {
+      "title": "Welcome to Tutorial! 👋",
+      "text": "Ready to test your reflexes? In this short tour, we'll show you the basics of the game."
+    },
+    "timer": {
+      "title": "Your Goal: Timing",
+      "text": "The time bar you see is your biggest rival. Your goal is to catch the time at the perfect moment, 00ms."
+    },
+    "turn": {
+      "title": "Turn Time",
+      "text": "You have 10 seconds to make a move. If time runs out, you lose your turn."
+    },
+    "player": {
+      "title": "Player Timers",
+      "text": "Total match time is shared between two players. Time spent thinking is deducted from your own balance."
+    },
+    "help": {
+      "title": "Guide & Tips",
+      "text": "You can click on the ? (Question mark) for detailed rules whenever you're stuck."
+    },
+    "mode": {
+      "title": "Game Mode",
+      "text": "You are currently playing in Classic Mode against a Medium Bot. You can choose different game modes and variants from the main menu."
+    },
+    "action": {
+      "title": "Strike Moment",
+      "text": "Let's start if you're ready! Press the button when the time hits the target."
+    },
+    "buttons": {
+      "skip": "SKIP",
+      "ready": "I'M READY!",
+      "start": "START GAME",
+      "next": "NEXT"
+    },
+    "finished": {
+      "title": "TUTORIAL COMPLETED!",
+      "text": "You are now ready for real matches.",
+      "start_real": "Start Real Match",
+      "retry": "Try Again",
+      "menu": "Main Menu"
+    },
+    "labels": {
+      "you": "You",
+      "bot": "Bot",
+      "get_ready": "Get ready...",
+      "exit": "Exit"
+    }
+  },
+  "rules": {
+    "title": "GAME GUIDE v2.0",
+    "how_to_play": {
+      "title": "HOW TO PLAY?",
+      "text": "Try to catch the <1>target millisecond (usually 00ms)</1> while the timer is running. Press the <3>BUTTON</3> on the screen when it's your turn. The closer you are to the target, the more accurate your shot will be!"
+    },
+    "hit_zones": {
+      "title": "HIT ZONES (MS)",
+      "table": {
+        "diff": "Diff (ms)",
+        "result": "Result",
+        "effect": "Effect",
+        "perfect": "⚽ PERFECT GOAL",
+        "perfect_effect": "Certain Goal",
+        "penalty": "Penalty",
+        "penalty_effect": "75% Goal",
+        "shot": "Shot",
+        "shot_effect": "30% Goal",
+        "cross": "Cross",
+        "cross_effect": "20% Goal",
+        "freekick": "Freekick / Post",
+        "freekick_effect": "Very Low",
+        "offside": "❌ OFFSIDE / OUT",
+        "offside_effect": "Turn Passes"
+      }
+    },
+    "modes": {
+      "bot": {
+        "title": "VS BOT",
+        "desc": "Select bot difficulty and race against time.",
+        "diff_easy": "700ms Error Margin",
+        "diff_medium": "200ms Error Margin",
+        "diff_hard": "50ms Error Margin",
+        "diff_impossible": "10ms (Perfect)"
+      },
+      "survival": {
+        "title": "SURVIVAL",
+        "lives": "<0>Lives:</0> Start with 3 lives. Mistakes cost lives. Earn a life every 10 points.",
+        "curses": "<0>Curses:</0> A curse appears every 15 turns.",
+        "fever": "<0>Fever & Adrenaline:</0> Fill the bar with critical hits, slow down time!"
+      },
+      "time_attack": {
+        "title": "TIME ATTACK",
+        "objective": "Collect the highest score within <0>60s</0>.",
+        "combo": "<0>Combo:</0> Multiplier increases as you score (up to 5x).",
+        "red_target": "<0>Red Target:</0> If hit, <2>-10s</2> penalty!",
+        "fever": "<0>Fever:</0> Time freezes at 10 Combos!"
+      },
+      "variants": {
+        "title": "VARIANTS",
+        "classic": "<0>Classic:</0> Standard 00ms target.",
+        "ghost": "<0>Ghost:</0> Timer disappears after 500ms.",
+        "unstable": "<0>Unstable:</0> Time speed changes randomly (Chaos).",
+        "random": "<0>Random:</0> Timer starts differently each turn.",
+        "moving": "<0>Moving:</0> Target (00ms) moves constantly."
+      }
+    },
+    "ready_btn": "I'M READY!",
+    "hint": "Hedefi tam ortadan vur!",
+    "goal": "GOL = PUAN & SÜRE",
+    "red_penalty": "KIRMIZI = -10 SN CEZA!"
+  },
+  "survival": {
+    "title": "SURVIVAL",
+    "labels": {
+      "lives_warning": "You have 3 lives, be careful.",
+      "curse_warning": "A <0>CURSE</0> starts every 15 turns.",
+      "streak": "STREAK",
+      "speed": "SPEED",
+      "target": "TARGET",
+      "adrenaline": "ADRENALINE",
+      "fever": "FEVER!",
+      "curse_active": "CURSE: {{name}}"
+    },
+    "buttons": {
+      "prepare": "PREPARING...",
+      "challenge": "CHALLENGE",
+      "hit": "HIT!",
+      "space_hint": "PLAY WITH [SPACE] KEY"
+    },
+    "messages": {
+      "apple_hit": "APPLE HIT! (+10 STREAK)",
+      "fever_protect": "FEVER PROTECTION!",
+      "shield_break": "SHIELD BROKEN! (Still Alive)",
+      "life_lost": "WATCH OUT! ({{lives}} Lives Left)",
+      "dead": "YOU DIED!",
+      "curse_start": "CURSE STARTING: {{name}}!",
+      "curse_end": "Curse Lifted!",
+      "life_bonus": "+1 LIFE! | Speed: {{speed}}x",
+      "fever_mode": "FEVER MODE!",
+      "critical": "CRITICAL! (+%35 Adrenaline)",
+      "nice": "NICE! (Streak: {{streak}})",
+      "time_out_life": "TIME OUT! (-1 Life)",
+      "time_out_dead": "TIME OUT! Eliminated.",
+      "game_over": "💀 GAME OVER"
+    },
+    "curses": {
+      "reverse": "REVERSE FLOW",
+      "unstable": "UNSTABLE SPEED",
+      "moving": "MOVING TARGET"
+    }
+  },
+  "time_attack": {
+    "title": "TIME ATTACK",
+    "labels": {
+      "remaining_time": "⏱️ TIME LEFT",
+      "fever": "FEVER",
+      "combo": "COMBO",
+      "high_score": "HIGH SCORE"
+    },
+    "rules": {
+      "hint": "Hit the target right in the center!",
+      "goal": "GOAL = SCORE & TIME",
+      "red_penalty": "RED = -10 SEC PENALTY!"
+    },
+    "buttons": {
+      "start": "START",
+      "fever_hit": "FEVER!",
+      "hit": "HIT!"
+    },
+    "messages": {
+      "fever_break": "FEVER SHIELD BROKEN!",
+      "red_hit": "DIRECT RED! (-10s)",
+      "miss_fever": "MISS (Fever Active)",
+      "miss": "MISS! (-2s)",
+      "perfect": "PERFECT! (+2s)",
+      "combo_bonus": "COMBO! (+2s)",
+      "time_freeze": "TIME FROZEN!",
+      "time_up": "⏱️ TIME UP!",
+      "final_score": "Total Score: {{score}}"
+    }
+  },
+  "penalty": {
+    "title": "Penalty Kicks",
+    "series": "PENALTY SHOOTOUT",
+    "round": "ROUND {{current}} / {{total}}",
+    "shoot_btn": "SHOOT!",
+    "waiting": "...",
+    "teams": {
+      "blue": "BLUE TEAM",
+      "red": "RED TEAM"
+    },
+    "turn": "Turn: {{team}}",
+    "messages": {
+      "goal": "GOAL!",
+      "save": "KEEPER SAVED",
+      "post": "HIT THE POST",
+      "out": "WENT OUT",
+      "series_start": "SHOOTOUT STARTS!",
+      "excitement": "THRILL CONTINUES!",
+      "start": "Penalty Kicks Starting!"
+    }
+  },
+  "components": {
+    "pause": {
+      "title": "Game Paused",
+      "resume": "Resume",
+      "restart": "Restart",
+      "menu": "Main Menu"
+    },
+    "game_over": {
+      "play_again": "PLAY AGAIN",
+      "menu": "Main Menu",
+      "winner": "{{winner}} won!",
+      "draw": "Draw!"
+    },
+    "turn_info": {
+      "turn": "Turn:",
+      "time_out": "{{player}} timed out!",
+      "start": "{{player}} starts!"
+    },
+    "timer": {
+      "hint": "HIT HERE!",
+      "target": "TARGET"
+    }
+  },
+  "common": {
+    "good_luck": "Good luck!",
+    "turn_timeout_msg": "Time's up! Turn passes to opponent."
+  },
+  "setup": {
+    "difficulty": "DIFFICULTY",
+    "game_type": "GAME TYPE",
+    "duration": "DURATION",
+    "helper_bar": "HELPER BAR",
+    "on": "ON",
+    "off": "OFF",
+    "players": "PLAYERS",
+    "player_1_placeholder": "Player 1",
+    "player_2_placeholder": "Player 2",
+    "start_game": "START GAME",
+    "starting": "Starting...",
+    "minute": "Minute",
+    "ready_status": {
+      "p1": "P1 Ready",
+      "p2": "P2 Ready",
+      "checked": "Ready ✓"
+    }
+  },
+  "welcome_modal": {
+    "title": "Welcome to Time iT!",
+    "description": "This is a reflex and rhythm game. Your goal is to catch the time exactly at <0>00ms</0> or within the <1>Green Zone</1>.",
+    "tutorial_btn": "Complete Tutorial First",
+    "recommended": "(Recommended)",
+    "start_btn": "I Know, Start Now"
+  }
+}

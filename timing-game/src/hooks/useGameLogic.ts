@@ -12,6 +12,7 @@ import type {
 } from "../shared/types";
 
 import { CheckCircle, XCircle, Goal, AlertCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 // Core Hooks
 import { useGameState } from "./core/useGameState";
@@ -70,6 +71,7 @@ export const useGameLogic = ({
 
   const survival = useSurvivalSystem(() => playSoundSafe("whistle"));
   const timeAttack = useTimeAttackSystem();
+  const { t } = useTranslation();
 
   const {
     spawnBoss: timeAttackSpawnBoss,
@@ -130,7 +132,7 @@ export const useGameLogic = ({
     if (gameMode === "survival" || gameMode === "time_attack") {
       setCurrentPlayer("p1");
       setActionMessage({
-        text: "Başarılar!",
+        text: t("common.good_luck"),
         icon: CheckCircle,
         className: "text-white",
       });
@@ -138,13 +140,15 @@ export const useGameLogic = ({
       const startPlayer = Math.random() < 0.5 ? "p1" : "p2";
       setCurrentPlayer(startPlayer);
       setActionMessage({
-        text: `${playerNames[startPlayer]} başlıyor!`,
+        text: t("components.turn_info.start", {
+          player: playerNames[startPlayer],
+        }),
         icon: AlertCircle,
         className: "text-blue-400",
       });
     }
     randomizeRound();
-  }, [gameMode, playerNames, randomizeRound, setCurrentPlayer]);
+  }, [gameMode, playerNames, randomizeRound, setCurrentPlayer, t]);
 
   const handleTimerUpdate = useCallback(() => {
     if (activeCurse === "MOVING_TARGET") {
@@ -206,23 +210,25 @@ export const useGameLogic = ({
           highScore
         )}`
       );
-      setWinner("💀 OYUN BİTTİ");
+      setWinner(t("survival.messages.game_over"));
       updateHighScore(survivalStreak);
     } else if (gameMode === "time_attack") {
-      setFinalScore(`Toplam Puan: ${scores.p1}`);
-      setWinner("⏱️ SÜRE DOLDU!");
+      setFinalScore(
+        t("time_attack.messages.final_score", { score: scores.p1 })
+      );
+      setWinner(t("time_attack.messages.time_up"));
       updateHighScore(scores.p1);
     } else {
       setFinalScore(
         `Skor: ${playerNames.p1} [${scores.p1}] - [${scores.p2}] ${playerNames.p2}`
       );
       if (scores.p1 > scores.p2) {
-        setWinner(`🏆 ${playerNames.p1} kazandı!`);
+        setWinner(t("components.game_over.winner", { winner: playerNames.p1 }));
         if (gameMode === "bot") updateHighScore(scores.p1);
       } else if (scores.p2 > scores.p1) {
-        setWinner(`🏆 ${playerNames.p2} kazandı!`);
+        setWinner(t("components.game_over.winner", { winner: playerNames.p2 }));
       } else {
-        setWinner("🤝 Berabere!");
+        setWinner(t("components.game_over.draw"));
       }
     }
 
@@ -241,6 +247,7 @@ export const useGameLogic = ({
     setGameState,
     timer,
     playSoundSafe,
+    t,
   ]);
 
   useInterval(
@@ -279,14 +286,14 @@ export const useGameLogic = ({
           setSurvivalLives((l) => l - 1);
           // İkonlu mesaj
           setActionMessage({
-            text: "SÜRE DOLDU! (-1 Can)",
+            text: t("survival.messages.time_out_life"),
             icon: AlertCircle,
             className: "text-red-500 font-bold",
           });
           setTurnTimeLeft(GAMEPLAY_CONSTANTS.TURN_TIME_LIMIT);
         } else {
           setActionMessage({
-            text: "SÜRE DOLDU! Elendin.",
+            text: t("survival.messages.time_out_dead"),
             icon: XCircle,
             className: "text-red-600 font-black",
           });
@@ -294,7 +301,9 @@ export const useGameLogic = ({
         }
       } else if (gameMode !== "time_attack") {
         setActionMessage({
-          text: `${playerNames[currentPlayer]} süresini doldurdu!`,
+          text: t("components.turn_info.time_out", {
+            player: playerNames[currentPlayer],
+          }),
           icon: XCircle,
           className: "text-gray-400",
         });
@@ -321,6 +330,7 @@ export const useGameLogic = ({
     setSurvivalLives,
     setTurnTimeLeft,
     playSoundSafe,
+    t,
   ]);
 
   // Hint mantığı
@@ -362,7 +372,7 @@ export const useGameLogic = ({
     ) {
       playSoundSafe("miss");
       setActionMessage({
-        text: "Süren bitti! Sıra karşı oyuncuda.",
+        text: t("common.turn_timeout_msg"),
         icon: AlertCircle,
         className: "text-red-400",
       });
@@ -404,9 +414,14 @@ export const useGameLogic = ({
     const displayMs = String(Math.floor(distance / 10)).padStart(2, "0");
     const { result, message, isGoal } = calculateShotResult(distance);
 
-    // Mesaj objesi oluştur
+    const translatedText = t("game.turn_message", {
+      player: playerNames[currentPlayer],
+      result: t(message),
+      ms: displayMs,
+    });
+
     setActionMessage({
-      text: `${playerNames[currentPlayer]}: ${message} (${displayMs}ms)`,
+      text: translatedText,
       icon: isGoal ? CheckCircle : result === "DİREK" ? Goal : XCircle,
       className: isGoal
         ? "text-green-400"
@@ -444,6 +459,7 @@ export const useGameLogic = ({
     handleSurvivalShot,
     finishGame,
     setTurnTimeLeft,
+    t,
   ]);
 
   useBotSystem({

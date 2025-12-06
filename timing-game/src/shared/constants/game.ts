@@ -1,10 +1,14 @@
 import type { GameVariant } from "../types";
 
 export const DIFFICULTIES = {
-  EASY: { label: "Kolay", reaction: 2500, accuracy: 0.3 },
-  MEDIUM: { label: "Orta", reaction: 2000, accuracy: 0.5 },
-  HARD: { label: "Zor", reaction: 1500, accuracy: 0.75 },
-  IMPOSSIBLE: { label: "İmkansız", reaction: 1000, accuracy: 1 },
+  EASY: { labelKey: "difficulty.easy", reaction: 2500, accuracy: 0.3 },
+  MEDIUM: { labelKey: "difficulty.medium", reaction: 2000, accuracy: 0.5 },
+  HARD: { labelKey: "difficulty.hard", reaction: 1500, accuracy: 0.75 },
+  IMPOSSIBLE: {
+    labelKey: "difficulty.impossible",
+    reaction: 1000,
+    accuracy: 1,
+  },
 };
 
 export const SHOT_ZONES = {
@@ -15,12 +19,36 @@ export const SHOT_ZONES = {
   FREEKICK: 710,
 };
 
-export const VARIANTS: { key: GameVariant; label: string; desc: string }[] = [
-  { key: "classic", label: "Klasik", desc: "Standart oyun. Hedef 00ms." },
-  { key: "ghost", label: "Hayalet", desc: "Sayaç 500ms'den sonra kaybolur." },
-  { key: "unstable", label: "Dengesiz", desc: "Zamanın hızı sürekli değişir." },
-  { key: "random", label: "Rastgele", desc: "Her tur farklı yerden başlar." },
-  { key: "moving", label: "Gezgin", desc: "Hedef sürekli değişir." },
+export const VARIANTS: {
+  key: GameVariant;
+  labelKey: string;
+  descKey: string;
+}[] = [
+  {
+    key: "classic",
+    labelKey: "variant.classic.label",
+    descKey: "variant.classic.desc",
+  },
+  {
+    key: "ghost",
+    labelKey: "variant.ghost.label",
+    descKey: "variant.ghost.desc",
+  },
+  {
+    key: "unstable",
+    labelKey: "variant.unstable.label",
+    descKey: "variant.unstable.desc",
+  },
+  {
+    key: "random",
+    labelKey: "variant.random.label",
+    descKey: "variant.random.desc",
+  },
+  {
+    key: "moving",
+    labelKey: "variant.moving.label",
+    descKey: "variant.moving.desc",
+  },
 ];
 
 export const SURVIVAL_CONSTANTS = {

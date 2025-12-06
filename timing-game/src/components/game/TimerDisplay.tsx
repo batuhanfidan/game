@@ -2,6 +2,7 @@ import React, { useMemo, memo } from "react";
 import { formatTime } from "../../shared/utils/formatTime";
 import type { GameVariant } from "../../shared/types";
 import { Apple, ShieldAlert, Hand } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface TimerDisplayProps {
   totalMs: number;
@@ -32,6 +33,7 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({
 }) => {
   const ms = totalMs % 1000;
   const percentage = (ms / 1000) * 100;
+  const { t } = useTranslation();
 
   const targetPos = useMemo(() => {
     if (isPenaltyMode) {
@@ -153,7 +155,7 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({
                 }}
               >
                 <span className="bg-white text-black text-[10px] font-bold px-2 py-1 rounded mb-1 whitespace-nowrap shadow-lg">
-                  BURADA BAS!
+                  {t("components.timer.hint")}
                 </span>
                 <Hand className="rotate-180 fill-white text-white" size={20} />
               </div>
@@ -189,7 +191,7 @@ const TimerDisplay: React.FC<TimerDisplayProps> = ({
 
       {variant === "moving" && !isPenaltyMode && (
         <div className="text-[#10b981] text-xs font-bold mt-1 animate-pulse">
-          HEDEF: {targetOffset}ms
+          {t("components.timer.target")}: {targetOffset}ms
         </div>
       )}
     </div>

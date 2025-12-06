@@ -6,8 +6,8 @@ import { playSound } from "../../../shared/utils/sound";
 import type { VisualEffectData } from "../../../shared/types";
 import { User, Flame } from "lucide-react";
 import { GAME_DELAYS } from "../../../shared/constants/game";
+import { useTranslation } from "react-i18next";
 
-// GameLayout ve Context
 import GameLayout from "../../../components/layout/GameLayout";
 import { GameProvider } from "../../../context/GameContext";
 
@@ -15,13 +15,29 @@ type Player = "p1" | "p2";
 
 const calculatePenaltyOutcome = (diff: number) => {
   if (diff <= 60) {
-    return { result: "GOL", message: "GOL!", isGoal: true };
+    return {
+      result: "GOL",
+      messageKey: "penalty.messages.goal",
+      isGoal: true,
+    };
   } else if (diff <= 110) {
-    return { result: "KURTARDI", message: "KALECİ KURTARDI", isGoal: false };
+    return {
+      result: "KURTARDI",
+      messageKey: "penalty.messages.save",
+      isGoal: false,
+    };
   } else if (diff <= 160) {
-    return { result: "DİREK", message: "DİREKTEN DÖNDÜ", isGoal: false };
+    return {
+      result: "DİREK",
+      messageKey: "penalty.messages.post",
+      isGoal: false,
+    };
   } else {
-    return { result: "AUT", message: "DIŞARI GİTTİ", isGoal: false };
+    return {
+      result: "AUT",
+      messageKey: "penalty.messages.out",
+      isGoal: false,
+    };
   }
 };
 
@@ -33,12 +49,14 @@ const PenaltyMode = () => {
     p1: [],
     p2: [],
   });
-
+  const { t } = useTranslation();
   const [gameTimeMs, setGameTimeMs] = useState(0);
   const [targetOffset, setTargetOffset] = useState(500);
   const [isGameOver, setIsGameOver] = useState(false);
   const [winner, setWinner] = useState("");
-  const [actionMessage, setActionMessage] = useState("Penaltı Atışları");
+  const [actionMessage, setActionMessage] = useState(
+    t("penalty.messages.start")
+  );
   const [visualEffect, setVisualEffect] = useState<VisualEffectData | null>(
     null
   );
@@ -102,13 +120,15 @@ const PenaltyMode = () => {
 
     const currentCursor = gameTimeMs % 1000;
     const diff = Math.abs(currentCursor - targetOffset);
-    const { result, message, isGoal } = calculatePenaltyOutcome(diff);
+
+    const { result, messageKey, isGoal } = calculatePenaltyOutcome(diff);
+    const messageText = t(messageKey);
 
     if (isGoal) {
       playSound("goal");
       setVisualEffect({ type: "goal", player: currentPlayer });
       setScores((s) => ({ ...s, [currentPlayer]: s[currentPlayer] + 1 }));
-      setActionMessage(`⚽ ${message}`);
+      setActionMessage(`⚽ ${messageText}`);
     } else {
       playSound("miss");
       let effectType: "miss" | "post" | "save" = "miss";
@@ -116,7 +136,7 @@ const PenaltyMode = () => {
       if (result === "KURTARDI") effectType = "save";
 
       setVisualEffect({ type: effectType, player: currentPlayer });
-      setActionMessage(`❌ ${message}`);
+      setActionMessage(`❌ ${messageText}`);
     }
 
     setHistory((h) => ({
@@ -130,13 +150,17 @@ const PenaltyMode = () => {
     shotTaken,
     isGameOver,
     isPaused,
+    t,
   ]);
 
-  const finishGame = useCallback((finalWinner: string) => {
-    setIsGameOver(true);
-    playSound("whistle");
-    setWinner(finalWinner);
-  }, []);
+  const finishGame = useCallback(
+    (finalWinnerKey: string, params?: Record<string, string | number>) => {
+      setIsGameOver(true);
+      playSound("whistle");
+      setWinner(t(finalWinnerKey, params) as string);
+    },
+    [t]
+  );
 
   useEffect(() => {
     if (!shotTaken || isGameOver) return;
@@ -162,19 +186,25 @@ const PenaltyMode = () => {
     const p1Score = history.p1.filter(Boolean).length;
     const p2Score = history.p2.filter(Boolean).length;
 
+    const team1Name = t("penalty.teams.blue");
+    const team2Name = t("penalty.teams.red");
+
     if (completedRound === 5) {
-      if (p1Score > p2Score) finishGame("🏆 Oyuncu 1 Kazandı!");
-      else if (p2Score > p1Score) finishGame("🏆 Oyuncu 2 Kazandı!");
-      else setActionMessage("SERİ PENALTILAR BAŞLIYOR!");
+      if (p1Score > p2Score)
+        finishGame("components.game_over.winner", { winner: team1Name });
+      else if (p2Score > p1Score)
+        finishGame("components.game_over.winner", { winner: team2Name });
+      else setActionMessage(t("penalty.messages.series_start"));
     } else if (completedRound > 5) {
       if (p1Score !== p2Score) {
-        if (p1Score > p2Score) finishGame("🏆 Oyuncu 1 Kazandı!");
-        else finishGame("🏆 Oyuncu 2 Kazandı!");
+        if (p1Score > p2Score)
+          finishGame("components.game_over.winner", { winner: team1Name });
+        else finishGame("components.game_over.winner", { winner: team2Name });
       } else {
-        setActionMessage("HEYECAN DEVAM EDİYOR!");
+        setActionMessage(t("penalty.messages.excitement"));
       }
     }
-  }, [history, finishGame]);
+  }, [history, finishGame, t]);
 
   const restartGame = () => {
     setRound(1);
@@ -185,7 +215,7 @@ const PenaltyMode = () => {
     setShotTaken(false);
     setIsPaused(false);
     setTargetOffset(500);
-    setActionMessage("Penaltı Atışları Başlıyor!");
+    setActionMessage(t("penalty.messages.start"));
     startTimeRef.current = 0;
     pausedTimeRef.current = 0;
   };
@@ -224,10 +254,10 @@ const PenaltyMode = () => {
     <div className="text-4xl font-bold mb-6 text-yellow-400 flex items-center gap-2">
       {round > 5 ? (
         <>
-          <Flame className="text-red-500 animate-pulse" /> SERİ PENALTILAR
+          <Flame className="text-red-500 animate-pulse" /> {t("penalty.series")}
         </>
       ) : (
-        `TUR ${round} / 5`
+        t("penalty.round", { current: round, total: 5 })
       )}
     </div>
   );
@@ -243,7 +273,7 @@ const PenaltyMode = () => {
       isTwoPlayerMode={true}
       currentPlayer={currentPlayer}
       scoreDisplay={scoreDisplay}
-      bottomInfo="PENALTI MODU"
+      bottomInfo={t("penalty.title").toUpperCase()}
       showThemeButton={false}
     >
       <GameLayout>
@@ -257,7 +287,7 @@ const PenaltyMode = () => {
             }`}
           >
             <span className="text-lg md:text-xl font-bold text-blue-400 flex items-center gap-2">
-              <User size={24} /> P1
+              <User size={24} /> {t("penalty.teams.blue")}{" "}
             </span>
             <div className="flex gap-2">{renderScoreDots("p1")}</div>
             <span className="text-3xl font-black font-mono">{scores.p1}</span>
@@ -271,7 +301,7 @@ const PenaltyMode = () => {
             }`}
           >
             <span className="text-lg md:text-xl font-bold text-red-400 flex items-center gap-2">
-              <User size={24} /> P2
+              <User size={24} /> {t("penalty.teams.red")}{" "}
             </span>
             <div className="flex gap-2">{renderScoreDots("p2")}</div>
             <span className="text-3xl font-black font-mono">{scores.p2}</span>
@@ -308,7 +338,9 @@ const PenaltyMode = () => {
             <ActionButton
               onClick={handleShoot}
               disabled={shotTaken || isGameOver || isPaused}
-              customText={shotTaken ? "..." : "ŞUT ÇEK!"}
+              customText={
+                shotTaken ? t("penalty.waiting") : t("penalty.shoot_btn")
+              }
               customColor={
                 currentPlayer === "p1"
                   ? "bg-blue-600 hover:bg-blue-500 border-b-4 border-blue-800 active:border-b-0 active:translate-y-1"
@@ -319,7 +351,12 @@ const PenaltyMode = () => {
           </div>
 
           <div className="mt-4 text-gray-500 text-xs uppercase tracking-widest animate-pulse">
-            Sıra: {currentPlayer === "p1" ? "MAVİ TAKIM" : "KIRMIZI TAKIM"}
+            {t("penalty.turn", {
+              team:
+                currentPlayer === "p1"
+                  ? t("penalty.teams.blue")
+                  : t("penalty.teams.red"),
+            })}
           </div>
         </div>
 

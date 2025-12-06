@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import type {
   VisualEffectData,
   Player,
@@ -40,6 +41,8 @@ export const useTimeAttackSystem = () => {
   const [bossPosition, setBossPosition] = useState<number | null>(null);
   const [isFever, setIsFever] = useState(false);
   const [feverEndTime, setFeverEndTime] = useState<number | null>(null);
+
+  const { t } = useTranslation();
 
   const resetSystem = useCallback(() => {
     setCombo(0);
@@ -107,7 +110,7 @@ export const useTimeAttackSystem = () => {
       if (isFever) {
         if (isBlocked) {
           result.message = {
-            text: "FEVER KALKANI KIRILDI!",
+            text: t("time_attack.messages.fever_break"),
             icon: Shield,
             className: "text-blue-400",
           };
@@ -119,7 +122,7 @@ export const useTimeAttackSystem = () => {
       }
       if (isBlocked && !isFever) {
         result.message = {
-          text: "DİREK KIRMIZI! (-10sn)",
+          text: t("time_attack.messages.red_hit"),
           icon: ShieldAlert,
           className: "text-red-500 font-bold",
         };
@@ -133,13 +136,13 @@ export const useTimeAttackSystem = () => {
       if (diff > halfWidth) {
         if (isFever) {
           result.message = {
-            text: "ISKA (Fever Aktif)",
+            text: t("time_attack.messages.miss_fever"),
             icon: Snowflake,
             className: "text-cyan-300",
           };
         } else {
           result.message = {
-            text: "ISKA! (-2sn)",
+            text: t("time_attack.messages.miss"),
             icon: X,
             className: "text-gray-400",
           };
@@ -164,14 +167,14 @@ export const useTimeAttackSystem = () => {
       if (result.isGolden) {
         result.timeBonus = 2;
         result.message = {
-          text: "MÜKEMMEL! (+2sn)",
+          text: t("time_attack.messages.perfect"),
           icon: Star,
           className: "text-yellow-300",
         };
       } else if (newCombo % 5 === 0) {
         result.timeBonus = 2;
         result.message = {
-          text: `KOMBO! (+2sn)`,
+          text: t("time_attack.messages.combo_bonus"),
           icon: Flame,
           className: "text-orange-400",
         };
@@ -186,14 +189,14 @@ export const useTimeAttackSystem = () => {
         setFeverEndTime(Date.now() + FEVER_DURATION_MS);
         result.shouldTriggerFever = true;
         result.message = {
-          text: "ZAMAN DONDU!",
+          text: t("time_attack.messages.time_freeze"),
           icon: Snowflake,
           className: "text-cyan-300 font-bold",
         };
       }
       return result;
     },
-    [combo, targetWidth, isBossActive, bossPosition, isFever]
+    [combo, targetWidth, isBossActive, bossPosition, isFever, t]
   );
 
   const handleTimeAttackShot = useCallback(
