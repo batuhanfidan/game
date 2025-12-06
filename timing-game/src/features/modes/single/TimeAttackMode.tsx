@@ -9,9 +9,11 @@ import { useGameLogic } from "../../../hooks/useGameLogic";
 import { THEMES } from "../../../shared/constants/ui";
 import { GameProvider } from "../../../context/GameContext";
 import { Timer, ArrowLeft, Trophy, Flame, Zap } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 const TimeAttackMode = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [playerReady, setPlayerReady] = useState(false);
 
   const themeIndex = THEMES.findIndex((t) => t.name === "Zamana Karşı");
@@ -83,7 +85,7 @@ const TimeAttackMode = () => {
                   : "bg-orange-500 border-orange-400"
               }`}
             >
-              {combo} KOMBO
+              {combo} {t("time_attack.labels.combo")}
             </span>
             {isTimeAttackFever && (
               <span className="bg-yellow-500 text-black text-xs font-bold px-3 py-1 rounded-full shadow-lg border border-yellow-300 animate-pulse flex items-center gap-1">
@@ -98,7 +100,7 @@ const TimeAttackMode = () => {
       )}
 
       <div className="text-xs text-gray-300 mt-2 bg-black/60 px-4 py-1.5 rounded-full border border-white/10 backdrop-blur-md font-medium">
-        EN YÜKSEK:{" "}
+        {t("time_attack.labels.high_score")}:
         <span className="text-white font-bold ml-1">{highScore}</span>
       </div>
     </div>
@@ -138,26 +140,32 @@ const TimeAttackMode = () => {
         {gameState === "idle" && !countdown && (
           <div className="flex flex-col items-center gap-6 z-20 bg-black/80 p-8 md:p-10 rounded-3xl border border-cyan-900/30 shadow-2xl max-w-sm w-full mx-4 backdrop-blur-xl animate-popup">
             <h2 className="text-2xl font-black text-cyan-400 tracking-widest uppercase drop-shadow-md flex items-center gap-3">
-              <Timer size={28} /> ZAMANA KARŞI
+              <Timer size={28} /> {t("time_attack.title")}
             </h2>
 
             <div className="text-center text-gray-300 text-sm leading-relaxed space-y-2">
-              <p>Hedefi tam ortadan vur!</p>
-              <p className="text-green-400 font-bold">GOL = PUAN & SÜRE</p>
-              <p className="text-red-400 font-bold">KIRMIZI = -10 SN CEZA!</p>
+              <p>{t("time_attack.rules.hint")}</p>
+              <p className="text-green-400 font-bold">
+                {t("time_attack.rules.goal")}
+              </p>
+              <p className="text-red-400 font-bold">
+                {t("time_attack.rules.red_penalty")}
+              </p>
             </div>
             <button
               onClick={() => setPlayerReady(true)}
               disabled={playerReady}
               className="w-full py-4 rounded-xl text-lg font-bold transition-all bg-cyan-900/20 border border-cyan-500/50 text-cyan-400 hover:bg-cyan-900/40 hover:text-cyan-200 hover:border-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.1)] hover:shadow-[0_0_30px_rgba(34,211,238,0.3)] cursor-pointer active:scale-95"
             >
-              {playerReady ? "HAZIRLANIYOR..." : "BAŞLA"}
+              {playerReady
+                ? t("survival.buttons.prepare")
+                : t("time_attack.buttons.start")}
             </button>
             <button
               onClick={handleBackToMenu}
               className="text-gray-500 hover:text-gray-300 text-xs tracking-widest uppercase mt-2 transition-colors flex items-center gap-1"
             >
-              <ArrowLeft size={14} /> Menüye Dön
+              <ArrowLeft size={14} /> {t("components.pause.menu")}
             </button>
           </div>
         )}
@@ -183,7 +191,7 @@ const TimeAttackMode = () => {
                           : "text-white"
                       }
                     >
-                      ⏱️ KALAN SÜRE
+                      ⏱️ {t("time_attack.labels.remaining_time")}
                     </span>
                   }
                   minutes={Math.floor(playerTimes.p1 / 60)}
@@ -275,7 +283,7 @@ const TimeAttackMode = () => {
             </div>
 
             <div className="mt-8 text-gray-500 text-[10px] uppercase tracking-[0.2em] animate-pulse hidden md:block">
-              [SPACE] TUŞU İLE OYNA
+              {/* {t("survival.buttons.space_hint")} */}
             </div>
           </>
         )}

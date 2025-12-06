@@ -11,10 +11,18 @@ import {
   MousePointer2,
 } from "lucide-react";
 import { WelcomeModal } from "../../components/common/WelcomeModal";
+import { useTranslation } from "react-i18next";
 
 const MainMenu = () => {
   const navigate = useNavigate();
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
+
+  const { t, i18n } = useTranslation();
+
+  const toggleLanguage = () => {
+    const newLang = i18n.language === "tr" ? "en" : "tr";
+    i18n.changeLanguage(newLang);
+  };
 
   return (
     <div className="min-h-screen w-screen bg-[#0f0f11] text-white font-mono flex flex-col items-center py-12 px-4 relative overflow-hidden selection:bg-cyan-500/30">
@@ -28,10 +36,6 @@ const MainMenu = () => {
 
       {/* --- BAŞLIK: HIT MS! --- */}
       <div className="z-10 text-center mb-16 relative group cursor-default">
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/5 backdrop-blur-md border border-white/10 text-[10px] font-bold tracking-widest uppercase mb-6 text-cyan-200 shadow-lg group-hover:bg-white/10 transition-colors">
-          Refleks Simülasyonu
-        </div>
-
         <h1 className="text-7xl md:text-9xl font-black tracking-tighter text-transparent bg-clip-text bg-linear-to-b from-white via-gray-200 to-gray-500 drop-shadow-[0_0_30px_rgba(255,255,255,0.1)] relative z-10">
           Time iT!
         </h1>
@@ -39,7 +43,7 @@ const MainMenu = () => {
         <div className="flex items-center justify-center gap-3 mt-4 opacity-40">
           <div className="h-px w-12 bg-white"></div>
           <p className="text-sm font-light tracking-[0.5em] uppercase text-white">
-            Milisaniyelerle Yarış
+            {t("menu.subtitle")}
           </p>
           <div className="h-px w-12 bg-white"></div>
         </div>
@@ -52,9 +56,9 @@ const MainMenu = () => {
           {
             id: "survival",
 
-            title: "HAYATTA KALMA",
+            title: t("menu.modes.survival.title"),
 
-            desc: "3 can ile başla, gidebildiğin yere kadar git.",
+            desc: t("menu.modes.survival.desc"),
 
             icon: <Skull size={24} />,
 
@@ -74,9 +78,9 @@ const MainMenu = () => {
           {
             id: "time",
 
-            title: "ZAMANA KARŞI",
+            title: t("menu.modes.time_attack.title"),
 
-            desc: "60 saniye içersinde en yüksek skora ulaş.",
+            desc: t("menu.modes.time_attack.desc"),
 
             icon: <Timer size={24} />,
 
@@ -96,9 +100,9 @@ const MainMenu = () => {
           {
             id: "bot",
 
-            title: "BOTA KARŞI",
+            title: t("menu.modes.bot.title"),
 
-            desc: "Yapay zekaya karşı oyna.",
+            desc: t("menu.modes.bot.desc"),
 
             icon: <Bot size={24} />,
 
@@ -118,9 +122,9 @@ const MainMenu = () => {
           {
             id: "2p",
 
-            title: "1 vs 1",
+            title: t("menu.modes.multiplayer.title"),
 
-            desc: "Arkadaşlarınla lokal oyna.",
+            desc: t("menu.modes.multiplayer.desc"),
 
             icon: <Gamepad2 size={24} />,
 
@@ -140,9 +144,9 @@ const MainMenu = () => {
           {
             id: "penalty",
 
-            title: "PENALTI",
+            title: t("menu.modes.penalty.title"),
 
-            desc: "Penaltı atışları.",
+            desc: t("menu.modes.penalty.desc"),
 
             icon: <Trophy size={24} />,
 
@@ -256,10 +260,37 @@ const MainMenu = () => {
           <div className="bg-cyan-500/10 p-1.5 rounded-full group-hover:bg-cyan-500/20 transition-colors">
             <MousePointer2 size={14} className="text-cyan-400" />
           </div>
-          <span>OYUNU ÖĞREN</span>
+          <span>{t("menu.tutorial_btn")}</span>
         </button>
       </div>
       <WelcomeModal />
+      {/* GEÇİCİ DİL BUTONU */}
+      <button
+        onClick={toggleLanguage}
+        className="
+          fixed top-6 right-6 z-50 
+          group flex items-center gap-3 
+          px-4 py-2.5 
+          rounded-full 
+          bg-neutral-900/40 backdrop-blur-xl 
+          border border-white/10 
+          hover:border-cyan-500/50 hover:bg-neutral-900/80 
+          transition-all duration-300 ease-out
+          shadow-lg hover:shadow-cyan-500/20 
+          active:scale-95 cursor-pointer
+        "
+      >
+        <div className="p-1.5 rounded-full bg-white/5 group-hover:bg-cyan-500/20 transition-colors duration-300">
+          <Globe
+            size={16}
+            className="text-gray-400 group-hover:text-cyan-400 transition-colors"
+          />
+        </div>
+
+        <span className="text-xs font-black text-gray-300 group-hover:text-white tracking-[0.2em] font-mono">
+          {i18n.language === "tr" ? "EN" : "TR"}
+        </span>
+      </button>
     </div>
   );
 };

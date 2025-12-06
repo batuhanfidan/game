@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { calculateShotResult } from "../../shared/utils/calculateShotResult";
 import { playSound } from "../../shared/utils/sound";
 import { CheckCircle, XCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import type {
   GameMode,
   GameState,
@@ -37,6 +38,7 @@ export const useBotSystem = ({
   setVisualEffect,
   setActionMessage,
 }: UseBotSystemProps) => {
+  const { t } = useTranslation();
   const stateRef = useRef({
     playerTimes,
     botAccuracy,
@@ -96,11 +98,17 @@ export const useBotSystem = ({
       const { result, message, isGoal } = calculateShotResult(error);
       const displayMs = String(Math.floor(error / 10)).padStart(2, "0");
 
+      const translatedMessage = t("game.turn_message", {
+        player: "Bot",
+        result: t(message),
+        ms: displayMs,
+      });
+
       if (isGoal) {
         playSound("goal");
         setVisualEffect({ type: "goal", player: "p2" });
         setActionMessage({
-          text: `Bot: ${message} (${displayMs}ms)`,
+          text: translatedMessage,
           icon: CheckCircle,
           className: "text-green-400",
         });
@@ -112,9 +120,7 @@ export const useBotSystem = ({
           player: "p2",
         });
         setActionMessage({
-          text: `Bot: ${
-            result === "GOL" ? "Golü kaçırdı!" : message
-          } (${displayMs}ms)`,
+          text: translatedMessage,
           icon: XCircle,
           className: "text-red-400",
         });
@@ -137,5 +143,6 @@ export const useBotSystem = ({
     setScores,
     setVisualEffect,
     setActionMessage,
+    t,
   ]);
 };

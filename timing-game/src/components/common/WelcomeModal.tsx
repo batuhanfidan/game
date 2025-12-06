@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { Zap, BookOpen, Play } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation, Trans } from "react-i18next";
 
 export const WelcomeModal = () => {
   // DEV MODU: Her zaman true olarak başla
   const [isOpen, setIsOpen] = useState(true);
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleStart = () => {
     setIsOpen(false);
@@ -29,15 +31,17 @@ export const WelcomeModal = () => {
           </div>
 
           <h2 className="text-3xl font-black text-white tracking-tight">
-            TIME iT'e Hoşgeldin!
+            {t("welcome_modal.title")}
           </h2>
 
           <p className="text-gray-400 text-sm leading-relaxed">
-            Bu bir refleks ve ritim oyunudur. Amacın süreyi tam
-            <span className="text-green-400 font-bold mx-1">00ms</span>
-            veya
-            <span className="text-green-400 font-bold mx-1">Yeşil Bölge</span>
-            içinde yakalamaktır.
+            <Trans
+              i18nKey="welcome_modal.description"
+              components={[
+                <span key="0" className="text-green-400 font-bold mx-1" />, // <0> etiketi için
+                <span key="1" className="text-green-400 font-bold mx-1" />, // <1> etiketi için
+              ]}
+            />
           </p>
 
           <div className="grid grid-cols-1 gap-3 mt-8">
@@ -46,9 +50,9 @@ export const WelcomeModal = () => {
               className="flex items-center justify-center gap-3 w-full py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold transition-all hover:scale-[1.02]"
             >
               <BookOpen size={20} />
-              Önce Eğitimi Tamamla
+              {t("welcome_modal.tutorial_btn")}
               <span className="text-blue-200 text-xs font-normal">
-                (Önerilen)
+                {t("welcome_modal.recommended")}
               </span>
             </button>
 
@@ -57,7 +61,7 @@ export const WelcomeModal = () => {
               className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-neutral-800 hover:bg-neutral-700 text-gray-300 font-medium transition-colors"
             >
               <Play size={18} />
-              Biliyorum, Hemen Başla
+              {t("welcome_modal.start_btn")}
             </button>
           </div>
         </div>

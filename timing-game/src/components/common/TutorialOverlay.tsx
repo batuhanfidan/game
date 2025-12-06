@@ -1,6 +1,7 @@
 import React from "react";
 import { X, ArrowRight, Check, Zap, HelpCircle } from "lucide-react";
 import { UI_CONSTANTS, TUTORIAL_STEPS } from "../../shared//constants/ui";
+import { useTranslation } from "react-i18next";
 
 interface TutorialOverlayProps {
   step: number;
@@ -15,6 +16,8 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
   onSkip,
   isVisible,
 }) => {
+  const { t } = useTranslation();
+
   if (!isVisible || step >= TUTORIAL_STEPS.length) return null;
 
   const currentData = TUTORIAL_STEPS[step];
@@ -124,13 +127,13 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
               </span>
             )}
 
-            {currentData.title && (
+            {currentData.titleKey && (
               <h3
                 className={`font-bold text-lg leading-tight ${
                   isIntro ? "text-yellow-400" : "text-white"
                 }`}
               >
-                {currentData.title}
+                {t(currentData.titleKey)}
               </h3>
             )}
           </div>
@@ -140,7 +143,7 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
               isIntro ? "text-gray-300" : "text-blue-50"
             }`}
           >
-            {currentData.text}
+            {t(currentData.textKey)}
           </p>
 
           <div className="flex justify-end gap-3">
@@ -149,7 +152,7 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
                 onClick={onSkip}
                 className="px-3 py-2 text-xs font-bold text-white/70 hover:text-white transition-colors"
               >
-                ATLA
+                {t("tutorial.buttons.skip")}
               </button>
             )}
 
@@ -164,7 +167,11 @@ const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
                 px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 hover:scale-[1.02] active:scale-95 transition-all shadow-lg
               `}
             >
-              {isIntro ? "HAZIRIM!" : isLastStep ? "OYUNA BAŞLA" : "DEVAM"}
+              {isIntro
+                ? t("tutorial.buttons.ready")
+                : isLastStep
+                ? t("tutorial.buttons.start")
+                : t("tutorial.buttons.next")}
               {isLastStep || isIntro ? (
                 <Check size={16} />
               ) : (

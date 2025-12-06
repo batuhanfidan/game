@@ -18,12 +18,14 @@ import {
 import TutorialOverlay from "../../../components/common/TutorialOverlay";
 import GameLayout from "../../../components/layout/GameLayout";
 import { GameProvider } from "../../../context/GameContext";
+import { useTranslation } from "react-i18next";
 
 const TutorialMode = () => {
   const navigate = useNavigate();
   const { currentTheme, nextTheme, theme } = useTheme(0);
   const [step, setStep] = useState(0);
   const [showOverlay, setShowOverlay] = useState(true);
+  const { t } = useTranslation();
 
   const gameLogic = useGameLogic({
     gameMode: "bot",
@@ -102,7 +104,7 @@ const TutorialMode = () => {
             <PlayerTimer
               player={
                 <span className="flex items-center gap-2">
-                  <User size={20} /> Sen
+                  <User size={20} /> {t("tutorial.labels.you")} {/* ("Sen") */}
                 </span>
               }
               minutes={Math.floor(playerTimes.p1 / 60)}
@@ -111,7 +113,7 @@ const TutorialMode = () => {
             <PlayerTimer
               player={
                 <span className="flex items-center gap-2">
-                  <Bot size={20} /> Bot
+                  <Bot size={20} /> {t("tutorial.labels.bot")} {/* ("Bot") */}
                 </span>
               }
               minutes={Math.floor(playerTimes.p2 / 60)}
@@ -137,7 +139,7 @@ const TutorialMode = () => {
             {actionMessage.icon && (
               <actionMessage.icon size={24} className="inline-block" />
             )}
-            {actionMessage.text || "Hazır ol..."}
+            {actionMessage.text || t("tutorial.labels.get_ready")}{" "}
           </div>
 
           <TurnInfo
@@ -158,11 +160,12 @@ const TutorialMode = () => {
               onClick={() => navigate("/")}
               className="flex items-center gap-2 text-sm text-gray-500 hover:text-white"
             >
-              <ArrowLeft size={16} /> Çıkış
+              <ArrowLeft size={16} /> {t("tutorial.labels.exit")}{" "}
             </button>
           </div>
         </div>
 
+        {/* EĞİTİM TAMAMLANDI POPUP'I */}
         {isFinished && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm animate-fade-in">
             <div className="bg-neutral-900 border border-green-500/30 p-8 rounded-2xl text-center shadow-2xl max-w-sm w-full">
@@ -170,10 +173,10 @@ const TutorialMode = () => {
                 <CheckCircle size={48} className="text-green-500" />
               </div>
               <h2 className="text-3xl font-black text-white mb-2">
-                EĞİTİM TAMAMLANDI!
+                {t("tutorial.finished.title")}
               </h2>
               <p className="text-gray-400 mb-8">
-                Artık gerçek maçlara hazırsın.
+                {t("tutorial.finished.text")}
               </p>
 
               <div className="flex flex-col gap-3">
@@ -181,19 +184,19 @@ const TutorialMode = () => {
                   onClick={() => navigate("/game/bot")}
                   className="bg-green-600 hover:bg-green-500 text-white font-bold py-3 rounded-xl transition-all"
                 >
-                  Gerçek Maça Başla
+                  {t("tutorial.finished.start_real")}
                 </button>
                 <button
                   onClick={handleRetry}
                   className="bg-gray-800 hover:bg-gray-700 text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
                 >
-                  <RotateCcw size={18} /> Tekrar Dene
+                  <RotateCcw size={18} /> {t("tutorial.finished.retry")}{" "}
                 </button>
                 <button
                   onClick={handleFinish}
                   className="text-gray-500 hover:text-white text-sm mt-2"
                 >
-                  Ana Menü
+                  {t("tutorial.finished.menu")}
                 </button>
               </div>
             </div>

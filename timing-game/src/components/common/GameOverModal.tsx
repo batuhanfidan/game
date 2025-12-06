@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Trophy, RotateCcw, Home } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface GameOverModalProps {
   winner: string;
@@ -15,6 +16,7 @@ const GameOverModal: React.FC<GameOverModalProps> = ({
 }) => {
   const navigate = useNavigate();
   const [isVisible, setIsVisible] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const t = setTimeout(() => setIsVisible(true), 50);
@@ -65,7 +67,7 @@ const GameOverModal: React.FC<GameOverModalProps> = ({
               className="group relative w-full overflow-hidden rounded-xl bg-white py-4 text-black font-black uppercase tracking-widest transition-all hover:scale-[1.02] hover:shadow-[0_0_20px_rgba(255,255,255,0.2)] active:scale-95 cursor-pointer focus-visible:ring-4 focus-visible:ring-blue-500"
             >
               <span className="relative z-10 flex items-center justify-center gap-2">
-                TEKRAR OYNA <RotateCcw size={20} />
+                {t("components.game_over.play_again")} <RotateCcw size={20} />
               </span>
               <div className="absolute inset-0 -translate-x-full bg-linear-to-r from-transparent via-gray-300 to-transparent transition-transform duration-500 group-hover:translate-x-full opacity-50"></div>
             </button>
@@ -74,7 +76,7 @@ const GameOverModal: React.FC<GameOverModalProps> = ({
               onClick={() => navigate("/")}
               className="w-full py-3 rounded-xl text-gray-400 font-bold uppercase tracking-widest hover:text-white hover:bg-white/5 transition-all flex items-center justify-center gap-2 text-sm border border-transparent hover:border-white/10 active:scale-95 cursor-pointer focus-visible:ring-4 focus-visible:ring-blue-500"
             >
-              <Home size={18} /> Ana Menüye Dön
+              <Home size={18} /> {t("components.game_over.menu")}
             </button>
           </div>
         </div>

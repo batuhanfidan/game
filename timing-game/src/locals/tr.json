@@ -1,0 +1,357 @@
+{
+  "menu": {
+    "title": "TIME iT!",
+    "subtitle": "Milisaniyelerle Yarış",
+    "tutorial_btn": "OYUNU ÖĞREN",
+    "modes": {
+      "survival": {
+        "title": "HAYATTA KALMA",
+        "desc": "3 can ile başla, gidebildiğin yere kadar git."
+      },
+      "time_attack": {
+        "title": "ZAMANA KARŞI",
+        "desc": "60 saniye içerisinde en yüksek skora ulaş."
+      },
+      "bot": {
+        "title": "BOTA KARŞI",
+        "desc": "Yapay zekaya karşı oyna."
+      },
+      "multiplayer": {
+        "title": "1 vs 1",
+        "desc": "Arkadaşlarınla lokal oyna."
+      },
+      "penalty": {
+        "title": "PENALTI",
+        "desc": "Penaltı atışları."
+      }
+    }
+  },
+  "game": {
+    "result": {
+      "perfect": "MÜKEMMEL! Sıfırı tutturdun, gol!",
+      "penalty_goal": "Penaltıdan gol! ⚽",
+      "penalty_miss": "Penaltı auta gitti! 😬",
+      "penalty_save": "Kaleci kurtardı! 🧤",
+      "shot_goal": "Ceza sahasından gol! ⚽",
+      "shot_save": "Uzak mesafeden şut, kaleci kontrol etti.",
+      "cross_goal": "Başarılı orta ve GOOOL! ⚽",
+      "cross_miss": "Orta başarısız.",
+      "freekick_goal": "Frikikten harika gol! 🎯",
+      "freekick_post": "Frikik direğe çarptı!",
+      "freekick_miss": "Frikik auta gitti.",
+      "offside": "Ofsayt bayrağı kalktı. ❌"
+    },
+    "turn_message": "{{player}}: {{result}} ({{ms}}ms)"
+  },
+  "difficulty": {
+    "easy": "Kolay",
+    "medium": "Orta",
+    "hard": "Zor",
+    "impossible": "İmkansız"
+  },
+  "variant": {
+    "classic": { "label": "Klasik", "desc": "Standart oyun. Hedef 00ms." },
+    "ghost": { "label": "Hayalet", "desc": "Sayaç 500ms'den sonra kaybolur." },
+    "unstable": {
+      "label": "Dengesiz",
+      "desc": "Zamanın hızı sürekli değişir."
+    },
+    "random": { "label": "Rastgele", "desc": "Her tur farklı yerden başlar." },
+    "moving": { "label": "Gezgin", "desc": "Hedef sürekli değişir." },
+    "tutorial": {
+      "intro": {
+        "title": "Eğitim Moduna Hoşgeldin! 👋",
+        "text": "Reflekslerini test etmeye hazır mısın? Bu kısa turda sana oyunun temellerini göstereceğiz."
+      },
+      "timer": {
+        "title": "Hedefin: Zamanlama",
+        "text": "Gördüğün zaman çubuğu senin en büyük rakibin. Amacın süreyi mükemmel anda, yani 00ms'de yakalamak."
+      },
+      "turn": {
+        "title": "Sıra Süresi",
+        "text": "Hamle yapmak için 10 saniyen var. Eğer süre dolarsa sıranı kaybedersin."
+      },
+      "player": {
+        "title": "Oyuncu Süreleri",
+        "text": "Toplam maç süresi iki oyuncu arasında paylaştırılır. Düşünürken harcadığın zaman kendi bakiyenden düşer."
+      },
+      "help": {
+        "title": "Kılavuz ve İpuçları",
+        "text": "Takıldığın yerde detaylı kurallar için ?(Soru işareti)'ne tıklayabilirsin."
+      },
+      "mode": {
+        "title": "Oyun Modu",
+        "text": "Şu an Klasik Mod'da, Orta Seviye Bot'a karşı oynamaktasın. Ana menüden farklı oyun modları ve varyasyonları seçerek yeni deneyimler elde edebilirsin."
+      },
+      "action": {
+        "title": "Vuruş Anı",
+        "text": "Hazırsan başlayalım! Süre hedefe geldiğinde butona bas."
+      },
+      "buttons": {
+        "skip": "ATLA",
+        "ready": "HAZIRIM!",
+        "start": "OYUNA BAŞLA",
+        "next": "DEVAM"
+      },
+      "finished": {
+        "title": "EĞİTİM TAMAMLANDI!",
+        "text": "Artık gerçek maçlara hazırsın.",
+        "start_real": "Gerçek Maça Başla",
+        "retry": "Tekrar Dene",
+        "menu": "Ana Menü"
+      }
+    }
+  },
+  "tutorial": {
+    "intro": {
+      "title": "Eğitim Moduna Hoşgeldin! 👋",
+      "text": "Reflekslerini test etmeye hazır mısın? Bu kısa turda sana oyunun temellerini göstereceğiz."
+    },
+    "timer": {
+      "title": "Hedefin: Zamanlama",
+      "text": "Gördüğün zaman çubuğu senin en büyük rakibin. Amacın süreyi mükemmel anda, yani 00ms'de yakalamak."
+    },
+    "turn": {
+      "title": "Sıra Süresi",
+      "text": "Hamle yapmak için 10 saniyen var. Eğer süre dolarsa sıranı kaybedersin."
+    },
+    "player": {
+      "title": "Oyuncu Süreleri",
+      "text": "Toplam maç süresi iki oyuncu arasında paylaştırılır. Düşünürken harcadığın zaman kendi bakiyenden düşer."
+    },
+    "help": {
+      "title": "Kılavuz ve İpuçları",
+      "text": "Takıldığın yerde detaylı kurallar için ?(Soru işareti)'ne tıklayabilirsin."
+    },
+    "mode": {
+      "title": "Oyun Modu",
+      "text": "Şu an Klasik Mod'da, Orta Seviye Bot'a karşı oynamaktasın. Ana menüden farklı oyun modları ve varyasyonları seçerek yeni deneyimler elde edebilirsin."
+    },
+    "action": {
+      "title": "Vuruş Anı",
+      "text": "Hazırsan başlayalım! Süre hedefe geldiğinde butona bas."
+    },
+    "buttons": {
+      "skip": "ATLA",
+      "ready": "HAZIRIM!",
+      "start": "OYUNA BAŞLA",
+      "next": "DEVAM"
+    },
+    "finished": {
+      "title": "EĞİTİM TAMAMLANDI!",
+      "text": "Artık gerçek maçlara hazırsın.",
+      "start_real": "Gerçek Maça Başla",
+      "retry": "Tekrar Dene",
+      "menu": "Ana Menü"
+    },
+    "labels": {
+      "you": "Sen",
+      "bot": "Bot",
+      "get_ready": "Hazır ol...",
+      "exit": "Çıkış"
+    }
+  },
+  "rules": {
+    "title": "OYUN KILAVUZU v2.0",
+    "how_to_play": {
+      "title": "NASIL OYNANIR?",
+      "text": "Kronometre çalışırken <1>hedef milisaniyeyi (genellikle 00ms)</1> yakalamaya çalış. Sıran geldiğinde ekrandaki <3>BUTONA</3> bas. Hedefe ne kadar yakınsan şutun o kadar isabetli olur!"
+    },
+    "hit_zones": {
+      "title": "VURUŞ BÖLGELERİ (MS)",
+      "table": {
+        "diff": "Fark (ms)",
+        "result": "Sonuç",
+        "effect": "Etki",
+        "perfect": "⚽ MÜKEMMEL GOL",
+        "perfect_effect": "Kesin Gol",
+        "penalty": "Penaltı",
+        "penalty_effect": "%75 Gol",
+        "shot": "Şut",
+        "shot_effect": "%30 Gol",
+        "cross": "Orta",
+        "cross_effect": "%20 Gol",
+        "freekick": "Frikik / Direk",
+        "freekick_effect": "Çok Düşük",
+        "offside": "❌ OFSAYT / AUT",
+        "offside_effect": "Sıra Geçer"
+      }
+    },
+    "modes": {
+      "bot": {
+        "title": "BOTA KARŞI",
+        "desc": "Botun zorluk seviyesini seç ve zamana karşı yarış.",
+        "diff_easy": "700ms Hata Payı",
+        "diff_medium": "200ms Hata Payı",
+        "diff_hard": "50ms Hata Payı",
+        "diff_impossible": "10ms (Mükemmel)"
+      },
+      "survival": {
+        "title": "HAYATTA KALMA",
+        "lives": "<0>Can:</0> 3 can ile oyuna başlarsın. Hata yaparsan can kaybedersin. Her 10 puanda bir can kazanırsın.",
+        "curses": "<0>Lanetler:</0> Her 15 turda bir lanet gelir.",
+        "fever": "<0>Fever & Adrenalin:</0> Kritik vuruşlarla barı doldur, zamanı yavaşlat!"
+      },
+      "time_attack": {
+        "title": "ZAMANA KARŞI",
+        "objective": "<0>60sn</0> içinde en yüksek puanı topla.",
+        "combo": "<0>Kombo:</0> Gol attıkça çarpan artar (5x'e kadar).",
+        "red_target": "<0>Kırmızı Hedef:</0> Vurursan <2>-10sn</2> ceza!",
+        "fever": "<0>Fever:</0> 10 Kombo yaparsan zaman donar!"
+      },
+      "variants": {
+        "title": "VARYASYONLAR",
+        "classic": "<0>Klasik:</0> Standart 00ms hedefi.",
+        "ghost": "<0>Hayalet:</0> 500ms'den sonra sayaç kaybolur.",
+        "unstable": "<0>Dengesiz:</0> Zaman hızı rastgele değişir (Kaos).",
+        "random": "<0>Rastgele:</0> Sayaç her tur farklı başlar.",
+        "moving": "<0>Gezgin:</0> Hedef (00ms) sürekli yer değiştirir."
+      }
+    },
+    "ready_btn": "HAZIRIM!"
+  },
+  "survival": {
+    "title": "HAYATTA KAL",
+    "labels": {
+      "lives_warning": "3 Canın var, dikkatli ol.",
+      "curse_warning": "Her 15 turda bir <0>LANET</0> başlar.",
+      "streak": "SERİ",
+      "speed": "HIZ",
+      "target": "HEDEF",
+      "adrenaline": "ADRENALİN",
+      "fever": "FEVER!",
+      "curse_active": "LANET: {{name}}"
+    },
+    "buttons": {
+      "prepare": "HAZIRLANIYOR...",
+      "challenge": "MEYDAN OKU",
+      "hit": "VUR!",
+      "space_hint": "[SPACE] TUŞU İLE OYNA"
+    },
+    "messages": {
+      "apple_hit": "ELMA VURULDU! (+10 SERİ)",
+      "fever_protect": "FEVER KORUMASI!",
+      "shield_break": "KALKAN KIRILDI! (Hayattasın)",
+      "life_lost": "DİKKAT! ({{lives}} Can Kaldı)",
+      "dead": "ÖLDÜN!",
+      "curse_start": "LANET BAŞLIYOR: {{name}}!",
+      "curse_end": "Lanet Kalktı!",
+      "life_bonus": "+1 CAN! | Hız: {{speed}}x",
+      "fever_mode": "FEVER MODU!",
+      "critical": "KRİTİK! (+%35 Adrenalin)",
+      "nice": "GÜZEL! (Seri: {{streak}})",
+      "time_out_life": "SÜRE DOLDU! (-1 Can)",
+      "time_out_dead": "SÜRE DOLDU! Elendin.",
+      "game_over": "💀 OYUN BİTTİ"
+    },
+    "curses": {
+      "reverse": "TERS AKINTI",
+      "unstable": "DENGESİZ HIZ",
+      "moving": "GEZİCİ HEDEF"
+    }
+  },
+  "time_attack": {
+    "title": "ZAMANA KARŞI",
+    "labels": {
+      "remaining_time": "⏱️ KALAN SÜRE",
+      "fever": "FEVER",
+      "combo": "KOMBO",
+      "high_score": "EN YÜKSEK"
+    },
+    "rules": {
+      "hint": "Hedefi tam ortadan vur!",
+      "goal": "GOL = PUAN & SÜRE",
+      "red_penalty": "KIRMIZI = -10 SN CEZA!"
+    },
+    "buttons": {
+      "start": "BAŞLA",
+      "fever_hit": "FEVER!",
+      "hit": "VUR!"
+    },
+    "messages": {
+      "fever_break": "FEVER KALKANI KIRILDI!",
+      "red_hit": "DİREK KIRMIZI! (-10sn)",
+      "miss_fever": "ISKA (Fever Aktif)",
+      "miss": "ISKA! (-2sn)",
+      "perfect": "MÜKEMMEL! (+2sn)",
+      "combo_bonus": "KOMBO! (+2sn)",
+      "time_freeze": "ZAMAN DONDU!",
+      "time_up": "⏱️ SÜRE DOLDU!",
+      "final_score": "Toplam Puan: {{score}}"
+    }
+  },
+  "penalty": {
+    "title": "Penaltı Atışları",
+    "series": "SERİ PENALTILAR",
+    "round": "TUR {{current}} / {{total}}",
+    "shoot_btn": "ŞUT ÇEK!",
+    "waiting": "...",
+    "teams": {
+      "blue": "MAVİ TAKIM",
+      "red": "KIRMIZI TAKIM"
+    },
+    "turn": "Sıra: {{team}}",
+    "messages": {
+      "goal": "GOL!",
+      "save": "KALECİ KURTARDI",
+      "post": "DİREKTEN DÖNDÜ",
+      "out": "DIŞARI GİTTİ",
+      "series_start": "SERİ PENALTILAR BAŞLIYOR!",
+      "excitement": "HEYECAN DEVAM EDİYOR!",
+      "start": "Penaltı Atışları Başlıyor!"
+    }
+  },
+  "components": {
+    "pause": {
+      "title": "Oyun Duraklatıldı",
+      "resume": "Oyuna Dön",
+      "restart": "Yeniden Başlat",
+      "menu": "Ana Menüye Dön"
+    },
+    "game_over": {
+      "play_again": "TEKRAR OYNA",
+      "menu": "Ana Menüye Dön",
+      "winner": "{{winner}} kazandı!",
+      "draw": "Berabere!"
+    },
+    "turn_info": {
+      "turn": "Sıra:",
+      "time_out": "{{player}} süresini doldurdu!",
+      "start": "{{player}} başlıyor!"
+    },
+    "timer": {
+      "hint": "BURADA BAS!",
+      "target": "HEDEF"
+    }
+  },
+  "common": {
+    "good_luck": "Başarılar!",
+    "turn_timeout_msg": "Süren bitti! Sıra karşı oyuncuda."
+  },
+  "setup": {
+    "difficulty": "ZORLUK",
+    "game_type": "OYUN TİPİ",
+    "duration": "SÜRE",
+    "helper_bar": "YARDIMCI BAR",
+    "on": "AÇIK",
+    "off": "KAPALI",
+    "players": "OYUNCULAR",
+    "player_1_placeholder": "Oyuncu 1",
+    "player_2_placeholder": "Oyuncu 2",
+    "start_game": "OYUNU BAŞLAT",
+    "starting": "Başlatılıyor...",
+    "minute": "Dakika",
+    "ready_status": {
+      "p1": "P1 Hazır",
+      "p2": "P2 Hazır",
+      "checked": "Hazır ✓"
+    }
+  },
+  "welcome_modal": {
+    "title": "Time iT'e Hoşgeldin!",
+    "description": "Bu bir refleks ve ritim oyunudur. Amacın süreyi tam <0>00ms</0> veya <1>Yeşil Bölge</1> içinde yakalamaktır.",
+    "tutorial_btn": "Önce Eğitimi Tamamla",
+    "recommended": "(Önerilen)",
+    "start_btn": "Biliyorum, Hemen Başla"
+  }
+}

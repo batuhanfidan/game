@@ -12,8 +12,10 @@ import { Trophy, User, ArrowLeft } from "lucide-react";
 import GameLayout from "../../../components/layout/GameLayout";
 import { GameProvider } from "../../../context/GameContext";
 import { useTheme } from "../../../hooks/core/useTheme";
+import { useTranslation } from "react-i18next";
 
 const TwoPlayerMode = () => {
+  const { t } = useTranslation();
   const [selectedVariant, setSelectedVariant] =
     useState<GameVariant>("classic");
   const [gameDuration, setGameDuration] = useState(180);
@@ -110,7 +112,7 @@ const TwoPlayerMode = () => {
           <div className="flex flex-col items-center gap-6 z-10 bg-neutral-900 p-8 rounded-2xl border border-gray-700 shadow-2xl max-w-2xl w-full mx-4 overflow-y-auto max-h-[95vh] animate-popup">
             <div className="w-full">
               <h2 className="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">
-                Oyun Tipi
+                {t("setup.game_type")}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                 {VARIANTS.map((v) => (
@@ -130,10 +132,10 @@ const TwoPlayerMode = () => {
                           : "text-gray-300"
                       }`}
                     >
-                      <VariantIcon variant={v.key} /> {v.label}
+                      <VariantIcon variant={v.key} /> {t(v.labelKey)}
                     </span>
                     <span className="text-xs text-gray-500 mt-0.5">
-                      {v.desc}
+                      {t(v.descKey)}
                     </span>
                   </button>
                 ))}
@@ -143,20 +145,20 @@ const TwoPlayerMode = () => {
             <div className="w-full flex flex-col gap-4">
               <div>
                 <h2 className="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">
-                  Süre
+                  {t("setup.duration")}
                 </h2>
                 <div className="flex gap-2 w-full">
-                  {[60, 180, 300].map((t) => (
+                  {[60, 180, 300].map((duration) => (
                     <button
-                      key={t}
-                      onClick={() => setGameDuration(t)}
+                      key={duration}
+                      onClick={() => setGameDuration(duration)}
                       className={`flex-1 px-2 py-3 rounded text-xs font-bold transition-all ${
-                        gameDuration === t
+                        gameDuration === duration
                           ? "bg-blue-600 text-white"
                           : "bg-gray-800 text-gray-400 hover:bg-gray-700"
                       }`}
                     >
-                      {t / 60} Dakika
+                      {duration / 60} {t("setup.minute")},
                     </button>
                   ))}
                 </div>
@@ -164,7 +166,7 @@ const TwoPlayerMode = () => {
 
               <div>
                 <h2 className="text-sm font-bold text-gray-400 mb-2 uppercase tracking-wider">
-                  Yardımcı Bar
+                  {t("setup.helper_bar")}
                 </h2>
                 <div className="flex gap-2 w-full">
                   <button
@@ -175,7 +177,7 @@ const TwoPlayerMode = () => {
                         : "bg-gray-800 border-transparent text-gray-500 hover:bg-gray-700"
                     }`}
                   >
-                    AÇIK
+                    {t("setup.on")}
                   </button>
 
                   <button
@@ -189,14 +191,14 @@ const TwoPlayerMode = () => {
                         : "bg-gray-800 border-transparent text-gray-500 hover:bg-gray-700"
                     }`}
                   >
-                    KAPALI
+                    {t("setup.off")}
                   </button>
                 </div>
               </div>
             </div>
 
             <h2 className="text-sm font-bold text-gray-400 uppercase tracking-wider w-full mt-2">
-              Oyuncular
+              {t("setup.players")}
             </h2>
             <div className="flex flex-col sm:flex-row gap-4 w-full">
               <input
@@ -207,7 +209,7 @@ const TwoPlayerMode = () => {
                   setPlayerNames((prev) => ({ ...prev, p1: e.target.value }))
                 }
                 className="bg-gray-800 border border-gray-600 rounded px-3 py-2 text-center w-full text-white"
-                placeholder="Oyuncu 1"
+                placeholder={t("setup.player_1_placeholder")}
               />
               <input
                 type="text"
@@ -217,7 +219,7 @@ const TwoPlayerMode = () => {
                   setPlayerNames((prev) => ({ ...prev, p2: e.target.value }))
                 }
                 className="bg-gray-800 border border-gray-600 rounded px-3 py-2 text-center w-full text-white"
-                placeholder="Oyuncu 2"
+                placeholder={t("setup.player_2_placeholder")}
               />
             </div>
 
@@ -233,7 +235,9 @@ const TwoPlayerMode = () => {
                     : "bg-blue-600 hover:bg-blue-500"
                 }`}
               >
-                {p1Ready ? "Hazır ✓" : "P1 Hazır"}
+                {p1Ready
+                  ? t("setup.ready_status.checked")
+                  : t("setup.ready_status.p1")}
               </button>
               <button
                 onClick={() => setP2Ready(true)}
@@ -246,14 +250,16 @@ const TwoPlayerMode = () => {
                     : "bg-red-600 hover:bg-red-500"
                 }`}
               >
-                {p2Ready ? "Hazır ✓" : "P2 Hazır"}
+                {p2Ready
+                  ? t("setup.ready_status.checked")
+                  : t("setup.ready_status.p2")}
               </button>
             </div>
             <button
               onClick={() => (window.location.href = "/")}
               className="mt-2 text-gray-400 hover:text-white underline text-sm flex items-center gap-1"
             >
-              <ArrowLeft size={14} /> Menüye Dön
+              <ArrowLeft size={14} /> {t("components.pause.menu")}
             </button>
           </div>
         )}
@@ -292,6 +298,7 @@ const TwoPlayerMode = () => {
                 <ActionButton
                   onClick={handleAction}
                   disabled={currentPlayer !== "p1" || isPaused}
+                  customText={t("survival.buttons.hit")}
                 />
                 <p className="mt-2 text-sm text-gray-400 text-center w-full truncate px-2">
                   {playerNames.p1}
@@ -305,6 +312,7 @@ const TwoPlayerMode = () => {
                 <ActionButton
                   onClick={handleAction}
                   disabled={currentPlayer !== "p2" || isPaused}
+                  customText={t("survival.buttons.hit")}
                 />
                 <p className="mt-2 text-sm text-gray-400 text-center w-full truncate px-2">
                   {playerNames.p2}
