@@ -10,8 +10,8 @@ import TutorialMode from "./features/modes/single/TutorialMode";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { soundsReady } from "./shared/utils/sound";
 import { GameProvider } from "./context/GameContext";
-import { useGameLogic } from "./hooks/useGameLogic"; //
-import { useTheme } from "./hooks/core/useTheme"; //
+import { useGameLogic } from "./hooks/useGameLogic";
+import { useTheme } from "./hooks/core/useTheme";
 
 function App() {
   useEffect(() => {
