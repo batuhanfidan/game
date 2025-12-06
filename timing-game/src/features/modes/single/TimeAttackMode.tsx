@@ -259,7 +259,7 @@ const TimeAttackMode = () => {
             </div>
 
             <div
-              className={`text-lg md:text-2xl mt-8 text-center font-medium px-4 h-8 tracking-wide drop-shadow-sm truncate w-full flex items-center justify-center gap-2 ${
+              className={`text-lg md:text-2xl mt-8 text-center font-medium px-4 h-8 tracking-wide drop-shadow-sm whitespace-normal w-full flex items-center justify-center gap-2 ${
                 actionMessage.className || "text-cyan-300"
               }`}
             >

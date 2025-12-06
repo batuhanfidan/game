@@ -96,7 +96,7 @@ const BotMode = () => {
                 <span className="hidden xs:inline sm:inline">
                   {playerNames.p1}
                 </span>
-                <span className="inline xs:hidden sm:hidden truncate max-w-[60px]">
+                <span className="inline xs:hidden sm:hidden whitespace-normal max-w-[60px]">
                   {playerNames.p1}
                 </span>
               </span>
@@ -273,17 +273,17 @@ const BotMode = () => {
             />
 
             <div
-              className={`text-base sm:text-xl md:text-2xl mt-3 sm:mt-4 md:mt-6 text-center font-bold px-2 sm:px-4 h-6 sm:h-8 drop-shadow-sm flex items-center justify-center gap-1 sm:gap-2 ${
+              className={`text-base sm:text-xl md:text-2xl mt-3 sm:mt-4 md:mt-6 text-center font-bold px-2 sm:px-4 min-h-12 h-auto drop-shadow-sm flex items-center justify-center gap-1 sm:gap-2 ${
                 actionMessage.className || "text-green-400"
               }`}
             >
               {actionMessage.icon && (
                 <actionMessage.icon
                   size={20}
-                  className="sm:w-6 sm:h-6 inline-block"
+                  className="sm:w-6 sm:h-6 inline-block shrink-0"
                 />
               )}
-              <span className="truncate max-w-[280px] sm:max-w-none">
+              <span className="whitespace-normal leading-tight">
                 {actionMessage.text}
               </span>
             </div>
