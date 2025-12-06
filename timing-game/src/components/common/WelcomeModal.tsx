@@ -3,18 +3,24 @@ import { Zap, BookOpen, Play } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
 
+let hasSeenSession = false;
+
 export const WelcomeModal = () => {
-  // DEV MODU: Her zaman true olarak başla
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(!hasSeenSession);
   const navigate = useNavigate();
   const { t } = useTranslation();
 
-  const handleStart = () => {
+  const handleClose = () => {
+    hasSeenSession = true;
     setIsOpen(false);
   };
 
+  const handleStart = () => {
+    handleClose();
+  };
+
   const handleTutorial = () => {
-    setIsOpen(false);
+    handleClose();
     navigate("/game/tutorial");
   };
 
