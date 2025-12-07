@@ -1,25 +1,44 @@
-// client/src/features/menu/Leaderboard.tsx
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Trophy, Loader2, Timer, Skull } from "lucide-react";
 import { getLeaderboard, type ScoreData } from "../../services/api";
+import { useTranslation } from "react-i18next";
 
 type TabMode = "time_attack" | "survival";
+type TimeFrame = "daily" | "weekly" | "all_time";
 
 const Leaderboard = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+
   const [activeTab, setActiveTab] = useState<TabMode>("time_attack");
+  const [timeFrame, setTimeFrame] = useState<TimeFrame>("all_time");
   const [scores, setScores] = useState<ScoreData[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Verileri Sunucudan Çek
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const data = (await getLeaderboard(activeTab)) as ScoreData[];
-        setScores(data);
+        const rawData = (await getLeaderboard(
+          activeTab,
+          timeFrame
+        )) as ScoreData[];
+
+        const filteredList: ScoreData[] = [];
+        const userCounts: Record<string, number> = {};
+
+        rawData.forEach((score) => {
+          const name = score.name;
+          const currentCount = userCounts[name] || 0;
+
+          if (currentCount < 3) {
+            filteredList.push(score);
+            userCounts[name] = currentCount + 1;
+          }
+        });
+
+        setScores(filteredList.slice(0, 15));
       } catch (error) {
         console.error("Liderlik tablosu hatası:", error);
       } finally {
@@ -28,25 +47,24 @@ const Leaderboard = () => {
     };
 
     fetchData();
-  }, [activeTab]);
+  }, [activeTab, timeFrame]);
 
   return (
     <div className="min-h-screen w-screen bg-[#0f0f11] text-white font-mono flex flex-col items-center py-8 px-4 overflow-hidden relative">
-      {/* Arka Plan Efektleri */}
       <div className="fixed top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top,var(--tw-gradient-stops))] from-yellow-500/10 via-[#0f0f11] to-[#0f0f11] pointer-events-none" />
 
-      {/* Başlık */}
+      {/* Başlık - Büyük Boyuta Döndü */}
       <div className="z-10 text-center mb-8">
         <h1 className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-linear-to-b from-yellow-300 to-yellow-600 drop-shadow-lg flex items-center justify-center gap-3">
           <Trophy className="text-yellow-500 fill-yellow-500/20" size={40} />
-          LİDERLİK TABLOSU
+          {t("leaderboard.title")}
         </h1>
         <p className="text-gray-500 text-sm mt-2 font-bold tracking-widest uppercase">
-          Tüm Zamanların En İyileri
+          {t("leaderboard.subtitle")}
         </p>
       </div>
 
-      {/* Sekmeler (Tabs) */}
+      {/* MOD SEKMELERİ - Büyük Boyut */}
       <div className="z-10 flex gap-2 p-1 bg-neutral-900/80 rounded-xl border border-white/10 mb-6 backdrop-blur-md">
         <button
           onClick={() => setActiveTab("time_attack")}
@@ -56,7 +74,7 @@ const Leaderboard = () => {
               : "text-gray-400 hover:text-white hover:bg-white/5"
           }`}
         >
-          <Timer size={18} /> ZAMANA KARŞI
+          <Timer size={18} /> {t("leaderboard.tabs.time_attack")}
         </button>
         <button
           onClick={() => setActiveTab("survival")}
@@ -66,11 +84,32 @@ const Leaderboard = () => {
               : "text-gray-400 hover:text-white hover:bg-white/5"
           }`}
         >
-          <Skull size={18} /> HAYATTA KALMA
+          <Skull size={18} /> {t("leaderboard.tabs.survival")}
         </button>
       </div>
 
-      {/* Liste */}
+      {/* ZAMAN FİLTRELERİ */}
+      <div className="z-10 flex gap-2 mb-6">
+        {[
+          { key: "all_time", label: t("leaderboard.filters.all_time") },
+          { key: "weekly", label: t("leaderboard.filters.weekly") },
+          { key: "daily", label: t("leaderboard.filters.daily") },
+        ].map((f) => (
+          <button
+            key={f.key}
+            onClick={() => setTimeFrame(f.key as TimeFrame)}
+            className={`text-xs font-bold px-4 py-2 rounded-full border transition-all ${
+              timeFrame === f.key
+                ? "bg-white text-black border-white"
+                : "bg-transparent text-gray-500 border-gray-700 hover:border-gray-500"
+            }`}
+          >
+            {f.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Liste - Geniş ve Ferah */}
       <div className="z-10 w-full max-w-3xl bg-neutral-900/60 border border-white/10 rounded-2xl overflow-hidden backdrop-blur-xl shadow-2xl min-h-[400px] relative">
         {loading ? (
           <div className="absolute inset-0 flex items-center justify-center">
@@ -79,17 +118,23 @@ const Leaderboard = () => {
         ) : scores.length === 0 ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500">
             <Trophy size={48} className="mb-4 opacity-20" />
-            <p>Henüz kayıtlı skor yok.</p>
+            <p>{t("leaderboard.empty")}</p>
           </div>
         ) : (
           <div className="overflow-y-auto max-h-[60vh] custom-scrollbar">
             <table className="w-full text-left">
               <thead className="bg-white/5 text-gray-400 text-xs uppercase tracking-wider sticky top-0 backdrop-blur-md z-10">
                 <tr>
-                  <th className="p-4 text-center w-16">#</th>
-                  <th className="p-4">OYUNCU</th>
-                  <th className="p-4 text-right">TARİH</th>
-                  <th className="p-4 text-right w-32">SKOR</th>
+                  <th className="p-4 text-center w-16">
+                    {t("leaderboard.table.rank")}
+                  </th>
+                  <th className="p-4">{t("leaderboard.table.player")}</th>
+                  <th className="p-4 text-right hidden sm:table-cell">
+                    {t("leaderboard.table.date")}
+                  </th>
+                  <th className="p-4 text-right w-32">
+                    {t("leaderboard.table.score")}
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
@@ -115,7 +160,7 @@ const Leaderboard = () => {
                     <td className="p-4 font-bold text-white group-hover:text-yellow-400 transition-colors">
                       {s.name}
                     </td>
-                    <td className="p-4 text-right text-gray-500 text-xs font-mono">
+                    <td className="p-4 text-right text-gray-500 text-xs font-mono hidden sm:table-cell">
                       {s.date
                         ? new Date(s.date).toLocaleDateString("tr-TR")
                         : "-"}
@@ -131,12 +176,11 @@ const Leaderboard = () => {
         )}
       </div>
 
-      {/* Geri Dön Butonu */}
       <button
         onClick={() => navigate("/")}
         className="z-10 mt-8 flex items-center gap-2 text-gray-400 hover:text-white transition-colors bg-white/5 px-6 py-3 rounded-full hover:bg-white/10"
       >
-        <ArrowLeft size={18} /> Ana Menüye Dön
+        <ArrowLeft size={18} /> {t("leaderboard.back")}
       </button>
     </div>
   );

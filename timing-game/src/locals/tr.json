@@ -26,6 +26,59 @@
       }
     }
   },
+  "auth": {
+    "title": "KİMLİK SEÇİMİ",
+    "subtitle": "Skor tablosunda bu isimle görüneceksin.",
+    "placeholder": "Kullanıcı Adı...",
+    "submit": "OYUNA GİRİŞ YAP",
+    "loading": "Giriş Yapılıyor...",
+    "error_min_length": "İsim en az 3 karakter olmalı.",
+    "error_taken": "Bu kullanıcı adı zaten alınmış."
+  },
+  "profile": {
+    "title": "PROFİL",
+    "logout": "Çıkış Yap",
+    "logout_confirm": "Çıkış yapmak istediğine emin misin?",
+    "joined": "Katılım:",
+    "unknown_date": "Bilinmiyor",
+    "stats": {
+      "best_score": "En İyi Skor",
+      "best_time_attack": "Zamana Karşı",
+      "best_survival": "Hayatta Kalma",
+      "total_games": "Toplam Maç"
+    },
+    "history": {
+      "title": "Son Maçlar",
+      "empty": "Henüz hiç oyun oynanmamış."
+    },
+    "edit": {
+      "save": "Kaydet",
+      "cancel": "İptal",
+      "error_min": "En az 3 karakter.",
+      "error_generic": "İsim değiştirilemedi."
+    }
+  },
+  "leaderboard": {
+    "title": "LİDERLİK TABLOSU",
+    "subtitle": "En İyiler",
+    "tabs": {
+      "time_attack": "ZAMANA KARŞI",
+      "survival": "HAYATTA KALMA"
+    },
+    "filters": {
+      "all_time": "TÜM ZAMANLAR",
+      "weekly": "BU HAFTA",
+      "daily": "BUGÜN"
+    },
+    "table": {
+      "rank": "#",
+      "player": "OYUNCU",
+      "date": "TARİH",
+      "score": "SKOR"
+    },
+    "empty": "Henüz kayıtlı skor yok.",
+    "back": "Ana Menüye Dön"
+  },
   "game": {
     "result": {
       "perfect": "MÜKEMMEL! Sıfırı tutturdun, gol!",
@@ -57,50 +110,7 @@
       "desc": "Zamanın hızı sürekli değişir."
     },
     "random": { "label": "Rastgele", "desc": "Her tur farklı yerden başlar." },
-    "moving": { "label": "Gezgin", "desc": "Hedef sürekli değişir." },
-    "tutorial": {
-      "intro": {
-        "title": "Eğitim Moduna Hoşgeldin! 👋",
-        "text": "Reflekslerini test etmeye hazır mısın? Bu kısa turda sana oyunun temellerini göstereceğiz."
-      },
-      "timer": {
-        "title": "Hedefin: Zamanlama",
-        "text": "Gördüğün zaman çubuğu senin en büyük rakibin. Amacın süreyi mükemmel anda, yani 00ms'de yakalamak."
-      },
-      "turn": {
-        "title": "Sıra Süresi",
-        "text": "Hamle yapmak için 10 saniyen var. Eğer süre dolarsa sıranı kaybedersin."
-      },
-      "player": {
-        "title": "Oyuncu Süreleri",
-        "text": "Toplam maç süresi iki oyuncu arasında paylaştırılır. Düşünürken harcadığın zaman kendi bakiyenden düşer."
-      },
-      "help": {
-        "title": "Kılavuz ve İpuçları",
-        "text": "Takıldığın yerde detaylı kurallar için ?(Soru işareti)'ne tıklayabilirsin."
-      },
-      "mode": {
-        "title": "Oyun Modu",
-        "text": "Şu an Klasik Mod'da, Orta Seviye Bot'a karşı oynamaktasın. Ana menüden farklı oyun modları ve varyasyonları seçerek yeni deneyimler elde edebilirsin."
-      },
-      "action": {
-        "title": "Vuruş Anı",
-        "text": "Hazırsan başlayalım! Süre hedefe geldiğinde butona bas."
-      },
-      "buttons": {
-        "skip": "ATLA",
-        "ready": "HAZIRIM!",
-        "start": "OYUNA BAŞLA",
-        "next": "DEVAM"
-      },
-      "finished": {
-        "title": "EĞİTİM TAMAMLANDI!",
-        "text": "Artık gerçek maçlara hazırsın.",
-        "start_real": "Gerçek Maça Başla",
-        "retry": "Tekrar Dene",
-        "menu": "Ana Menü"
-      }
-    }
+    "moving": { "label": "Gezgin", "desc": "Hedef sürekli değişir." }
   },
   "tutorial": {
     "intro": {

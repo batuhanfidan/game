@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { User, ArrowRight, Loader2 } from "lucide-react";
 import { loginOrRegister } from "../../services/api";
+import { useTranslation } from "react-i18next";
 
 interface UsernameModalProps {
   onLoginSuccess: (username: string) => void;
@@ -12,6 +13,7 @@ const UsernameModal: React.FC<UsernameModalProps> = ({ onLoginSuccess }) => {
   const [username, setUsername] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation(); // 2. TANIMLAMA
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,10 +26,8 @@ const UsernameModal: React.FC<UsernameModalProps> = ({ onLoginSuccess }) => {
     setError(null);
 
     try {
-      // Sunucuya soruyoruz
       await loginOrRegister(username);
 
-      // Başarılıysa localStorage'a kaydet
       localStorage.setItem("timing_game_username", username);
       onLoginSuccess(username);
     } catch (err) {
@@ -53,11 +53,9 @@ const UsernameModal: React.FC<UsernameModalProps> = ({ onLoginSuccess }) => {
           </div>
 
           <h2 className="text-2xl font-black text-white mb-2 tracking-tight">
-            KİMLİK SEÇİMİ
+            {t("auth.title")}
           </h2>
-          <p className="text-gray-400 text-sm mb-8">
-            Skor tablosunda bu isimle görüneceksin.
-          </p>
+          <p className="text-gray-400 text-sm mb-8">{t("auth.subtitle")}</p>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="relative">
@@ -65,7 +63,7 @@ const UsernameModal: React.FC<UsernameModalProps> = ({ onLoginSuccess }) => {
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="Kullanıcı Adı..."
+                placeholder={t("auth.placeholder")}
                 className="w-full bg-black/50 border border-neutral-700 text-white px-5 py-4 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder:text-gray-600 font-bold text-lg text-center"
                 autoFocus
               />
@@ -86,7 +84,7 @@ const UsernameModal: React.FC<UsernameModalProps> = ({ onLoginSuccess }) => {
                 <Loader2 size={20} className="animate-spin" />
               ) : (
                 <>
-                  OYUNA GİRİŞ YAP <ArrowRight size={20} />
+                  {t("auth.submit")} <ArrowRight size={20} />
                 </>
               )}
             </button>

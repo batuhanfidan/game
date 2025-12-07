@@ -26,6 +26,59 @@
       }
     }
   },
+  "auth": {
+    "title": "CHOOSE IDENTITY",
+    "subtitle": "You will appear on the leaderboard with this name.",
+    "placeholder": "Username...",
+    "submit": "ENTER GAME",
+    "loading": "Logging in...",
+    "error_min_length": "Name must be at least 3 chars.",
+    "error_taken": "This username is already taken."
+  },
+  "profile": {
+    "title": "PROFILE",
+    "logout": "Log Out",
+    "logout_confirm": "Are you sure you want to log out?",
+    "joined": "Joined:",
+    "unknown_date": "Unknown",
+    "stats": {
+      "best_score": "Best Score",
+      "best_time_attack": "Time Attack",
+      "best_survival": "Survival",
+      "total_games": "Total Games"
+    },
+    "history": {
+      "title": "Recent Matches",
+      "empty": "No games played yet."
+    },
+    "edit": {
+      "save": "Save",
+      "cancel": "Cancel",
+      "error_min": "Min 3 characters.",
+      "error_generic": "Failed to change name."
+    }
+  },
+  "leaderboard": {
+    "title": "LEADERBOARD",
+    "subtitle": "Hall of Fame",
+    "tabs": {
+      "time_attack": "TIME ATTACK",
+      "survival": "SURVIVAL"
+    },
+    "filters": {
+      "all_time": "ALL TIME",
+      "weekly": "THIS WEEK",
+      "daily": "TODAY"
+    },
+    "table": {
+      "rank": "#",
+      "player": "PLAYER",
+      "date": "DATE",
+      "score": "SCORE"
+    },
+    "empty": "No scores recorded yet.",
+    "back": "Back to Menu"
+  },
   "game": {
     "result": {
       "perfect": "PERFECT! You hit zero, GOAL!",
@@ -166,9 +219,9 @@
       }
     },
     "ready_btn": "I'M READY!",
-    "hint": "Hedefi tam ortadan vur!",
-    "goal": "GOL = PUAN & SÜRE",
-    "red_penalty": "KIRMIZI = -10 SN CEZA!"
+    "hint": "Hit the target right in the center!",
+    "goal": "GOAL = SCORE & TIME",
+    "red_penalty": "RED = -10 SEC PENALTY!"
   },
   "survival": {
     "title": "SURVIVAL",
