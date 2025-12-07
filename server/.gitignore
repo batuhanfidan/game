@@ -1,0 +1,16 @@
+# Bağımlılıkları görmezden gel
+node_modules/
+
+# Derlenmiş dosyaları görmezden gel
+dist/
+build/
+
+# Logları görmezden gel
+*.log
+npm-debug.log*
+
+# Çevresel değişkenler ve Veritabanı
+.env
+database.json
+
+serviceAccountKey.json
