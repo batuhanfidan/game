@@ -247,20 +247,37 @@ const MainMenu = () => {
       </div>
 
       {/* --- ALT BAR (TUTORIAL) --- */}
-      <div className="fixed bottom-10 z-20">
+      <div className="fixed bottom-10 z-20 flex gap-4">
+        {/* Tutorial Butonu */}
         <button
           onClick={() => navigate("/game/tutorial")}
           className="
-            flex items-center gap-3 px-8 py-3.5 rounded-full 
-            bg-gray-500 backdrop-blur-2xl border border-white/10 
-            text-xs font-bold text-white hover:text-white hover:bg-white/10 
-            transition-all hover:scale-105 shadow-2xl group
+            flex items-center gap-3 px-6 py-3.5 rounded-full 
+            bg-gray-800/80 backdrop-blur-xl border border-white/10 
+            text-xs font-bold text-gray-300 hover:text-white hover:bg-gray-700 
+            transition-all hover:scale-105 shadow-xl group
           "
         >
           <div className="bg-cyan-500/10 p-1.5 rounded-full group-hover:bg-cyan-500/20 transition-colors">
-            <MousePointer2 size={14} className="text-cyan-400" />
+            <MousePointer2 size={16} className="text-cyan-400" />
           </div>
           <span>{t("menu.tutorial_btn")}</span>
+        </button>
+
+        {/* YENİ: Leaderboard Butonu */}
+        <button
+          onClick={() => navigate("/leaderboard")}
+          className="
+            flex items-center gap-3 px-6 py-3.5 rounded-full 
+            bg-yellow-900/40 backdrop-blur-xl border border-yellow-500/20 
+            text-xs font-bold text-yellow-100 hover:text-white hover:bg-yellow-900/60 
+            transition-all hover:scale-105 shadow-xl group
+          "
+        >
+          <div className="bg-yellow-500/10 p-1.5 rounded-full group-hover:bg-yellow-500/20 transition-colors">
+            <Trophy size={16} className="text-yellow-400" />
+          </div>
+          <span>LİDERLİK TABLOSU</span>
         </button>
       </div>
       <WelcomeModal />
