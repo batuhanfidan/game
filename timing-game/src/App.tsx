@@ -7,38 +7,34 @@ import PenaltyMode from "./features/modes/multi/PenaltyMode";
 import SurvivalMode from "./features/modes/single/SurvivalMode";
 import TimeAttackMode from "./features/modes/single/TimeAttackMode";
 import TutorialMode from "./features/modes/single/TutorialMode";
+import Leaderboard from "./features/menu/Leaderboard";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { soundsReady } from "./shared/utils/sound";
 import { GameProvider } from "./context/GameContext";
 import { useGameLogic } from "./hooks/useGameLogic";
 import { useTheme } from "./hooks/core/useTheme";
 import UsernameModal from "./components/auth/UsernameModal";
-import { getUserStats } from "./services/api"; // <-- Kontrol için bunu ekledik
-import { Loader2 } from "lucide-react"; // <-- Yükleniyor ikonu
+import { getUserStats } from "./services/api";
+import { Loader2 } from "lucide-react";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true); // <-- Yeni: Kontrol ediliyor mu?
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
   useEffect(() => {
     soundsReady.then(() => {
       console.log("All sounds loaded successfully");
     });
 
-    // ---  KULLANICI DOĞRULAMA ---
     const verifyUser = async () => {
       const savedUser = localStorage.getItem("timing_game_username");
 
       if (savedUser) {
         try {
-          // Sunucuya sor: Bu isimde biri gerçekten var mı?
           const userData = await getUserStats(savedUser);
-
           if (userData) {
-            // Evet var, girişi onayla
             setIsAuthenticated(true);
           } else {
-            // Hayır yok (Eski veritabanından kalmış), temizle!
             console.warn(
               "Eski kullanıcı verisi tespit edildi, temizleniyor..."
             );
@@ -47,14 +43,12 @@ function App() {
           }
         } catch (error) {
           console.error("Doğrulama hatası:", error);
-
           localStorage.removeItem("timing_game_username");
           setIsAuthenticated(false);
         }
       } else {
         setIsAuthenticated(false);
       }
-
       setIsCheckingAuth(false);
     };
 
@@ -94,6 +88,8 @@ function App() {
           ) : (
             <Routes>
               <Route path="/" element={<MainMenu />} />
+              <Route path="/leaderboard" element={<Leaderboard />} />{" "}
+              {/* <-- GERİ GELDİ */}
               <Route path="/game/2p" element={<TwoPlayerMode />} />
               <Route path="/game/bot" element={<BotMode />} />
               <Route path="/game/penalty" element={<PenaltyMode />} />
