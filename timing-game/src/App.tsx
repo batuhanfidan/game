@@ -12,21 +12,53 @@ import { soundsReady } from "./shared/utils/sound";
 import { GameProvider } from "./context/GameContext";
 import { useGameLogic } from "./hooks/useGameLogic";
 import { useTheme } from "./hooks/core/useTheme";
-import Leaderboard from "./features/menu/Leaderboard";
 import UsernameModal from "./components/auth/UsernameModal";
+import { getUserStats } from "./services/api"; // <-- Kontrol için bunu ekledik
+import { Loader2 } from "lucide-react"; // <-- Yükleniyor ikonu
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true); // <-- Yeni: Kontrol ediliyor mu?
 
   useEffect(() => {
     soundsReady.then(() => {
       console.log("All sounds loaded successfully");
     });
 
-    const savedUser = localStorage.getItem("timing_game_username");
-    if (savedUser) {
-      setIsAuthenticated(true);
-    }
+    // ---  KULLANICI DOĞRULAMA ---
+    const verifyUser = async () => {
+      const savedUser = localStorage.getItem("timing_game_username");
+
+      if (savedUser) {
+        try {
+          // Sunucuya sor: Bu isimde biri gerçekten var mı?
+          const userData = await getUserStats(savedUser);
+
+          if (userData) {
+            // Evet var, girişi onayla
+            setIsAuthenticated(true);
+          } else {
+            // Hayır yok (Eski veritabanından kalmış), temizle!
+            console.warn(
+              "Eski kullanıcı verisi tespit edildi, temizleniyor..."
+            );
+            localStorage.removeItem("timing_game_username");
+            setIsAuthenticated(false);
+          }
+        } catch (error) {
+          console.error("Doğrulama hatası:", error);
+
+          localStorage.removeItem("timing_game_username");
+          setIsAuthenticated(false);
+        }
+      } else {
+        setIsAuthenticated(false);
+      }
+
+      setIsCheckingAuth(false);
+    };
+
+    verifyUser();
   }, []);
 
   const { theme, currentTheme } = useTheme();
@@ -36,6 +68,14 @@ function App() {
     gameMode: "classic",
     gameVariant: "classic",
   });
+
+  if (isCheckingAuth) {
+    return (
+      <div className="h-screen w-screen bg-[#0f0f11] flex items-center justify-center text-white">
+        <Loader2 className="animate-spin text-blue-500" size={48} />
+      </div>
+    );
+  }
 
   return (
     <ErrorBoundary>
@@ -54,7 +94,6 @@ function App() {
           ) : (
             <Routes>
               <Route path="/" element={<MainMenu />} />
-              <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="/game/2p" element={<TwoPlayerMode />} />
               <Route path="/game/bot" element={<BotMode />} />
               <Route path="/game/penalty" element={<PenaltyMode />} />
