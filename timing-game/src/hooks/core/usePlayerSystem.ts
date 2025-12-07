@@ -4,13 +4,14 @@ import type { Player, GameMode } from "../../shared/types";
 
 export const usePlayerSystem = (initialTime: number, gameMode: GameMode) => {
   const [currentPlayer, setCurrentPlayer] = useState<Player>("p1");
-  // Fix: Tip çıkarımını number olarak zorluyoruz, yoksa '10' literal tipi sanıyor
   const [turnTimeLeft, setTurnTimeLeft] = useState<number>(
     GAMEPLAY_CONSTANTS.TURN_TIME_LIMIT
   );
 
+  const savedName = localStorage.getItem("timing_game_username");
+
   const [playerNames, setPlayerNames] = useState({
-    p1: "Oyuncu 1",
+    p1: savedName || "Oyuncu 1",
     p2: gameMode === "bot" ? "Bot" : "Oyuncu 2",
   });
 

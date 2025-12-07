@@ -203,6 +203,8 @@ export const useGameLogic = ({
     timer.setIsPaused(false);
     playSoundSafe("whistle");
 
+    const currentPlayerName = playerNames.p1 || "Oyuncu 1";
+
     if (gameMode === "survival") {
       setFinalScore(
         `Seri: ${survivalStreak} | En İyi: ${Math.max(
@@ -211,13 +213,13 @@ export const useGameLogic = ({
         )}`
       );
       setWinner(t("survival.messages.game_over"));
-      updateHighScore(survivalStreak);
+      updateHighScore(survivalStreak, currentPlayerName);
     } else if (gameMode === "time_attack") {
       setFinalScore(
         t("time_attack.messages.final_score", { score: scores.p1 })
       );
       setWinner(t("time_attack.messages.time_up"));
-      updateHighScore(scores.p1);
+      updateHighScore(scores.p1, currentPlayerName);
     } else {
       setFinalScore(
         `Skor: ${playerNames.p1} [${scores.p1}] - [${scores.p2}] ${playerNames.p2}`
