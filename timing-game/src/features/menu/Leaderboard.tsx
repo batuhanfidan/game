@@ -3,10 +3,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft, Trophy, Loader2, Timer, Skull } from "lucide-react";
-import {
-  getLeaderboard,
-  type ScoreData,
-} from "../../../../server/src/services/api";
+import { getLeaderboard, type ScoreData } from "../../services/api";
 
 type TabMode = "time_attack" | "survival";
 

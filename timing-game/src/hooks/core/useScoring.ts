@@ -3,7 +3,7 @@ import {
   getLeaderboard,
   saveScoreToApi,
   type ScoreData,
-} from "../../../../server/src/services/api";
+} from "../../../src/services/api";
 import type { GameMode, GameVariant } from "../../shared/types";
 
 export const useScoring = (gameMode: GameMode, gameVariant: GameVariant) => {
