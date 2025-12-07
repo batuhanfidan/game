@@ -9,14 +9,16 @@ import {
   Globe,
   Lock,
   MousePointer2,
+  User,
 } from "lucide-react";
 import { WelcomeModal } from "../../components/common/WelcomeModal";
 import { useTranslation } from "react-i18next";
+import ProfileModal from "./ProfileModal";
 
 const MainMenu = () => {
   const navigate = useNavigate();
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
-
+  const [showProfile, setShowProfile] = useState(false);
   const { t, i18n } = useTranslation();
 
   const toggleLanguage = () => {
@@ -277,7 +279,7 @@ const MainMenu = () => {
           <div className="bg-yellow-500/10 p-1.5 rounded-full group-hover:bg-yellow-500/20 transition-colors">
             <Trophy size={16} className="text-yellow-400" />
           </div>
-          <span>LİDERLİK TABLOSU</span>
+          <span>{t("leaderboard.title")}</span>
         </button>
       </div>
       <WelcomeModal />
@@ -308,6 +310,35 @@ const MainMenu = () => {
           {i18n.language === "tr" ? "EN" : "TR"}
         </span>
       </button>
+      <button
+        onClick={() => setShowProfile(true)}
+        className="
+          fixed top-6 left-6 z-50 
+          group flex items-center gap-3 
+          px-4 py-2.5 
+          rounded-full 
+          bg-neutral-900/40 backdrop-blur-xl 
+          border border-white/10 
+          hover:border-blue-500/50 hover:bg-neutral-900/80 
+          transition-all duration-300 ease-out
+          shadow-lg hover:shadow-blue-500/20 
+          active:scale-95 cursor-pointer
+        "
+      >
+        <div className="p-1.5 rounded-full bg-white/5 group-hover:bg-blue-500/20 transition-colors duration-300">
+          <User
+            size={16}
+            className="text-gray-400 group-hover:text-blue-400 transition-colors"
+          />
+        </div>
+        <span className="text-xs font-black text-gray-300 group-hover:text-white tracking-widest font-mono">
+          PROFİL
+        </span>
+      </button>
+      <ProfileModal
+        isOpen={showProfile}
+        onClose={() => setShowProfile(false)}
+      />
     </div>
   );
 };
