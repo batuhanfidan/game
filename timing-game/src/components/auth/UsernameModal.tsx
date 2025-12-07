@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { User, ArrowRight, Loader2 } from "lucide-react";
-import { loginOrRegister } from "../../services/api";
+import { loginOrRegister } from "../../../../server/src/services/api";
 
 interface UsernameModalProps {
   onLoginSuccess: (username: string) => void;
