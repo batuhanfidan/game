@@ -25,6 +25,13 @@ export const usePlayerSystem = (initialTime: number, gameMode: GameMode) => {
     p2: startDuration,
   });
 
+  useEffect(() => {
+    setPlayerTimes({
+      p1: startDuration,
+      p2: startDuration,
+    });
+  }, [startDuration]);
+
   const currentPlayerRef = useRef(currentPlayer);
   useEffect(() => {
     currentPlayerRef.current = currentPlayer;
