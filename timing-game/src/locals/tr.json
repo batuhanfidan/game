@@ -252,7 +252,8 @@
       "nice": "GÜZEL! (Seri: {{streak}})",
       "time_out_life": "SÜRE DOLDU! (-1 Can)",
       "time_out_dead": "SÜRE DOLDU! Elendin.",
-      "game_over": "💀 OYUN BİTTİ"
+      "game_over": "💀 OYUN BİTTİ",
+      "eniyi": "En İyi"
     },
     "curses": {
       "reverse": "TERS AKINTI",
@@ -322,7 +323,9 @@
       "play_again": "TEKRAR OYNA",
       "menu": "Ana Menüye Dön",
       "winner": "{{winner}} kazandı!",
-      "draw": "Berabere!"
+      "draw": "Berabere!",
+      "share": "Skoru Paylaş",
+      "copied": "KOPYALANDI!"
     },
     "turn_info": {
       "turn": "Sıra:",

@@ -207,10 +207,9 @@ export const useGameLogic = ({
 
     if (gameMode === "survival") {
       setFinalScore(
-        `Seri: ${survivalStreak} | En İyi: ${Math.max(
-          survivalStreak,
-          highScore
-        )}`
+        `${t("survival.labels.streak")}: ${survivalStreak} | ${t(
+          "profile.stats.best_score"
+        )}: ${Math.max(survivalStreak, highScore)}`
       );
       setWinner(t("survival.messages.game_over"));
       updateHighScore(survivalStreak, currentPlayerName);
