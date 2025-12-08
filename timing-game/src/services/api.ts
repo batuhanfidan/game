@@ -11,6 +11,7 @@ import {
   orderBy,
   limit,
   writeBatch,
+  deleteDoc,
   getCountFromServer,
   type QueryConstraint,
 } from "firebase/firestore";
@@ -214,5 +215,48 @@ export const updateUsername = async (currentName: string, newName: string) => {
   } catch (error) {
     console.error("İsim değiştirme hatası:", error);
     throw error;
+  }
+};
+
+export const getAllUsers = async () => {
+  try {
+    // En son kayıt olan 50 kullanıcı
+    const q = query(usersRef, orderBy("createdAt", "desc"), limit(50));
+    const snapshot = await getDocs(q);
+
+    return snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+  } catch (error) {
+    console.error("Kullanıcıları çekme hatası:", error);
+    return [];
+  }
+};
+
+// 7. KULLANICI SİL (Admin İçin)
+export const deleteUser = async (userId: string) => {
+  try {
+    await deleteDoc(doc(db, "users", userId));
+    return true;
+  } catch (error) {
+    console.error("Kullanıcı silme hatası:", error);
+    throw error;
+  }
+};
+
+// 8. İSTATİSTİK ÖZETİ (Admin Dashboard İçin)
+export const getAdminStats = async () => {
+  try {
+    const scoresCount = await getCountFromServer(scoresRef);
+    const usersCount = await getCountFromServer(usersRef);
+
+    return {
+      totalScores: scoresCount.data().count,
+      totalUsers: usersCount.data().count,
+    };
+  } catch (error) {
+    console.error("Admin stats hatası:", error);
+    return { totalScores: 0, totalUsers: 0 };
   }
 };

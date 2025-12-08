@@ -16,6 +16,7 @@ import { useTheme } from "./hooks/core/useTheme";
 import UsernameModal from "./components/auth/UsernameModal";
 import { getUserStats } from "./services/api";
 import { Loader2 } from "lucide-react";
+import AdminPanel from "./features/AdminPanel";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -89,7 +90,6 @@ function App() {
             <Routes>
               <Route path="/" element={<MainMenu />} />
               <Route path="/leaderboard" element={<Leaderboard />} />{" "}
-              {/* <-- GERİ GELDİ */}
               <Route path="/game/2p" element={<TwoPlayerMode />} />
               <Route path="/game/bot" element={<BotMode />} />
               <Route path="/game/penalty" element={<PenaltyMode />} />
@@ -97,6 +97,7 @@ function App() {
               <Route path="/game/time-attack" element={<TimeAttackMode />} />
               <Route path="/game/tutorial" element={<TutorialMode />} />
               <Route path="*" element={<MainMenu />} />
+              <Route path="/admin" element={<AdminPanel />} />
             </Routes>
           )}
         </div>
