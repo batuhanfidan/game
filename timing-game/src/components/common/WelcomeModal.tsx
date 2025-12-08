@@ -3,15 +3,16 @@ import { Zap, BookOpen, Play } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
 
-let hasSeenSession = false;
-
 export const WelcomeModal = () => {
-  const [isOpen, setIsOpen] = useState(!hasSeenSession);
+  const [isOpen, setIsOpen] = useState(() => {
+    const hasSeen = localStorage.getItem("app_welcome_seen");
+    return !hasSeen;
+  });
   const navigate = useNavigate();
   const { t } = useTranslation();
 
   const handleClose = () => {
-    hasSeenSession = true;
+    localStorage.setItem("app_welcome_seen", "true");
     setIsOpen(false);
   };
 

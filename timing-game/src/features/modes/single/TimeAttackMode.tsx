@@ -293,6 +293,7 @@ const TimeAttackMode = () => {
             winner={winner}
             finalScore={finalScore}
             onRestart={restartGame}
+            gameMode="time_attack"
           />
         )}
       </GameLayout>

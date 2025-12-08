@@ -313,6 +313,7 @@ const SurvivalMode = () => {
             winner={winner}
             finalScore={finalScore}
             onRestart={restartGame}
+            gameMode="survival"
           />
         )}
       </GameLayout>
