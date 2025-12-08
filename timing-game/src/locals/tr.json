@@ -353,7 +353,7 @@
     "player_2_placeholder": "Oyuncu 2",
     "start_game": "OYUNU BAŞLAT",
     "starting": "Başlatılıyor...",
-    "minute": "Dakika",
+    "minute": "dk",
     "ready_status": {
       "p1": "P1 Hazır",
       "p2": "P2 Hazır",
