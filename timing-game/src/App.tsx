@@ -34,13 +34,24 @@ function App() {
 
       if (savedUid) {
         try {
-          // 1. ID ile kullanıcıyı bul (İsim değişse bile ID değişmez!)
+          // 1. ID ile kullanıcıyı bul
           const userData = await getUserByUid(savedUid);
 
           if (userData) {
             // Kullanıcı bulundu!
 
-            // 2. İsim senkronizasyonu (Firebase'den değiştirdiysen burası yakalar)
+            if (userData.isBanned) {
+              alert(
+                "HESABINIZ YASAKLANDI! 🚫\nErişiminiz yönetici tarafından engellendi."
+              );
+              localStorage.removeItem("timing_game_uid");
+              localStorage.removeItem("timing_game_username");
+              setIsAuthenticated(false);
+              setIsCheckingAuth(false);
+              return; // Fonksiyondan çık
+            }
+
+            // 2. İsim senkronizasyonu
             if (savedName && userData.username !== savedName) {
               console.log("İsim değişikliği tespit edildi. Güncelleniyor...");
 

@@ -13,6 +13,9 @@ import {
   limit,
   writeBatch,
   getCountFromServer,
+  startAt,
+  endAt,
+  updateDoc,
   type QueryConstraint,
 } from "firebase/firestore";
 import { signInAnonymously } from "firebase/auth";
@@ -46,6 +49,7 @@ export const loginOrRegister = async (username: string) => {
 
     if (!userDocSnap.exists()) {
       await setDoc(userDocRef, {
+        usernameLower: username.toLowerCase(),
         username: username,
         uid: user.uid,
         createdAt: new Date().toISOString(),
@@ -350,5 +354,121 @@ export const syncUserScores = async (
     }
   } catch (error) {
     console.error("Senkronizasyon hatası:", error);
+  }
+};
+
+// 11. KULLANICI ARAMA
+export const searchUsers = async (searchTerm: string) => {
+  try {
+    if (!searchTerm.trim()) return getAllUsers();
+
+    const term = searchTerm.toLowerCase();
+
+    // YÖNTEM A: Veritabanı Sorgusu (Hızlı - Yeni Kayıtlar İçin)
+    try {
+      const q = query(
+        usersRef,
+        orderBy("usernameLower"),
+        startAt(term),
+        endAt(term + "\uf8ff"),
+        limit(20)
+      );
+      const snapshot = await getDocs(q);
+
+      // Eğer veritabanından sonuç geldiyse direkt döndür
+      if (!snapshot.empty) {
+        return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      }
+    } catch (e) {
+      // Index hatası veya alan yoksa Yöntem B'ye geç
+      console.warn(
+        "Veritabanı araması atlandı (Index yok veya eski veri), manuel aranıyor...",
+        e
+      );
+    }
+
+    // YÖNTEM B: Manuel Filtreleme (Yavaş ama Garantili - Eski Kayıtlar İçin)
+    // Eğer veritabanı sorgusu boş döndüyse veya hata verdiyse bunu çalıştır
+    const allUsers = await getAllUsers();
+    return (allUsers as { id: string; username?: string }[]).filter(
+      (u) => u.username && String(u.username).toLowerCase().includes(term)
+    );
+  } catch (error) {
+    console.error("Kullanıcı arama hatası:", error);
+    return [];
+  }
+};
+
+// 12. SKORLARI FİLTRELE (Moda Göre)
+export const getFilteredScores = async (
+  modeFilter: string | "all",
+  timeFrame: "all" | "daily" | "weekly" = "all",
+  sortBy: "score" | "date" = "date", // <-- YENİ: Neye göre sıralansın?
+  sortOrder: "asc" | "desc" = "desc" // <-- YENİ: Artan mı azalan mı?
+) => {
+  try {
+    const constraints: QueryConstraint[] = [];
+
+    // Mod Filtresi
+    if (modeFilter !== "all") {
+      constraints.push(where("mode", "==", modeFilter));
+    }
+
+    // Zaman Filtresi
+    if (timeFrame !== "all") {
+      const now = new Date();
+      const startDate = new Date();
+
+      if (timeFrame === "daily") {
+        startDate.setHours(0, 0, 0, 0);
+      } else {
+        startDate.setDate(now.getDate() - 7);
+      }
+      constraints.push(where("date", ">=", startDate.toISOString()));
+    }
+
+    // Sıralama (Kritik Kısım)
+    constraints.push(orderBy(sortBy, sortOrder));
+    constraints.push(limit(50));
+
+    const q = query(scoresRef, ...constraints);
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    console.error("Skor filtreleme hatası:", error);
+    return [];
+  }
+};
+
+export const toggleBanUser = async (uid: string, isBanned: boolean) => {
+  try {
+    const userRef = doc(db, "users", uid);
+    await updateDoc(userRef, { isBanned: isBanned });
+    return true;
+  } catch (error) {
+    console.error("Ban işlemi hatası:", error);
+    throw error;
+  }
+};
+
+// 14. KULLANICININ TÜM SKORLARINI GETİR (Option 2 - Dedektif Modu)
+export const getScoresByUid = async (uid: string) => {
+  try {
+    const q = query(
+      scoresRef,
+      where("uid", "==", uid),
+      orderBy("date", "desc"),
+      limit(50)
+    );
+    const snapshot = await getDocs(q);
+
+    // 👇 DÜZELTME BURADA: 'as unknown as ScoreData[]' ekledik
+    return snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as unknown as ScoreData[];
+  } catch (error) {
+    console.error("Kullanıcı skorları çekilemedi:", error);
+    return [];
   }
 };
