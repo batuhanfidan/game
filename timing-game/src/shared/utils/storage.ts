@@ -1,10 +1,11 @@
 import type { GameMode, GameVariant } from "../types";
+import { secureStorage } from "./secureStorage";
 
 export const storage = {
   getHighScore: (mode: GameMode, variant: GameVariant): number => {
     try {
       const key = `timing-game-highscore-${mode}-${variant}`;
-      const value = localStorage.getItem(key);
+      const value = secureStorage.getItem(key);
       return value ? parseInt(value, 10) : 0;
     } catch (error) {
       console.warn("High score okunamadı:", error);
@@ -15,7 +16,7 @@ export const storage = {
   setHighScore: (mode: GameMode, variant: GameVariant, score: number) => {
     try {
       const key = `timing-game-highscore-${mode}-${variant}`;
-      localStorage.setItem(key, score.toString());
+      secureStorage.setItem(key, score.toString());
     } catch (error) {
       console.warn("High score kaydedilemedi:", error);
     }
@@ -24,7 +25,7 @@ export const storage = {
   // Achievement sistemi için altyapı
   getAchievements: (): string[] => {
     try {
-      return JSON.parse(localStorage.getItem("achievements") || "[]");
+      return JSON.parse(secureStorage.getItem("achievements") || "[]");
     } catch {
       return [];
     }
@@ -32,10 +33,12 @@ export const storage = {
 
   unlockAchievement: (id: string) => {
     try {
-      const unlocked = JSON.parse(localStorage.getItem("achievements") || "[]");
+      const unlocked = JSON.parse(
+        secureStorage.getItem("achievements") || "[]"
+      );
       if (!unlocked.includes(id)) {
         unlocked.push(id);
-        localStorage.setItem("achievements", JSON.stringify(unlocked));
+        secureStorage.setItem("achievements", JSON.stringify(unlocked));
         return true;
       }
     } catch {
@@ -46,7 +49,7 @@ export const storage = {
 
   getTutorialStatus: (mode: string): boolean => {
     try {
-      return localStorage.getItem(`tutorial_seen_${mode}`) === "true";
+      return secureStorage.getItem(`tutorial_seen_${mode}`) === "true";
     } catch {
       return false;
     }
@@ -54,7 +57,7 @@ export const storage = {
 
   setTutorialSeen: (mode: string) => {
     try {
-      localStorage.setItem(`tutorial_seen_${mode}`, "true");
+      secureStorage.setItem(`tutorial_seen_${mode}`, "true");
     } catch (e) {
       console.warn("Storage error:", e);
     }

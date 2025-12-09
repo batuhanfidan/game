@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { GAMEPLAY_CONSTANTS } from "../../shared/constants/game";
 import type { Player, GameMode } from "../../shared/types";
+import { secureStorage } from "../../shared/utils/secureStorage";
 
 export const usePlayerSystem = (initialTime: number, gameMode: GameMode) => {
   const [currentPlayer, setCurrentPlayer] = useState<Player>("p1");
@@ -8,7 +9,7 @@ export const usePlayerSystem = (initialTime: number, gameMode: GameMode) => {
     GAMEPLAY_CONSTANTS.TURN_TIME_LIMIT
   );
 
-  const savedName = localStorage.getItem("timing_game_username");
+  const savedName = secureStorage.getItem("timing_game_username");
 
   const [playerNames, setPlayerNames] = useState({
     p1: savedName || "Oyuncu 1",

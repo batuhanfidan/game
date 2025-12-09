@@ -17,6 +17,7 @@ import UsernameModal from "./components/auth/UsernameModal";
 import { getUserStats, getUserByUid, syncUserScores } from "./services/api";
 import { Loader2 } from "lucide-react";
 import AdminPanel from "./features/AdminPanel";
+import { secureStorage } from "../src/shared/utils/secureStorage";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -29,8 +30,8 @@ function App() {
 
     // --- KİMLİK DOĞRULAMA (ID TABANLI - BUG FREE) ---
     const verifyUser = async () => {
-      const savedUid = localStorage.getItem("timing_game_uid"); // ID var mı?
-      const savedName = localStorage.getItem("timing_game_username");
+      const savedUid = secureStorage.getItem("timing_game_uid"); // ID var mı?
+      const savedName = secureStorage.getItem("timing_game_username");
 
       if (savedUid) {
         try {
@@ -44,8 +45,8 @@ function App() {
               alert(
                 "HESABINIZ YASAKLANDI! 🚫\nErişiminiz yönetici tarafından engellendi."
               );
-              localStorage.removeItem("timing_game_uid");
-              localStorage.removeItem("timing_game_username");
+              secureStorage.removeItem("timing_game_uid");
+              secureStorage.removeItem("timing_game_username");
               setIsAuthenticated(false);
               setIsCheckingAuth(false);
               return; // Fonksiyondan çık
@@ -56,7 +57,7 @@ function App() {
               console.log("İsim değişikliği tespit edildi. Güncelleniyor...");
 
               // LocalStorage güncelle
-              localStorage.setItem("timing_game_username", userData.username);
+              secureStorage.setItem("timing_game_username", userData.username);
 
               // Skorları da arkada güncelle (Self-Healing)
               syncUserScores(savedUid, savedName, userData.username);
@@ -66,8 +67,8 @@ function App() {
           } else {
             // ID var ama veritabanında yok (Silinmiş)
             console.warn("Kullanıcı bulunamadı, çıkış yapılıyor.");
-            localStorage.removeItem("timing_game_uid");
-            localStorage.removeItem("timing_game_username");
+            secureStorage.removeItem("timing_game_uid");
+            secureStorage.removeItem("timing_game_username");
             setIsAuthenticated(false);
           }
         } catch (error) {
@@ -81,7 +82,7 @@ function App() {
           if (userData) {
             setIsAuthenticated(true);
           } else {
-            localStorage.removeItem("timing_game_username");
+            secureStorage.removeItem("timing_game_username");
             setIsAuthenticated(false);
           }
         } catch {

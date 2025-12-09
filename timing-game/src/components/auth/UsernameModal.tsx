@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { User, ArrowRight, Loader2 } from "lucide-react";
 import { loginOrRegister } from "../../services/api";
 import { useTranslation } from "react-i18next";
+import { secureStorage } from "../../shared/utils/secureStorage";
 
 interface UsernameModalProps {
   onLoginSuccess: (username: string) => void;
@@ -28,8 +29,8 @@ const UsernameModal: React.FC<UsernameModalProps> = ({ onLoginSuccess }) => {
     try {
       const result = await loginOrRegister(username);
 
-      localStorage.setItem("timing_game_username", result.username);
-      localStorage.setItem("timing_game_uid", result.userId);
+      secureStorage.setItem("timing_game_username", result.username);
+      secureStorage.setItem("timing_game_uid", result.userId);
 
       onLoginSuccess(username);
     } catch (err) {
