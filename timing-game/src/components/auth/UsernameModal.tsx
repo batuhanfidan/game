@@ -1,5 +1,3 @@
-// client/src/components/auth/UsernameModal.tsx
-
 import React, { useState } from "react";
 import { User, ArrowRight, Loader2 } from "lucide-react";
 import { loginOrRegister } from "../../services/api";
@@ -14,7 +12,7 @@ const UsernameModal: React.FC<UsernameModalProps> = ({ onLoginSuccess }) => {
   const [username, setUsername] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const { t } = useTranslation(); // 2. TANIMLAMA
+  const { t } = useTranslation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

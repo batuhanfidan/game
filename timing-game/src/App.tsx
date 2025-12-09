@@ -14,10 +14,10 @@ import { GameProvider } from "./context/GameContext";
 import { useGameLogic } from "./hooks/useGameLogic";
 import { useTheme } from "./hooks/core/useTheme";
 import UsernameModal from "./components/auth/UsernameModal";
-import { getUserStats, getUserByUid, syncUserScores } from "./services/api";
+import { getUserByUid, syncUserScores } from "./services/api"; // getUserStats artık gerekmiyor
 import { Loader2 } from "lucide-react";
 import AdminPanel from "./features/AdminPanel";
-import { secureStorage } from "../src/shared/utils/secureStorage";
+import { secureStorage } from "./shared/utils/secureStorage"; // Import yolunu düzelttim
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -28,67 +28,60 @@ function App() {
       console.log("All sounds loaded successfully");
     });
 
-    // --- KİMLİK DOĞRULAMA (ID TABANLI - BUG FREE) ---
     const verifyUser = async () => {
-      const savedUid = secureStorage.getItem("timing_game_uid"); // ID var mı?
+      // SADECE GÜVENLİ VERİLERİ OKU
+      const savedUid = secureStorage.getItem("timing_game_uid");
       const savedName = secureStorage.getItem("timing_game_username");
 
       if (savedUid) {
         try {
-          // 1. ID ile kullanıcıyı bul
+          // 1. ID KONTROLÜ (Taklit Edilemez)
           const userData = await getUserByUid(savedUid);
 
           if (userData) {
-            // Kullanıcı bulundu!
+            // Kullanıcı veritabanında bulundu!
+
+            // Ban Kontrolü
 
             if (userData.isBanned) {
-              alert(
-                "HESABINIZ YASAKLANDI! 🚫\nErişiminiz yönetici tarafından engellendi."
-              );
+              alert("HESABINIZ YASAKLANDI! 🚫");
               secureStorage.removeItem("timing_game_uid");
               secureStorage.removeItem("timing_game_username");
               setIsAuthenticated(false);
               setIsCheckingAuth(false);
-              return; // Fonksiyondan çık
+              return;
             }
 
-            // 2. İsim senkronizasyonu
+            // İsim Senkronizasyonu (Veritabanındaki isim farklıysa yereli güncelle)
             if (savedName && userData.username !== savedName) {
-              console.log("İsim değişikliği tespit edildi. Güncelleniyor...");
-
-              // LocalStorage güncelle
+              console.log("İsim senkronize edildi:", userData.username);
               secureStorage.setItem("timing_game_username", userData.username);
-
-              // Skorları da arkada güncelle (Self-Healing)
               syncUserScores(savedUid, savedName, userData.username);
             }
 
             setIsAuthenticated(true);
           } else {
             // ID var ama veritabanında yok (Silinmiş)
-            console.warn("Kullanıcı bulunamadı, çıkış yapılıyor.");
+            console.warn("Geçersiz kimlik, oturum kapatılıyor.");
             secureStorage.removeItem("timing_game_uid");
             secureStorage.removeItem("timing_game_username");
             setIsAuthenticated(false);
           }
         } catch (error) {
-          console.error("ID doğrulama hatası:", error);
-          setIsAuthenticated(false);
-        }
-      } else if (savedName) {
-        // Fallback: Sadece ismi olan eski kullanıcılar için
-        try {
-          const userData = await getUserStats(savedName);
-          if (userData) {
-            setIsAuthenticated(true);
-          } else {
-            secureStorage.removeItem("timing_game_username");
-            setIsAuthenticated(false);
-          }
-        } catch {
+          console.error("Doğrulama hatası:", error);
           setIsAuthenticated(false);
         }
       } else {
+        // --- GÜVENLİK DUVARI ---
+        // UID yoksa, isim olsa bile içeri alma!
+        // Hacker sadece isim yazarsa buraya düşer ve reddedilir.
+        if (savedName) {
+          console.warn(
+            "Eksik kimlik bilgisi. Güvenlik için tekrar giriş yapmalısınız."
+          );
+          // İstersen burada temizlik yapabilirsin ama yapmamak daha iyi (belki glitch olmuştur)
+          // secureStorage.removeItem("timing_game_username");
+        }
         setIsAuthenticated(false);
       }
 
