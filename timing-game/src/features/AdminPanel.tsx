@@ -30,6 +30,7 @@ import {
   toggleBanUser,
   getScoresByUid,
   type ScoreData,
+  getUserByUid,
 } from "../../src/services/api";
 
 interface AdminScoreData extends ScoreData {
@@ -148,8 +149,7 @@ const AdminPanel = () => {
 
         try {
           // Veritabanından kullanıcının rolünü çek
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-expect-error
+
           const userData = await getUserByUid(user.uid);
 
           // Eğer kullanıcı varsa VE rolü 'admin' ise içeri al
