@@ -117,7 +117,6 @@ export const saveScoreToApi = async (
   score: number
 ) => {
   try {
-    // Şu anki kullanıcının ID'sini al
     const currentUser = auth.currentUser;
     const uid = currentUser ? currentUser.uid : null;
 
@@ -308,5 +307,48 @@ export const getUserByUid = async (uid: string) => {
   } catch (error) {
     console.error("UID sorgu hatası:", error);
     return null;
+  }
+};
+
+// 10. SKOR SENKRONİZASYONU (İsim değişince eski skorları düzeltir)
+export const syncUserScores = async (
+  uid: string,
+  oldName: string,
+  newName: string
+) => {
+  try {
+    console.log(`Skorlar senkronize ediliyor: ${oldName} -> ${newName}`);
+
+    // 1. UID ile ara
+    let q = query(collection(db, "scores"), where("uid", "==", uid));
+    let snapshot = await getDocs(q);
+
+    // 2. Bulamazsan eski isimle ara
+    if (snapshot.empty && oldName) {
+      q = query(collection(db, "scores"), where("name", "==", oldName));
+      snapshot = await getDocs(q);
+    }
+
+    if (snapshot.empty) return;
+
+    const batch = writeBatch(db);
+    let operationCount = 0;
+
+    snapshot.docs.forEach((doc) => {
+      if (doc.data().name !== newName) {
+        batch.update(doc.ref, {
+          name: newName,
+          uid: uid,
+        });
+        operationCount++;
+      }
+    });
+
+    if (operationCount > 0) {
+      await batch.commit();
+      console.log("Skorlar başarıyla güncellendi.");
+    }
+  } catch (error) {
+    console.error("Senkronizasyon hatası:", error);
   }
 };

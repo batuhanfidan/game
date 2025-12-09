@@ -14,7 +14,7 @@ import { GameProvider } from "./context/GameContext";
 import { useGameLogic } from "./hooks/useGameLogic";
 import { useTheme } from "./hooks/core/useTheme";
 import UsernameModal from "./components/auth/UsernameModal";
-import { getUserStats, getUserByUid } from "./services/api";
+import { getUserStats, getUserByUid, syncUserScores } from "./services/api";
 import { Loader2 } from "lucide-react";
 import AdminPanel from "./features/AdminPanel";
 
@@ -27,24 +27,34 @@ function App() {
       console.log("All sounds loaded successfully");
     });
 
+    // --- KİMLİK DOĞRULAMA (ID TABANLI - BUG FREE) ---
     const verifyUser = async () => {
-      const savedUid = localStorage.getItem("timing_game_uid");
-
+      const savedUid = localStorage.getItem("timing_game_uid"); // ID var mı?
       const savedName = localStorage.getItem("timing_game_username");
 
       if (savedUid) {
         try {
+          // 1. ID ile kullanıcıyı bul (İsim değişse bile ID değişmez!)
           const userData = await getUserByUid(savedUid);
 
           if (userData) {
-            if (userData.username !== savedName) {
-              console.log(
-                `İsim senkronize edildi: ${savedName} -> ${userData.username}`
-              );
+            // Kullanıcı bulundu!
+
+            // 2. İsim senkronizasyonu (Firebase'den değiştirdiysen burası yakalar)
+            if (savedName && userData.username !== savedName) {
+              console.log("İsim değişikliği tespit edildi. Güncelleniyor...");
+
+              // LocalStorage güncelle
               localStorage.setItem("timing_game_username", userData.username);
+
+              // Skorları da arkada güncelle (Self-Healing)
+              syncUserScores(savedUid, savedName, userData.username);
             }
+
             setIsAuthenticated(true);
           } else {
+            // ID var ama veritabanında yok (Silinmiş)
+            console.warn("Kullanıcı bulunamadı, çıkış yapılıyor.");
             localStorage.removeItem("timing_game_uid");
             localStorage.removeItem("timing_game_username");
             setIsAuthenticated(false);
@@ -54,9 +64,10 @@ function App() {
           setIsAuthenticated(false);
         }
       } else if (savedName) {
+        // Fallback: Sadece ismi olan eski kullanıcılar için
         try {
-          const stats = await getUserStats(savedName);
-          if (stats) {
+          const userData = await getUserStats(savedName);
+          if (userData) {
             setIsAuthenticated(true);
           } else {
             localStorage.removeItem("timing_game_username");
@@ -66,7 +77,6 @@ function App() {
           setIsAuthenticated(false);
         }
       } else {
-        // Hiçbir kayıt yok
         setIsAuthenticated(false);
       }
 
@@ -109,15 +119,15 @@ function App() {
           ) : (
             <Routes>
               <Route path="/" element={<MainMenu />} />
-              <Route path="/leaderboard" element={<Leaderboard />} />{" "}
+              <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="/game/2p" element={<TwoPlayerMode />} />
               <Route path="/game/bot" element={<BotMode />} />
               <Route path="/game/penalty" element={<PenaltyMode />} />
               <Route path="/game/survival" element={<SurvivalMode />} />
               <Route path="/game/time-attack" element={<TimeAttackMode />} />
               <Route path="/game/tutorial" element={<TutorialMode />} />
-              <Route path="*" element={<MainMenu />} />
               <Route path="/admin" element={<AdminPanel />} />
+              <Route path="*" element={<MainMenu />} />
             </Routes>
           )}
         </div>
