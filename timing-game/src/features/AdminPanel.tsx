@@ -30,6 +30,7 @@ import {
   toggleBanUser,
   getScoresByUid,
   type ScoreData,
+  getUserByUid,
 } from "../../src/services/api";
 
 interface AdminScoreData extends ScoreData {
@@ -142,14 +143,37 @@ const AdminPanel = () => {
 
   // Yetki Kontrolü
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
-        setIsAdmin(true);
-        loadDashboard();
+        setLoading(true); // Kontrol ederken yükleniyor göster
+
+        try {
+          // Veritabanından kullanıcının rolünü çek
+
+          const userData = await getUserByUid(user.uid);
+
+          // Eğer kullanıcı varsa VE rolü 'admin' ise içeri al
+
+          if (userData && userData.role === "admin") {
+            setIsAdmin(true);
+            loadDashboard(); // Verileri çekmeye başla
+          } else {
+            // Giriş yapmış ama admin değil -> Ana sayfaya şutla
+            console.warn("Yetkisiz erişim denemesi!");
+            navigate("/");
+          }
+        } catch (error) {
+          console.error("Yetki kontrol hatası:", error);
+          navigate("/");
+        } finally {
+          setLoading(false);
+        }
       } else {
+        // Giriş yapmamış -> Ana sayfaya şutla
         navigate("/");
       }
     });
+
     return () => unsubscribe();
   }, [navigate, loadDashboard]);
 
@@ -183,6 +207,14 @@ const AdminPanel = () => {
       alert("Yetkin yok!");
     }
   };
+
+  if (loading && !isAdmin) {
+    return (
+      <div className="min-h-screen bg-[#0f0f11] flex items-center justify-center">
+        <Loader2 className="animate-spin text-red-500" size={48} />
+      </div>
+    );
+  }
 
   if (!isAdmin) return null;
 
