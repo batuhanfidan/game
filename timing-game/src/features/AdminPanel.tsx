@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { db, auth } from "../../src/firebase";
 import { deleteDoc, doc } from "firebase/firestore";
+import type { User } from "firebase/auth";
 import {
   deleteUser,
   getAdminStats,
@@ -29,8 +30,8 @@ import {
   getFilteredScores,
   toggleBanUser,
   getScoresByUid,
+  getUserByUid, // <-- BUNU EKLEMEYİ UNUTMA
   type ScoreData,
-  getUserByUid,
 } from "../../src/services/api";
 
 interface AdminScoreData extends ScoreData {
@@ -55,6 +56,7 @@ const AdminPanel = () => {
   const [activeTab, setActiveTab] = useState<TabType>("dashboard");
   const [loading, setLoading] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isCheckingRole, setIsCheckingRole] = useState(true); // Rol kontrolü için loading
 
   const [scores, setScores] = useState<AdminScoreData[]>([]);
   const [users, setUsers] = useState<AdminUserData[]>([]);
@@ -141,39 +143,35 @@ const AdminPanel = () => {
     }
   };
 
-  // Yetki Kontrolü
+  // 2. YETKİ KONTROLÜ (GÜVENLİ VERSİYON)
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+    const unsubscribe = auth.onAuthStateChanged(async (user: User | null) => {
       if (user) {
-        setLoading(true); // Kontrol ederken yükleniyor göster
-
+        // Kullanıcı var, peki admin mi?
         try {
-          // Veritabanından kullanıcının rolünü çek
+          // Veritabanından rolünü çekiyoruz
 
           const userData = await getUserByUid(user.uid);
 
-          // Eğer kullanıcı varsa VE rolü 'admin' ise içeri al
+          // KONTROL: Rolü 'admin' mi?
 
           if (userData && userData.role === "admin") {
             setIsAdmin(true);
             loadDashboard(); // Verileri çekmeye başla
           } else {
-            // Giriş yapmış ama admin değil -> Ana sayfaya şutla
-            console.warn("Yetkisiz erişim denemesi!");
+            // Admin değilse at
+            console.warn("Yetkisiz erişim: Admin değilsiniz.");
             navigate("/");
           }
         } catch (error) {
-          console.error("Yetki kontrol hatası:", error);
+          console.error("Yetki hatası:", error);
           navigate("/");
-        } finally {
-          setLoading(false);
         }
       } else {
-        // Giriş yapmamış -> Ana sayfaya şutla
         navigate("/");
       }
+      setIsCheckingRole(false);
     });
-
     return () => unsubscribe();
   }, [navigate, loadDashboard]);
 
@@ -208,7 +206,8 @@ const AdminPanel = () => {
     }
   };
 
-  if (loading && !isAdmin) {
+  // Rol kontrolü yapılırken bekleme ekranı
+  if (isCheckingRole) {
     return (
       <div className="min-h-screen bg-[#0f0f11] flex items-center justify-center">
         <Loader2 className="animate-spin text-red-500" size={48} />
@@ -270,7 +269,7 @@ const AdminPanel = () => {
           ))}
         </div>
 
-        {/* --- LAYOUT DÜZELTMESİ: FLEX ROW CONTAINER --- */}
+        {/* --- LAYOUT: FLEX ROW CONTAINER --- */}
         <div className="flex flex-col lg:flex-row gap-6">
           {/* SOL TARAF: ANA İÇERİK */}
           <div
@@ -347,7 +346,7 @@ const AdminPanel = () => {
                           <tr>
                             <th className="p-3">Kullanıcı</th>
                             <th className="p-3">Kayıt</th>
-                            <th className="p-3">Skor</th>
+                            <th className="p-3">En İyi Skor</th>
                             <th className="p-3 text-right">İşlem</th>
                           </tr>
                         </thead>
@@ -421,6 +420,7 @@ const AdminPanel = () => {
                 {activeTab === "scores" && (
                   <div className="space-y-4 animate-fade-in">
                     <div className="flex flex-col xl:flex-row gap-4 justify-between items-start xl:items-center">
+                      {/* Mod Filtresi */}
                       <div className="flex gap-2 overflow-x-auto pb-2 custom-scrollbar max-w-full">
                         <div className="flex items-center gap-2 text-gray-500 text-xs font-bold uppercase mr-2 shrink-0">
                           <Filter size={14} /> Filtrele:
@@ -448,7 +448,9 @@ const AdminPanel = () => {
                         ))}
                       </div>
 
+                      {/* Sağ Taraf: Zaman ve Sıralama */}
                       <div className="flex flex-wrap gap-3">
+                        {/* Zaman Filtresi */}
                         <div className="flex gap-1 bg-black/20 p-1 rounded-lg">
                           {[
                             { id: "all", label: "Tümü" },
@@ -471,6 +473,7 @@ const AdminPanel = () => {
                           ))}
                         </div>
 
+                        {/* Sıralama Butonları */}
                         <div className="flex gap-1 bg-black/20 p-1 rounded-lg">
                           <button
                             onClick={() =>
