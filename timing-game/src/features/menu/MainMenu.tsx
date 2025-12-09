@@ -16,6 +16,7 @@ import { WelcomeModal } from "../../components/common/WelcomeModal";
 import { useTranslation } from "react-i18next";
 import { getUserStats } from "../../services/api";
 import ProfileModal from "./ProfileModal";
+import { secureStorage } from "../../shared/utils/secureStorage";
 
 const MainMenu = () => {
   const navigate = useNavigate();
@@ -33,7 +34,7 @@ const MainMenu = () => {
   // Admin Yetki Kontrolü
   useEffect(() => {
     const checkAdmin = async () => {
-      const username = localStorage.getItem("timing_game_username");
+      const username = secureStorage.getItem("timing_game_username");
       if (username) {
         const stats = await getUserStats(username);
         // @ts-expect-error: Role alanı tipte tanımlı değilse hata vermesin

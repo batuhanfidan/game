@@ -16,6 +16,7 @@ import {
   type ScoreData,
 } from "../../services/api";
 import { useTranslation } from "react-i18next";
+import { secureStorage } from "../../shared/utils/secureStorage";
 
 interface UserStats {
   username: string;
@@ -42,7 +43,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
   const [editLoading, setEditLoading] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
 
-  const currentUsername = localStorage.getItem("timing_game_username");
+  const currentUsername = secureStorage.getItem("timing_game_username");
 
   const loadData = useCallback(async () => {
     if (!currentUsername) return;
@@ -78,7 +79,7 @@ const ProfileModal: React.FC<ProfileModalProps> = ({ isOpen, onClose }) => {
 
     try {
       await updateUsername(currentUsername, newUsername);
-      localStorage.setItem("timing_game_username", newUsername);
+      secureStorage.setItem("timing_game_username", newUsername);
       window.location.reload();
     } catch (error) {
       if (error instanceof Error) setEditError(error.message);

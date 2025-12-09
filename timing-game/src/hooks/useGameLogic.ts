@@ -25,6 +25,7 @@ import { useInterval } from "./core/useInterval";
 import { useSurvivalSystem } from "./modes/useSurvivalSystem";
 import { useTimeAttackSystem } from "./modes/useTimeAttackSystem";
 import { useBotSystem } from "./modes/useBotSystem";
+import { secureStorage } from "../shared/utils/secureStorage";
 
 interface UseGameLogicProps {
   initialTime?: number;
@@ -235,9 +236,9 @@ export const useGameLogic = ({
 
     // Oyun sayısını artır
     const currentCount = parseInt(
-      localStorage.getItem("games_played_count") || "0"
+      secureStorage.getItem("games_played_count") || "0"
     );
-    localStorage.setItem("games_played_count", (currentCount + 1).toString());
+    secureStorage.setItem("games_played_count", (currentCount + 1).toString());
   }, [
     gameMode,
     survivalStreak,
@@ -337,7 +338,7 @@ export const useGameLogic = ({
   // Hint mantığı
   useEffect(() => {
     const gamesPlayed = parseInt(
-      localStorage.getItem("games_played_count") || "0"
+      secureStorage.getItem("games_played_count") || "0"
     );
     if (gamesPlayed < 25) {
       setShowHint(true);

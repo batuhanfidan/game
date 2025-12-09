@@ -2,17 +2,18 @@ import { useState } from "react";
 import { Zap, BookOpen, Play } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation, Trans } from "react-i18next";
+import { secureStorage } from "../../../src/shared/utils/secureStorage";
 
 export const WelcomeModal = () => {
   const [isOpen, setIsOpen] = useState(() => {
-    const hasSeen = localStorage.getItem("app_welcome_seen");
+    const hasSeen = secureStorage.getItem("app_welcome_seen");
     return !hasSeen;
   });
   const navigate = useNavigate();
   const { t } = useTranslation();
 
   const handleClose = () => {
-    localStorage.setItem("app_welcome_seen", "true");
+    secureStorage.setItem("app_welcome_seen", "true");
     setIsOpen(false);
   };
 
