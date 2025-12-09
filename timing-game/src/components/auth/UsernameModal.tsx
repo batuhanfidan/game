@@ -26,9 +26,11 @@ const UsernameModal: React.FC<UsernameModalProps> = ({ onLoginSuccess }) => {
     setError(null);
 
     try {
-      await loginOrRegister(username);
+      const result = await loginOrRegister(username);
 
-      localStorage.setItem("timing_game_username", username);
+      localStorage.setItem("timing_game_username", result.username);
+      localStorage.setItem("timing_game_uid", result.userId);
+
       onLoginSuccess(username);
     } catch (err) {
       if (err instanceof Error) {

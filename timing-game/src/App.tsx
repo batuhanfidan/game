@@ -14,7 +14,7 @@ import { GameProvider } from "./context/GameContext";
 import { useGameLogic } from "./hooks/useGameLogic";
 import { useTheme } from "./hooks/core/useTheme";
 import UsernameModal from "./components/auth/UsernameModal";
-import { getUserStats } from "./services/api";
+import { getUserStats, getUserByUid } from "./services/api";
 import { Loader2 } from "lucide-react";
 import AdminPanel from "./features/AdminPanel";
 
@@ -28,28 +28,48 @@ function App() {
     });
 
     const verifyUser = async () => {
-      const savedUser = localStorage.getItem("timing_game_username");
+      const savedUid = localStorage.getItem("timing_game_uid");
 
-      if (savedUser) {
+      const savedName = localStorage.getItem("timing_game_username");
+
+      if (savedUid) {
         try {
-          const userData = await getUserStats(savedUser);
+          const userData = await getUserByUid(savedUid);
+
           if (userData) {
+            if (userData.username !== savedName) {
+              console.log(
+                `İsim senkronize edildi: ${savedName} -> ${userData.username}`
+              );
+              localStorage.setItem("timing_game_username", userData.username);
+            }
             setIsAuthenticated(true);
           } else {
-            console.warn(
-              "Eski kullanıcı verisi tespit edildi, temizleniyor..."
-            );
+            localStorage.removeItem("timing_game_uid");
             localStorage.removeItem("timing_game_username");
             setIsAuthenticated(false);
           }
         } catch (error) {
-          console.error("Doğrulama hatası:", error);
-          localStorage.removeItem("timing_game_username");
+          console.error("ID doğrulama hatası:", error);
+          setIsAuthenticated(false);
+        }
+      } else if (savedName) {
+        try {
+          const stats = await getUserStats(savedName);
+          if (stats) {
+            setIsAuthenticated(true);
+          } else {
+            localStorage.removeItem("timing_game_username");
+            setIsAuthenticated(false);
+          }
+        } catch {
           setIsAuthenticated(false);
         }
       } else {
+        // Hiçbir kayıt yok
         setIsAuthenticated(false);
       }
+
       setIsCheckingAuth(false);
     };
 
