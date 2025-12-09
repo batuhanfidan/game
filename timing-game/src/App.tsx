@@ -14,7 +14,7 @@ import { GameProvider } from "./context/GameContext";
 import { useGameLogic } from "./hooks/useGameLogic";
 import { useTheme } from "./hooks/core/useTheme";
 import UsernameModal from "./components/auth/UsernameModal";
-import { getUserStats } from "./services/api";
+import { getUserStats, getUserByUid, syncUserScores } from "./services/api";
 import { Loader2 } from "lucide-react";
 import AdminPanel from "./features/AdminPanel";
 
@@ -27,29 +27,70 @@ function App() {
       console.log("All sounds loaded successfully");
     });
 
+    // --- KİMLİK DOĞRULAMA (ID TABANLI - BUG FREE) ---
     const verifyUser = async () => {
-      const savedUser = localStorage.getItem("timing_game_username");
+      const savedUid = localStorage.getItem("timing_game_uid"); // ID var mı?
+      const savedName = localStorage.getItem("timing_game_username");
 
-      if (savedUser) {
+      if (savedUid) {
         try {
-          const userData = await getUserStats(savedUser);
+          // 1. ID ile kullanıcıyı bul
+          const userData = await getUserByUid(savedUid);
+
           if (userData) {
+            // Kullanıcı bulundu!
+
+            if (userData.isBanned) {
+              alert(
+                "HESABINIZ YASAKLANDI! 🚫\nErişiminiz yönetici tarafından engellendi."
+              );
+              localStorage.removeItem("timing_game_uid");
+              localStorage.removeItem("timing_game_username");
+              setIsAuthenticated(false);
+              setIsCheckingAuth(false);
+              return; // Fonksiyondan çık
+            }
+
+            // 2. İsim senkronizasyonu
+            if (savedName && userData.username !== savedName) {
+              console.log("İsim değişikliği tespit edildi. Güncelleniyor...");
+
+              // LocalStorage güncelle
+              localStorage.setItem("timing_game_username", userData.username);
+
+              // Skorları da arkada güncelle (Self-Healing)
+              syncUserScores(savedUid, savedName, userData.username);
+            }
+
             setIsAuthenticated(true);
           } else {
-            console.warn(
-              "Eski kullanıcı verisi tespit edildi, temizleniyor..."
-            );
+            // ID var ama veritabanında yok (Silinmiş)
+            console.warn("Kullanıcı bulunamadı, çıkış yapılıyor.");
+            localStorage.removeItem("timing_game_uid");
             localStorage.removeItem("timing_game_username");
             setIsAuthenticated(false);
           }
         } catch (error) {
-          console.error("Doğrulama hatası:", error);
-          localStorage.removeItem("timing_game_username");
+          console.error("ID doğrulama hatası:", error);
+          setIsAuthenticated(false);
+        }
+      } else if (savedName) {
+        // Fallback: Sadece ismi olan eski kullanıcılar için
+        try {
+          const userData = await getUserStats(savedName);
+          if (userData) {
+            setIsAuthenticated(true);
+          } else {
+            localStorage.removeItem("timing_game_username");
+            setIsAuthenticated(false);
+          }
+        } catch {
           setIsAuthenticated(false);
         }
       } else {
         setIsAuthenticated(false);
       }
+
       setIsCheckingAuth(false);
     };
 
@@ -89,15 +130,15 @@ function App() {
           ) : (
             <Routes>
               <Route path="/" element={<MainMenu />} />
-              <Route path="/leaderboard" element={<Leaderboard />} />{" "}
+              <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="/game/2p" element={<TwoPlayerMode />} />
               <Route path="/game/bot" element={<BotMode />} />
               <Route path="/game/penalty" element={<PenaltyMode />} />
               <Route path="/game/survival" element={<SurvivalMode />} />
               <Route path="/game/time-attack" element={<TimeAttackMode />} />
               <Route path="/game/tutorial" element={<TutorialMode />} />
-              <Route path="*" element={<MainMenu />} />
               <Route path="/admin" element={<AdminPanel />} />
+              <Route path="*" element={<MainMenu />} />
             </Routes>
           )}
         </div>

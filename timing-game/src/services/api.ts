@@ -5,14 +5,17 @@ import {
   getDoc,
   setDoc,
   addDoc,
+  deleteDoc,
   getDocs,
   query,
   where,
   orderBy,
   limit,
   writeBatch,
-  deleteDoc,
   getCountFromServer,
+  startAt,
+  endAt,
+  updateDoc,
   type QueryConstraint,
 } from "firebase/firestore";
 import { signInAnonymously } from "firebase/auth";
@@ -22,6 +25,7 @@ export interface ScoreData {
   score: number;
   date?: string;
   mode?: string;
+  uid?: string;
 }
 
 const usersRef = collection(db, "users");
@@ -45,6 +49,7 @@ export const loginOrRegister = async (username: string) => {
 
     if (!userDocSnap.exists()) {
       await setDoc(userDocRef, {
+        usernameLower: username.toLowerCase(),
         username: username,
         uid: user.uid,
         createdAt: new Date().toISOString(),
@@ -67,7 +72,7 @@ export const loginOrRegister = async (username: string) => {
   }
 };
 
-// 2. SKORLARI GETİR (Filtreli)
+// 2. SKORLARI GETİR
 export const getLeaderboard = async (
   mode: string,
   timeFrame: "daily" | "weekly" | "all_time" = "all_time"
@@ -116,11 +121,15 @@ export const saveScoreToApi = async (
   score: number
 ) => {
   try {
+    const currentUser = auth.currentUser;
+    const uid = currentUser ? currentUser.uid : null;
+
     await addDoc(scoresRef, {
       mode: mode,
       name: name,
       score: Number(score),
       date: new Date().toISOString(),
+      uid: uid,
     });
     return true;
   } catch (error) {
@@ -146,7 +155,6 @@ export const getUserStats = async (username: string) => {
     const scoresSnapshot = await getDocs(scoresQ);
     const recentGames = scoresSnapshot.docs.map((d) => d.data() as ScoreData);
 
-    // Mod bazlı rekorlar
     const taQ = query(
       scoresRef,
       where("name", "==", username),
@@ -190,27 +198,58 @@ export const updateUsername = async (currentName: string, newName: string) => {
   if (currentName === newName) return true;
 
   try {
+    // 1. Yeni isim müsait mi?
     const checkQ = query(usersRef, where("username", "==", newName));
     const checkSnap = await getDocs(checkQ);
     if (!checkSnap.empty) throw new Error("Bu kullanıcı adı zaten kullanımda.");
 
-    const userQ = query(usersRef, where("username", "==", currentName));
-    const userSnap = await getDocs(userQ);
-    if (userSnap.empty) throw new Error("Kullanıcı bulunamadı.");
+    // 2. Mevcut kullanıcının (Auth ID'sine göre) dokümanını bul
+    const currentUser = auth.currentUser;
+    if (!currentUser) throw new Error("Oturum açık değil.");
 
-    const userDoc = userSnap.docs[0];
-    const batch = writeBatch(db);
+    // Kullanıcının kendi profilini UID ile bul
+    const userDocRef = doc(db, "users", currentUser.uid);
 
-    batch.update(userDoc.ref, { username: newName });
+    // --- ADIM A: PROFİLİ GÜNCELLE ---
+    const userBatch = writeBatch(db);
+    userBatch.update(userDocRef, { username: newName });
+    await userBatch.commit();
 
-    const scoresQ = query(scoresRef, where("name", "==", currentName));
-    const scoresSnap = await getDocs(scoresQ);
+    // Önce UID ile ara (En güvenlisi)
+    let scoresQ = query(scoresRef, where("uid", "==", currentUser.uid));
+    let scoresSnap = await getDocs(scoresQ);
 
-    scoresSnap.docs.forEach((doc) => {
-      batch.update(doc.ref, { name: newName });
-    });
+    // Eğer UID ile skor bulamazsak (Eski kayıtlar), isme göre ara
+    if (scoresSnap.empty) {
+      scoresQ = query(scoresRef, where("name", "==", currentName));
+      scoresSnap = await getDocs(scoresQ);
+    }
 
-    await batch.commit();
+    if (scoresSnap.empty) return true;
+
+    // Batch ile güncelle
+    let batch = writeBatch(db);
+    let operationCount = 0;
+
+    for (const doc of scoresSnap.docs) {
+      // Skoru güncelle ve EĞER YOKSA ona UID de ekle (Veri iyileştirme)
+      batch.update(doc.ref, {
+        name: newName,
+        uid: currentUser.uid,
+      });
+      operationCount++;
+
+      if (operationCount >= 400) {
+        await batch.commit();
+        batch = writeBatch(db);
+        operationCount = 0;
+      }
+    }
+
+    if (operationCount > 0) {
+      await batch.commit();
+    }
+
     return true;
   } catch (error) {
     console.error("İsim değiştirme hatası:", error);
@@ -220,7 +259,6 @@ export const updateUsername = async (currentName: string, newName: string) => {
 
 export const getAllUsers = async () => {
   try {
-    // En son kayıt olan 50 kullanıcı
     const q = query(usersRef, orderBy("createdAt", "desc"), limit(50));
     const snapshot = await getDocs(q);
 
@@ -234,7 +272,6 @@ export const getAllUsers = async () => {
   }
 };
 
-// 7. KULLANICI SİL (Admin İçin)
 export const deleteUser = async (userId: string) => {
   try {
     await deleteDoc(doc(db, "users", userId));
@@ -245,7 +282,6 @@ export const deleteUser = async (userId: string) => {
   }
 };
 
-// 8. İSTATİSTİK ÖZETİ (Admin Dashboard İçin)
 export const getAdminStats = async () => {
   try {
     const scoresCount = await getCountFromServer(scoresRef);
@@ -258,5 +294,181 @@ export const getAdminStats = async () => {
   } catch (error) {
     console.error("Admin stats hatası:", error);
     return { totalScores: 0, totalUsers: 0 };
+  }
+};
+
+// 9. ID İLE KULLANICI GETİR
+export const getUserByUid = async (uid: string) => {
+  try {
+    const userDocRef = doc(db, "users", uid);
+    const userSnap = await getDoc(userDocRef);
+
+    if (userSnap.exists()) {
+      return userSnap.data();
+    } else {
+      return null;
+    }
+  } catch (error) {
+    console.error("UID sorgu hatası:", error);
+    return null;
+  }
+};
+
+// 10. SKOR SENKRONİZASYONU (İsim değişince eski skorları düzeltir)
+export const syncUserScores = async (
+  uid: string,
+  oldName: string,
+  newName: string
+) => {
+  try {
+    console.log(`Skorlar senkronize ediliyor: ${oldName} -> ${newName}`);
+
+    // 1. UID ile ara
+    let q = query(collection(db, "scores"), where("uid", "==", uid));
+    let snapshot = await getDocs(q);
+
+    // 2. Bulamazsan eski isimle ara
+    if (snapshot.empty && oldName) {
+      q = query(collection(db, "scores"), where("name", "==", oldName));
+      snapshot = await getDocs(q);
+    }
+
+    if (snapshot.empty) return;
+
+    const batch = writeBatch(db);
+    let operationCount = 0;
+
+    snapshot.docs.forEach((doc) => {
+      if (doc.data().name !== newName) {
+        batch.update(doc.ref, {
+          name: newName,
+          uid: uid,
+        });
+        operationCount++;
+      }
+    });
+
+    if (operationCount > 0) {
+      await batch.commit();
+      console.log("Skorlar başarıyla güncellendi.");
+    }
+  } catch (error) {
+    console.error("Senkronizasyon hatası:", error);
+  }
+};
+
+// 11. KULLANICI ARAMA
+export const searchUsers = async (searchTerm: string) => {
+  try {
+    if (!searchTerm.trim()) return getAllUsers();
+
+    const term = searchTerm.toLowerCase();
+
+    // YÖNTEM A: Veritabanı Sorgusu (Hızlı - Yeni Kayıtlar İçin)
+    try {
+      const q = query(
+        usersRef,
+        orderBy("usernameLower"),
+        startAt(term),
+        endAt(term + "\uf8ff"),
+        limit(20)
+      );
+      const snapshot = await getDocs(q);
+
+      // Eğer veritabanından sonuç geldiyse direkt döndür
+      if (!snapshot.empty) {
+        return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      }
+    } catch (e) {
+      // Index hatası veya alan yoksa Yöntem B'ye geç
+      console.warn(
+        "Veritabanı araması atlandı (Index yok veya eski veri), manuel aranıyor...",
+        e
+      );
+    }
+
+    // YÖNTEM B: Manuel Filtreleme (Yavaş ama Garantili - Eski Kayıtlar İçin)
+    // Eğer veritabanı sorgusu boş döndüyse veya hata verdiyse bunu çalıştır
+    const allUsers = await getAllUsers();
+    return (allUsers as { id: string; username?: string }[]).filter(
+      (u) => u.username && String(u.username).toLowerCase().includes(term)
+    );
+  } catch (error) {
+    console.error("Kullanıcı arama hatası:", error);
+    return [];
+  }
+};
+
+// 12. SKORLARI FİLTRELE (Moda Göre)
+export const getFilteredScores = async (
+  modeFilter: string | "all",
+  timeFrame: "all" | "daily" | "weekly" = "all",
+  sortBy: "score" | "date" = "date", // <-- YENİ: Neye göre sıralansın?
+  sortOrder: "asc" | "desc" = "desc" // <-- YENİ: Artan mı azalan mı?
+) => {
+  try {
+    const constraints: QueryConstraint[] = [];
+
+    // Mod Filtresi
+    if (modeFilter !== "all") {
+      constraints.push(where("mode", "==", modeFilter));
+    }
+
+    // Zaman Filtresi
+    if (timeFrame !== "all") {
+      const now = new Date();
+      const startDate = new Date();
+
+      if (timeFrame === "daily") {
+        startDate.setHours(0, 0, 0, 0);
+      } else {
+        startDate.setDate(now.getDate() - 7);
+      }
+      constraints.push(where("date", ">=", startDate.toISOString()));
+    }
+
+    // Sıralama (Kritik Kısım)
+    constraints.push(orderBy(sortBy, sortOrder));
+    constraints.push(limit(50));
+
+    const q = query(scoresRef, ...constraints);
+    const snapshot = await getDocs(q);
+    return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    console.error("Skor filtreleme hatası:", error);
+    return [];
+  }
+};
+
+export const toggleBanUser = async (uid: string, isBanned: boolean) => {
+  try {
+    const userRef = doc(db, "users", uid);
+    await updateDoc(userRef, { isBanned: isBanned });
+    return true;
+  } catch (error) {
+    console.error("Ban işlemi hatası:", error);
+    throw error;
+  }
+};
+
+// 14. KULLANICININ TÜM SKORLARINI GETİR (Option 2 - Dedektif Modu)
+export const getScoresByUid = async (uid: string) => {
+  try {
+    const q = query(
+      scoresRef,
+      where("uid", "==", uid),
+      orderBy("date", "desc"),
+      limit(50)
+    );
+    const snapshot = await getDocs(q);
+
+    // 👇 DÜZELTME BURADA: 'as unknown as ScoreData[]' ekledik
+    return snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    })) as unknown as ScoreData[];
+  } catch (error) {
+    console.error("Kullanıcı skorları çekilemedi:", error);
+    return [];
   }
 };
