@@ -24,7 +24,10 @@
         "title": "PENALTI",
         "desc": "Penaltı atışları."
       }
-    }
+    },
+    "care":"DİKKAT",
+    "demo": "Demo versiyondur. Proje hala geliştirme aşamasındadır, full sürüm çıkana kadar mekanikler, UI ve erişilebilirlikte değişimler gerçekleşebilir.Güncelleme geldikçe verileriniz sıfırlanabilir.",
+    "reset": "Ancak full sürüm çıktığı vakit veriler tamamen sıfırlanacaktır!"      
   },
   "auth": {
     "title": "KİMLİK SEÇİMİ",

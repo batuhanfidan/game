@@ -24,7 +24,10 @@
         "title": "PENALTY",
         "desc": "Penalty shots."
       }
-    }
+    },
+    "care":"NOTICE",
+    "demo": "This is a demo version. The project is still under development, and changes to mechanics, UI, and accessibility may occur before the full version is released. Your data may be reset with each update.",
+    "reset": "However, all data will be completely wiped when the full version is released!"
   },
   "auth": {
     "title": "CHOOSE IDENTITY",
