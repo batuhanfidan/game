@@ -11,6 +11,7 @@ import {
   MousePointer2,
   ShieldAlert,
   User,
+  AlertTriangle,
 } from "lucide-react";
 import { WelcomeModal } from "../../components/common/WelcomeModal";
 import { useTranslation } from "react-i18next";
@@ -109,7 +110,7 @@ const MainMenu = () => {
       <div className="fixed inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.04] pointer-events-none mix-blend-overlay"></div>
 
       {/* --- BAŞLIK --- */}
-      <div className="z-10 text-center mb-16 relative group cursor-default">
+      <div className="z-10 text-center mb-8 relative group cursor-default"> {/* mb-16'yı mb-8 yaptık, biraz yer açtık */}
         <h1 className="text-7xl md:text-9xl font-black tracking-tighter text-transparent bg-clip-text bg-linear-to-b from-white via-gray-200 to-gray-500 drop-shadow-[0_0_30px_rgba(255,255,255,0.1)] relative z-10">
           Time iT!
         </h1>
@@ -120,7 +121,22 @@ const MainMenu = () => {
           </p>
           <div className="h-px w-12 bg-white"></div>
         </div>
+
+        {/* DEMO VERSION  */}
+        <div className="mt-6 flex justify-center">
+          <span className="
+            px-4 py-1.5 rounded-full 
+            bg-yellow-500/10 border border-yellow-500/40 
+            text-yellow-400 text-xs font-bold tracking-[0.3em] uppercase 
+            shadow-[0_0_15px_rgba(234,179,8,0.2)] 
+            animate-pulse
+          ">
+            v0.5 Demo Version
+          </span>
+        </div>
       </div>
+
+      
 
       {/* --- KARTLAR GRID --- */}
       <div className="w-full max-w-6xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 z-10 pb-24">
@@ -256,6 +272,19 @@ const MainMenu = () => {
         </div>
       </div>
 
+      <div className="w-full px-4 z-30 flex justify-center mb-8 relative bottom-15">
+        <div className="max-w-5xl text-center cursor-help group">
+          <p className="text-[10px] md:text-[12px] text-white leading-relaxed opacity-60 group-hover:opacity-100 transition-opacity duration-300 bg-black/40 p-3 rounded-lg backdrop-blur-sm border border-white/5 group-hover:border-white/10">
+            <span className="flex items-center justify-center gap-1.5 text-yellow-500/80 font-bold mb-1">
+              <AlertTriangle size={12} /> {t("menu.care")}
+            </span>
+            {t("menu.demo")} <span className="text-red-400 font-bold">{t("menu.reset")}</span>
+          </p>
+        </div>
+      </div>
+
+      
+
       {/* --- ALT BAR --- */}
       <div className="fixed bottom-10 z-20 flex gap-4">
         {/* Tutorial Butonu */}
@@ -290,6 +319,8 @@ const MainMenu = () => {
           <span>{t("leaderboard.title")}</span>
         </button>
       </div>
+
+      
 
       {/* --- ADMIN BUTONU (Gizli) --- */}
       {isAdmin && (
