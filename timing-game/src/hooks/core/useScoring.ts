@@ -1,49 +1,53 @@
 import { useState, useCallback, useEffect } from "react";
 import {
-  getLeaderboard,
+  getUserStats, // <-- Bunu import ettiğinizden emin olun
   saveScoreToApi,
   type ScoreData,
 } from "../../services/api";
+import { secureStorage } from "../../shared/utils/secureStorage"; // <-- Bunu import ettiğinizden emin olun
 import type { GameMode, GameVariant } from "../../shared/types";
 
 export const useScoring = (gameMode: GameMode, gameVariant: GameVariant) => {
   const [scores, setScores] = useState({ p1: 0, p2: 0 });
   const [highScore, setHighScore] = useState(0);
-  const [leaderboard, setLeaderboard] = useState<ScoreData[]>([]);
+  const [leaderboard] = useState<ScoreData[]>([]);
 
   const apiKey =
     gameMode === "time_attack" || gameMode === "survival"
       ? gameMode
       : `${gameMode}_${gameVariant}`;
 
-  // 1. SKORLARI ÇEKME (Debug Loglu)
+
   const loadHighScore = useCallback(async () => {
+    // Klasik ve Bot modlarında skor takibi yapılmıyorsa çık
     if (gameMode === "classic" || gameMode === "bot") return;
 
-    console.log(`📡 [CLIENT] Sunucudan skor isteniyor... Mod: ${apiKey}`);
+    // Kullanıcı adını al
+    const username = secureStorage.getItem("timing_game_username");
+    if (!username) return;
 
+    console.log(`📡 [CLIENT] Kişisel rekor isteniyor... Mod: ${gameMode}`);
     try {
-      // API'yi çağır
-      const data = (await getLeaderboard(apiKey)) as ScoreData[];
+      // API'den sadece bu kullanıcının istatistiklerini al
+      const stats = await getUserStats(username);
 
-      console.log("📦 [CLIENT] Sunucudan gelen ham veri:", data);
+      if (stats) {
+        let personalBest = 0;
 
-      if (data && Array.isArray(data) && data.length > 0) {
-        setLeaderboard(data);
-        // Skorları sayıya çevirip en yükseği bul (Garanti olsun)
-        const scoresList = data.map((d) => Number(d.score));
-        const topScore = Math.max(...scoresList);
-
-        console.log(`🏆 [CLIENT] Hesaplanan En Yüksek Skor: ${topScore}`);
-        setHighScore(topScore);
+        if (gameMode === "survival") {
+          personalBest = stats.bestSurvival || 0;
+        } else if (gameMode === "time_attack") {
+          personalBest = stats.bestTimeAttack || 0;
+        }
+        console.log(`🏆 [CLIENT] Kişisel En İyi Skor: ${personalBest}`);
+        setHighScore(personalBest);
       } else {
-        console.warn("⚠️ [CLIENT] Veri boş veya hatalı formatta geldi.");
         setHighScore(0);
       }
     } catch (error) {
       console.error("🔴 [CLIENT] Skor çekme hatası:", error);
     }
-  }, [apiKey, gameMode]);
+  }, [gameMode]);
 
   // Sayfa açılışında çalıştır
   useEffect(() => {
@@ -55,7 +59,7 @@ export const useScoring = (gameMode: GameMode, gameVariant: GameVariant) => {
     async (score: number, playerName: string = "Oyuncu") => {
       console.log(`💾 [CLIENT] Skor kaydediliyor: ${score}`);
 
-      // Optimistic Update (Anında göster)
+      // Optimistic Update (Anında göster ki gecikme olmasın)
       setHighScore((prev) => Math.max(prev, score));
 
       // Sunucuya gönder
@@ -63,7 +67,7 @@ export const useScoring = (gameMode: GameMode, gameVariant: GameVariant) => {
 
       // Listeyi güncellemek için bekle ve çek
       setTimeout(() => {
-        console.log("🔄 [CLIENT] Kayıt sonrası liste güncelleniyor...");
+        console.log("🔄 [CLIENT] Kayıt sonrası veri güncelleniyor...");
         loadHighScore();
       }, 1000);
     },
@@ -72,6 +76,7 @@ export const useScoring = (gameMode: GameMode, gameVariant: GameVariant) => {
 
   const resetScores = useCallback(() => {
     setScores({ p1: 0, p2: 0 });
+    // resetlendiğinde de tekrar yükle
     loadHighScore();
   }, [loadHighScore]);
 
