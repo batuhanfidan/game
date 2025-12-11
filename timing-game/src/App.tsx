@@ -18,6 +18,8 @@ import { getUserByUid, syncUserScores } from "./services/api"; // getUserStats a
 import { Loader2 } from "lucide-react";
 import AdminPanel from "./features/AdminPanel";
 import { secureStorage } from "./shared/utils/secureStorage"; // Import yolunu düzelttim
+import OnlineLobby from "./features/menu/OnlineLobby";
+import OnlineGameMode from "./features/modes/multi/OnlineGameModel";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -130,6 +132,8 @@ function App() {
               <Route path="/game/penalty" element={<PenaltyMode />} />
               <Route path="/game/survival" element={<SurvivalMode />} />
               <Route path="/game/time-attack" element={<TimeAttackMode />} />
+              <Route path="/online-lobby" element={<OnlineLobby />} />
+              <Route path="/game/online/:roomId" element={<OnlineGameMode />} />
               <Route path="/game/tutorial" element={<TutorialMode />} />
               <Route path="/admin" element={<AdminPanel />} />
               <Route path="*" element={<MainMenu />} />

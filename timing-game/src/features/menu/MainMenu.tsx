@@ -7,7 +7,6 @@ import {
   Gamepad2,
   Trophy,
   Globe,
-  Lock,
   MousePointer2,
   ShieldAlert,
   User,
@@ -110,7 +109,9 @@ const MainMenu = () => {
       <div className="fixed inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.04] pointer-events-none mix-blend-overlay"></div>
 
       {/* --- BAŞLIK --- */}
-      <div className="z-10 text-center mb-8 relative group cursor-default"> {/* mb-16'yı mb-8 yaptık, biraz yer açtık */}
+      <div className="z-10 text-center mb-8 relative group cursor-default">
+        {" "}
+        {/* mb-16'yı mb-8 yaptık, biraz yer açtık */}
         <h1 className="text-7xl md:text-9xl font-black tracking-tighter text-transparent bg-clip-text bg-linear-to-b from-white via-gray-200 to-gray-500 drop-shadow-[0_0_30px_rgba(255,255,255,0.1)] relative z-10">
           Time iT!
         </h1>
@@ -121,22 +122,21 @@ const MainMenu = () => {
           </p>
           <div className="h-px w-12 bg-white"></div>
         </div>
-
         {/* DEMO VERSION  */}
         <div className="mt-6 flex justify-center">
-          <span className="
+          <span
+            className="
             px-4 py-1.5 rounded-full 
             bg-yellow-500/10 border border-yellow-500/40 
             text-yellow-400 text-xs font-bold tracking-[0.3em] uppercase 
             shadow-[0_0_15px_rgba(234,179,8,0.2)] 
             animate-pulse
-          ">
+          "
+          >
             v0.5 Demo Version
           </span>
         </div>
       </div>
-
-      
 
       {/* --- KARTLAR GRID --- */}
       <div className="w-full max-w-6xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 z-10 pb-24">
@@ -201,6 +201,18 @@ const MainMenu = () => {
             border: "group-hover:border-purple-500/30",
             path: "/game/penalty",
           },
+          {
+            id: "online",
+            title: "ONLINE ARENA",
+            desc: "Arkadaşınla Oyna",
+            icon: <Globe size={24} />,
+            BigIcon: Globe,
+            tag: "PVP",
+            color: "text-indigo-300",
+            bg: "bg-indigo-500/20",
+            border: "group-hover:border-indigo-500/30",
+            path: "/online-lobby",
+          },
         ].map((item) => (
           <button
             key={item.id}
@@ -248,28 +260,6 @@ const MainMenu = () => {
             <div className="absolute inset-0 bg-linear-to-tr from-white/0 via-white/0 to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
           </button>
         ))}
-
-        {/* LOCKED CARD */}
-        <div className="relative h-48 rounded-4xl p-6 border border-white/5 bg-black/20 backdrop-blur-sm flex flex-col justify-between group cursor-not-allowed overflow-hidden">
-          <Globe
-            className="absolute -bottom-8 -right-8 text-white/2 -rotate-12 group-hover:rotate-0 transition-transform duration-700"
-            size={160}
-          />
-          <div className="relative z-10 flex justify-between items-start opacity-40 group-hover:opacity-60 transition-opacity">
-            <div className="p-3.5 rounded-2xl bg-white/5 text-gray-400 border border-white/5">
-              <Globe size={24} />
-            </div>
-            <div className="px-3 py-1.5 rounded-full border border-white/5 bg-white/5 text-[10px] font-bold text-gray-500 tracking-widest flex items-center gap-1.5">
-              <Lock size={10} /> LOCKED
-            </div>
-          </div>
-          <div className="relative z-10 opacity-40 group-hover:opacity-60 transition-opacity">
-            <h3 className="text-xl font-black text-white mb-1 tracking-tight">
-              ONLINE ARENA
-            </h3>
-            <p className="text-xs font-medium text-white/40">Yakında...</p>
-          </div>
-        </div>
       </div>
 
       <div className="w-full px-4 z-30 flex justify-center mb-8 relative bottom-15">
@@ -278,12 +268,11 @@ const MainMenu = () => {
             <span className="flex items-center justify-center gap-1.5 text-yellow-500/80 font-bold mb-1">
               <AlertTriangle size={12} /> {t("menu.care")}
             </span>
-            {t("menu.demo")} <span className="text-red-400 font-bold">{t("menu.reset")}</span>
+            {t("menu.demo")}{" "}
+            <span className="text-red-400 font-bold">{t("menu.reset")}</span>
           </p>
         </div>
       </div>
-
-      
 
       {/* --- ALT BAR --- */}
       <div className="fixed bottom-10 z-20 flex gap-4">
@@ -319,8 +308,6 @@ const MainMenu = () => {
           <span>{t("leaderboard.title")}</span>
         </button>
       </div>
-
-      
 
       {/* --- ADMIN BUTONU (Gizli) --- */}
       {isAdmin && (
