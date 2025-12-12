@@ -13,7 +13,6 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { roomService } from "../services/roomService";
 
-// ... (calculateVariantTime ve calculateTargetOffset AYNI KALSIN) ...
 const calculateVariantTime = (
   elapsed: number,
   variant: string,
@@ -34,14 +33,23 @@ const calculateTargetOffset = (variant: string, seed: number): number => {
   return 500;
 };
 
-// YENİ: Mesaj Formatlayıcı (Gelen "penalty_miss" gibi kodları düzeltebiliriz)
+//  Mesaj Formatlayıcı
 const formatMessage = (msg: string, result: string) => {
-  // Eğer mesaj düzgünse olduğu gibi döndür, değilse Result'u kullan
   if (!msg || msg.includes("_")) {
-    return result; // "GOL", "ISKA", "DİREK" döner
+    return result;
   }
   return msg;
 };
+
+//  Hamle Verisi
+export interface MoveData {
+  player: "p1" | "p2";
+  result: string;
+  isGoal: boolean;
+  message: string;
+  diff: number;
+  timestamp: number;
+}
 
 export const useOnlineGameLogic = (roomId: string) => {
   const navigate = useNavigate();
@@ -56,9 +64,19 @@ export const useOnlineGameLogic = (roomId: string) => {
 
   const [scores, setScores] = useState({ p1: 0, p2: 0 });
   const [currentPlayer, setCurrentPlayer] = useState<"p1" | "p2">("p1");
+
+  // Her iki oyuncunun son hamlesini tutan state
+  const [lastMoves, setLastMoves] = useState<{
+    p1: MoveData | null;
+    p2: MoveData | null;
+  }>({
+    p1: null,
+    p2: null,
+  });
+
   const [actionMessage, setActionMessage] = useState<ActionMessage>({
     text: "",
-  }); // Başlangıç boş
+  });
   const [visualEffect, setVisualEffect] = useState<VisualEffectData | null>(
     null
   );
@@ -126,6 +144,17 @@ export const useOnlineGameLogic = (roomId: string) => {
       setGameState(data.status);
       if (data.scores) setScores(data.scores);
 
+      //  Oyuncu hamle geçmişini al
+      if (data.moves) {
+        setLastMoves({
+          p1: data.moves.p1 || null,
+          p2: data.moves.p2 || null,
+        });
+      } else {
+        // Oyun resetlendiyse
+        setLastMoves({ p1: null, p2: null });
+      }
+
       if (data.currentTurn) {
         setCurrentPlayer(data.currentTurn);
         currentPlayerRef.current = data.currentTurn;
@@ -157,12 +186,10 @@ export const useOnlineGameLogic = (roomId: string) => {
         });
       }
 
-      // --- DÜZELTİLEN KISIM: GÖRSEL EFEKTLER ---
-      if (data.lastAction && data.lastAction.timestamp > Date.now() - 2000) {
-        // isGoal verisini direkt okuyoruz, yoksa result stringine bakıyoruz
-        const { result, player, message, isGoal } = data.lastAction;
+      // --- ANLIK EFEKTLER (Ses ve Görsel) ---
 
-        // Güvenli Kontrol: isGoal varsa onu kullan, yoksa string kontrolü yap
+      if (data.lastAction && data.lastAction.timestamp > Date.now() - 2000) {
+        const { result, player, message, isGoal } = data.lastAction;
         const success =
           isGoal !== undefined
             ? isGoal
@@ -250,15 +277,25 @@ export const useOnlineGameLogic = (roomId: string) => {
         currentTurn: nextTurn,
         scores: { ...scores, [currentRole]: newScore },
         status: nextStatus,
-        turnStartTime: now, // Tur süresini sıfırla
+        turnStartTime: now,
         roundSeed: Math.floor(Math.random() * 1000),
         timeRemaining: newTimes,
         isPaused: false,
         totalPaused: 0,
+        // Oyuncunun son hamlesini kaydet
+        [`moves/${currentRole}`]: {
+          player: currentRole,
+          result: result,
+          isGoal: isGoal,
+          message: message,
+          diff: Math.floor(diff),
+          timestamp: Date.now(),
+        },
+
         lastAction: {
           player: currentRole,
           result: result,
-          isGoal: isGoal, // <-- DÜZELTME: isGoal değerini de gönderiyoruz!
+          isGoal: isGoal,
           message: message,
           timestamp: Date.now(),
         },
@@ -267,7 +304,6 @@ export const useOnlineGameLogic = (roomId: string) => {
     [scores, roomId, gameState, turnStartTime, serverOffset]
   );
 
-  // ... (Timeout handler ve Ana Döngü aynı kalsın) ...
   const handleAutoMiss = useCallback(() => {
     handleAction(true);
   }, [handleAction]);
@@ -330,6 +366,7 @@ export const useOnlineGameLogic = (roomId: string) => {
     currentPlayer,
     playerNames,
     actionMessage,
+    lastMoves,
     visualEffect,
     handleAction: () => handleAction(false),
     initializeGame: () => {},

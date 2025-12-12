@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom"; // useLocation eklendi
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Copy,
   Loader2,
@@ -34,8 +34,6 @@ const OnlineLobby = () => {
     secureStorage.getItem("timing_game_uid") || "anon_" + Date.now();
   const myName = secureStorage.getItem("timing_game_username") || "Misafir";
 
-  // --- STATE BAŞLANGIÇ DEĞERLERİ (LOOP ÇÖZÜMÜ) ---
-  // useEffect yerine state'i direkt location'dan başlatıyoruz.
   const initialRoomId = location.state?.roomId || "";
   const initialView = initialRoomId ? "lobby" : "browser";
 
@@ -43,28 +41,25 @@ const OnlineLobby = () => {
   const [view, setView] = useState<"browser" | "lobby">(initialView);
   const [roomId, setRoomId] = useState(initialRoomId);
 
-  // Eğer sayfaya yönlendirmeyle geldiysek (Rematch vb.), geçmişi temizle
-  // Böylece F5 atınca tekrar tetiklenmez.
+  // Manuel çıkış yapıldığını takip eden ref
+  const isLeavingRef = useRef(false);
+
   useEffect(() => {
     if (location.state?.roomId) {
       window.history.replaceState({}, document.title);
     }
   }, [location.state?.roomId]);
 
-  // Browser State
   const [publicRooms, setPublicRooms] = useState<GameRoom[]>([]);
   const [loadingList, setLoadingList] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Modal State
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showJoinCodeModal, setShowJoinCodeModal] = useState(false);
 
-  // Room Data
   const [roomData, setRoomData] = useState<GameRoom | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
-  // Formlar
   const [createForm, setCreateForm] = useState({
     roomName: `${myName}'in Odası`,
     isPublic: true,
@@ -73,7 +68,7 @@ const OnlineLobby = () => {
 
   // --- LİSTENERS ---
 
-  // 1. ODA LİSTESİ (Sadece Browser Modunda)
+  // 1. ODA LİSTESİ
   useEffect(() => {
     if (view === "browser") {
       setLoadingList(true);
@@ -85,13 +80,16 @@ const OnlineLobby = () => {
     }
   }, [view]);
 
-  // 2. ODA İÇİ (Sadece Lobby Modunda)
+  // 2. ODA İÇİ
   useEffect(() => {
     if (view === "lobby" && roomId) {
+      // Odaya girince çıkış flagini sıfırla
+      isLeavingRef.current = false;
+
       const unsubscribe = roomService.subscribeToRoom(roomId, (data) => {
-        // Oda kapandıysa veya veri yoksa
+        if (isLeavingRef.current) return;
+
         if (!data) {
-          // Lobi ekranındaysak uyar ve at
           toast.error("Oda kapatıldı.", { id: "room-closed" });
           setRoomId("");
           setRoomData(null);
@@ -100,12 +98,10 @@ const OnlineLobby = () => {
         }
         setRoomData(data);
 
-        // Kovulma Kontrolü
         const imHost = data.meta.hostUid === myUid;
         const imGuest = data.players.p2?.uid === myUid;
         const imSpectator = data.spectators && data.spectators[myUid];
 
-        // Eğer odadayım ama Host, Guest veya İzleyici DEĞİLSEM -> Atıldım
         if (!imHost && !imGuest && !imSpectator) {
           toast.error("Odadan atıldınız!", { id: "kicked-user" });
           setRoomId("");
@@ -114,7 +110,6 @@ const OnlineLobby = () => {
           return;
         }
 
-        // Oyun Başladıysa Yönlendir
         if (data.meta.status === "playing") {
           navigate(`/game/online/${roomId}`);
         }
@@ -165,15 +160,30 @@ const OnlineLobby = () => {
     }
   };
 
-  const handleLeaveRoom = async (notifyServer = true) => {
-    if (notifyServer && roomId && roomData) {
-      const isHost = roomData.meta.hostUid === myUid;
-      await roomService.leaveRoom(roomId, myUid, isHost); // myUid EKLENDİ
-    }
-    setRoomId("");
-    setRoomData(null);
-    setView("browser");
-  };
+  const handleLeaveRoom = useCallback(
+    (notifyServer = true) => {
+      // 1. Dinleyiciyi kör et
+      isLeavingRef.current = true;
+
+      const currentRoomId = roomId;
+      const currentIsHost = roomData?.meta.hostUid === myUid;
+
+      // 2. UI'ı ANINDA güncelle (Bekleme yok)
+      setRoomId("");
+      setRoomData(null);
+      setView("browser");
+
+      // 3. Sunucu işlemini arkada yap
+      if (notifyServer && currentRoomId) {
+        roomService
+          .leaveRoom(currentRoomId, myUid, currentIsHost)
+          .catch((err) => {
+            console.error("Çıkış hatası:", err);
+          });
+      }
+    },
+    [roomId, roomData, myUid]
+  );
 
   const handleKickGuest = async () => {
     if (roomId && confirm("Oyuncuyu atmak istiyor musun?")) {
@@ -211,9 +221,16 @@ const OnlineLobby = () => {
   const isHost = roomData?.meta.hostUid === myUid;
   const isGuest = roomData?.players.p2?.uid === myUid;
 
-  // --- RENDER ---
+  useEffect(() => {
+    if (roomData && roomData.meta.hostUid === myUid) {
+      if (roomData.meta.status === "playing" && !roomData.players.p2) {
+        toast("Rakip kaçtı! Oyun sonlandırılıyor.");
+        handleLeaveRoom(true);
+      }
+    }
+  }, [handleLeaveRoom, myUid, roomData]);
 
-  // ARKA PLAN
+  // RENDER
   const Background = () => (
     <div className="fixed inset-0 pointer-events-none z-0">
       <div className="absolute inset-0 bg-[#0a0a0a]"></div>
@@ -221,7 +238,6 @@ const OnlineLobby = () => {
     </div>
   );
 
-  // 1. LOBİ (ODANIN İÇİ)
   if (view === "lobby" && roomData) {
     return (
       <div className="min-h-screen w-screen font-mono flex flex-col items-center justify-center p-4 text-gray-200 relative">
@@ -430,12 +446,10 @@ const OnlineLobby = () => {
     );
   }
 
-  // 2. BROWSER (ANA EKRAN)
+  // 2. BROWSER
   return (
     <div className="min-h-screen w-screen font-mono flex flex-col items-center justify-center p-4 text-gray-200">
       <Background />
-
-      {/* Ana Pencere */}
       <div className="w-full max-w-4xl bg-[#111]/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl flex flex-col h-[600px] overflow-hidden relative z-10 animate-fade-in">
         {/* ÜST BAR */}
         <div className="bg-white/5 p-4 border-b border-white/5 flex flex-wrap items-center justify-between gap-4">
@@ -482,14 +496,12 @@ const OnlineLobby = () => {
         <div className="flex flex-1 overflow-hidden">
           {/* SOL: ODA LİSTESİ */}
           <div className="flex-1 flex flex-col border-r border-white/5 bg-[#0a0a0a]/50">
-            {/* Liste Başlığı */}
             <div className="flex items-center px-5 py-3 bg-white/5 border-b border-white/5 text-[10px] font-black text-gray-600 uppercase tracking-widest">
               <div className="flex-1">ODA DETAYLARI</div>
               <div className="w-24 text-center hidden sm:block">MOD</div>
               <div className="w-24 text-right">DURUM</div>
             </div>
 
-            {/* Liste */}
             <div className="flex-1 overflow-y-auto custom-scrollbar">
               {loadingList ? (
                 <div className="flex flex-col items-center justify-center h-full text-gray-600 gap-3">
@@ -581,7 +593,6 @@ const OnlineLobby = () => {
         </div>
       </div>
 
-      {/* --- MODAL: ODA KUR --- */}
       {showCreateModal && (
         <div
           className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"
@@ -664,7 +675,6 @@ const OnlineLobby = () => {
         </div>
       )}
 
-      {/* --- MODAL: KODLA GİR --- */}
       {showJoinCodeModal && (
         <div
           className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in"

@@ -1,6 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useOnlineGameLogic } from "../../../hooks/useOnlineGameLogic";
+import {
+  useOnlineGameLogic,
+  type MoveData,
+} from "../../../hooks/useOnlineGameLogic";
 import GameLayout from "../../../components/layout/GameLayout";
 import { GameProvider } from "../../../context/GameContext";
 import { useTheme } from "../../../hooks/core/useTheme";
@@ -10,18 +13,31 @@ import TurnInfo from "../../../components/layout/TurnInfo";
 import PlayerTimer from "../../../components/layout/PlayerTimer";
 import GameOverModal from "../../../components/common/GameOverModal";
 import PauseMenu from "../../../components/layout/PauseMenu";
-import { Trophy, Loader2, User, Eye, Pause, LogOut } from "lucide-react";
+import {
+  Trophy,
+  Loader2,
+  User,
+  Eye,
+  Pause,
+  LogOut,
+  CheckCircle,
+  XCircle,
+} from "lucide-react";
 import { secureStorage } from "../../../shared/utils/secureStorage";
 import { roomService } from "../../../services/roomService";
 import toast from "react-hot-toast";
+import { useTranslation } from "react-i18next";
 
 const OnlineGameMode = () => {
   const { roomId } = useParams();
   const navigate = useNavigate();
   const { currentTheme, nextTheme } = useTheme(2);
+  const { t } = useTranslation();
 
   const myName = secureStorage.getItem("timing_game_username");
   const myUid = secureStorage.getItem("timing_game_uid");
+
+  const isHostRef = useRef(false);
 
   const {
     gameState,
@@ -29,7 +45,6 @@ const OnlineGameMode = () => {
     scores,
     currentPlayer,
     playerNames,
-    actionMessage,
     visualEffect,
     handleAction,
     initializeGame,
@@ -39,6 +54,7 @@ const OnlineGameMode = () => {
     gameVariant,
     turnTimeLeft,
     playersTimeLeft,
+    lastMoves,
   } = useOnlineGameLogic(roomId || "");
 
   const [amIHost, setAmIHost] = useState(false);
@@ -52,26 +68,66 @@ const OnlineGameMode = () => {
     if (playerNames.p1 === myName) {
       setMyRole("p1");
       setAmIHost(true);
+      isHostRef.current = true;
       setIsSpectator(false);
     } else if (playerNames.p2 === myName) {
       setMyRole("p2");
       setAmIHost(false);
+      isHostRef.current = false;
       setIsSpectator(false);
     } else {
       setMyRole(null);
       setAmIHost(false);
+      isHostRef.current = false;
       setIsSpectator(true);
     }
   }, [playerNames, myName]);
 
-  // Host Başlatma (Artık Lobi yapıyor ama güvenlik için kalsın)
   useEffect(() => {
     if (amIHost && (gameState === "idle" || gameState === "waiting")) {
       initializeGame();
     }
   }, [amIHost, gameState, initializeGame]);
 
-  // --- FONKSİYONLAR ---
+  const handleSafeExit = useCallback(async () => {
+    if (!roomId || !myUid) return;
+    toast("Odadan ayrıldınız.", { icon: "👋" });
+    const isHost = isHostRef.current;
+
+    if (roomService.cancelDisconnectHandlers) {
+      roomService.cancelDisconnectHandlers(roomId, isHost);
+    }
+
+    await roomService.leaveRoom(roomId, myUid, isHost);
+    navigate("/online-lobby");
+  }, [roomId, myUid, navigate]);
+
+  useEffect(() => {
+    if (!roomId || !myUid) return;
+    const isHost = isHostRef.current;
+
+    if (roomService.setupDisconnectHandlers) {
+      roomService.setupDisconnectHandlers(roomId, myUid, isHost);
+    }
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = "";
+    };
+
+    const handlePopState = () => {
+      handleSafeExit();
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [roomId, myUid, handleSafeExit]);
+
   const handleHostRematch = async () => {
     toast.dismiss("rematch-request");
     await roomService.resetGame(roomId || "");
@@ -83,19 +139,9 @@ const OnlineGameMode = () => {
     toast.success("İstek gönderildi! Host bekleniyor...", { icon: "⏳" });
   };
 
-  const handleGuestQuit = async () => {
-    if (roomId) {
-      await roomService.leaveRoom(roomId, myUid || "", false);
-      navigate("/online-lobby");
-      toast("Oyun sonlandırıldı.");
-    }
-  };
-
-  const handleHostQuit = async () => {
-    if (roomId) {
-      await roomService.leaveRoom(roomId, myUid || "", true);
-      navigate("/online-lobby");
-      toast("Oda kapatıldı.");
+  const handleManualQuit = async () => {
+    if (confirm("Oyundan ayrılmak istediğine emin misin?")) {
+      await handleSafeExit();
     }
   };
 
@@ -127,6 +173,32 @@ const OnlineGameMode = () => {
     </div>
   );
 
+  //  Hamle Mesajını Formatla
+  const renderMoveMessage = (role: "p1" | "p2", move: MoveData | null) => {
+    if (!move) return <div className="h-8"></div>; // Boşluk koruyucu
+
+    const displayMs = String(Math.floor(move.diff / 10)).padStart(2, "0");
+    const playerName = playerNames[role];
+
+    // Mesajı oluştur
+    const translatedText = t("game.turn_message", {
+      player: playerName,
+      result: t(move.message),
+      ms: displayMs,
+    });
+
+    return (
+      <div
+        className={`text-lg font-bold flex items-center justify-center gap-2 animate-popup ${
+          move.isGoal ? "text-green-400" : "text-red-400"
+        }`}
+      >
+        {move.isGoal ? <CheckCircle size={20} /> : <XCircle size={20} />}
+        {translatedText}
+      </div>
+    );
+  };
+
   if (!roomId)
     return <div className="p-10 text-center text-white">Oda Bulunamadı</div>;
 
@@ -157,7 +229,7 @@ const OnlineGameMode = () => {
         ) : (
           <button
             onClick={
-              isSpectator ? () => navigate("/online-lobby") : handleGuestQuit
+              isSpectator ? () => navigate("/online-lobby") : handleManualQuit
             }
             className="absolute top-6 left-6 z-50 flex items-center gap-2 text-gray-500 hover:text-red-400 transition-colors bg-black/20 p-2 rounded-lg"
           >
@@ -224,7 +296,7 @@ const OnlineGameMode = () => {
             <>
               <TimerDisplay
                 totalMs={gameTimeMs}
-                targetOffset={targetOffset} // <-- Bu ayar "0ms" noktasını tam ortaya (500ms) sabitler
+                targetOffset={targetOffset}
                 showProgressBar={true}
                 goldenThreshold={15}
                 variant={
@@ -236,19 +308,35 @@ const OnlineGameMode = () => {
                     | "moving"
                 }
               />
-              <div
-                className={`text-xl font-black mt-6 h-8 flex items-center gap-2 ${actionMessage.className} animate-popup`}
-              >
-                {actionMessage.icon && <actionMessage.icon size={24} />}
-                {actionMessage.text}
+
+              {/* YENİ: Çift Geri Bildirim Alanı (Altlı Üstlü) */}
+              <div className="flex flex-col items-center gap-2 mt-4 min-h-20">
+                {/* P1 Son Hamlesi */}
+                <div
+                  className={`transition-opacity duration-300 ${
+                    currentPlayer === "p1" ? "opacity-100" : "opacity-60"
+                  }`}
+                >
+                  {renderMoveMessage("p1", lastMoves.p1)}
+                </div>
+                {/* Ayrım Çizgisi */}
+                <div className="w-12 h-px bg-white/10 my-1"></div>
+                {/* P2 Son Hamlesi */}
+                <div
+                  className={`transition-opacity duration-300 ${
+                    currentPlayer === "p2" ? "opacity-100" : "opacity-60"
+                  }`}
+                >
+                  {renderMoveMessage("p2", lastMoves.p2)}
+                </div>
               </div>
 
               <TurnInfo
                 currentPlayer={playerNames[currentPlayer]}
-                turnTimeLeft={Math.ceil(turnTimeLeft)} // <-- 10sn sayacı bağlandı
+                turnTimeLeft={Math.ceil(turnTimeLeft)}
               />
 
-              <div className="mt-12 w-full px-8 flex justify-center">
+              <div className="mt-8 w-full px-8 flex justify-center">
                 {isSpectator ? (
                   <div className="flex flex-col items-center gap-2 animate-pulse">
                     <div className="bg-neutral-800/80 text-white px-6 py-3 rounded-full font-bold text-sm border border-white/10 flex items-center gap-2 shadow-lg">
@@ -292,7 +380,7 @@ const OnlineGameMode = () => {
                 handleHostRematch();
               }
             }}
-            onQuit={handleHostQuit}
+            onQuit={handleManualQuit}
           />
         )}
 
@@ -309,7 +397,7 @@ const OnlineGameMode = () => {
               <p className="text-gray-400 mt-2">Host bekleniyor...</p>
 
               <button
-                onClick={handleGuestQuit}
+                onClick={handleManualQuit}
                 className="mt-8 px-6 py-3 bg-red-600/20 text-red-400 hover:bg-red-600 hover:text-white rounded-xl font-bold text-sm transition-all border border-red-600/30"
               >
                 ÇIKIŞ YAP

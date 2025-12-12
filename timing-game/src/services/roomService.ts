@@ -11,6 +11,7 @@ import {
   orderByChild,
   equalTo,
   serverTimestamp,
+  onDisconnect,
 } from "firebase/database";
 
 const generateRoomCode = () => {
@@ -216,12 +217,10 @@ export const roomService = {
       isPaused: false,
       totalPaused: 0,
       rematchRequested: false,
-      // YENİ: Oyuncu Süreleri (Saniye Cinsinden)
       timeRemaining: {
         p1: totalSeconds,
         p2: totalSeconds,
       },
-      // Oyunun asıl başlama zamanı (Referans için)
       gameStartTime: serverTimestamp(),
     });
   },
@@ -231,12 +230,14 @@ export const roomService = {
     await set(playerRef, isReady);
   },
 
+  // --- DÜZELTME BURADA ---
   resetGame: async (roomId: string) => {
-    // 1. Oyun durumunu sil veya resetle
+    // 1. Oyun durumunu "waiting" yap
+    //  OnlineGameMode'daki useEffect tetiklenir ve lobiye atar.
     const gameRef = ref(rtdb, `games/${roomId}`);
     await update(gameRef, {
       timeRemaining: { p1: 180, p2: 180 },
-      status: "idle",
+      status: "waiting",
       scores: { p1: 0, p2: 0 },
       currentTurn: "p1",
       roundStartTime: null,
@@ -244,6 +245,7 @@ export const roomService = {
       lastAction: null,
       isPaused: false,
       totalPaused: 0,
+      rematchRequested: false,
     });
 
     // 2. Oda durumunu 'waiting' yap ve oyuncuları 'not ready' yap
@@ -255,7 +257,6 @@ export const roomService = {
     });
   },
 
-  // 11. OYUNU DURAKLAT / DEVAM ETTİR (HATA DÜZELTİLDİ)
   toggleGamePause: async (roomId: string, isPaused: boolean) => {
     const gameRef = ref(rtdb, `games/${roomId}`);
     const snapshot = await get(gameRef);
@@ -263,7 +264,6 @@ export const roomService = {
 
     const data = snapshot.val();
 
-    // GÜNCELLEME: 'any' yerine tip tanımlı obje kullanıyoruz
     const updates: {
       isPaused: boolean;
       pausedAt?: object | null;
@@ -271,13 +271,9 @@ export const roomService = {
     } = { isPaused };
 
     if (isPaused) {
-      // DURAKLATILIYOR
-      updates.pausedAt = serverTimestamp(); // Ne zaman durdu?
+      updates.pausedAt = serverTimestamp();
     } else {
-      // DEVAM ETTİRİLİYOR
       updates.pausedAt = null;
-
-      // Geçen süreyi hesaplayıp toplam bekleme süresine ekle
       const pausedAt = data.pausedAt || Date.now();
       const diff = Date.now() - pausedAt;
       const currentTotal = data.totalPaused || 0;
@@ -287,9 +283,37 @@ export const roomService = {
     await update(gameRef, updates);
   },
 
-  // 12. REMATCH İSTEĞİ GÖNDER (Misafir için)
   requestRematch: async (roomId: string) => {
     const gameRef = ref(rtdb, `games/${roomId}`);
     await update(gameRef, { rematchRequested: true });
+  },
+
+  // --- GÜVENLİK ---
+  setupDisconnectHandlers: (roomId: string, uid: string, isHost: boolean) => {
+    const roomRef = ref(rtdb, `rooms/${roomId}`);
+    const gameRef = ref(rtdb, `games/${roomId}`);
+
+    if (isHost) {
+      onDisconnect(roomRef).remove();
+      onDisconnect(gameRef).remove();
+    } else {
+      const p2Ref = ref(rtdb, `rooms/${roomId}/players/p2`);
+      const statusRef = ref(rtdb, `rooms/${roomId}/meta/status`);
+      const readyRef = ref(rtdb, `rooms/${roomId}/players/p2/isReady`);
+
+      onDisconnect(p2Ref).remove();
+      onDisconnect(readyRef).remove();
+      onDisconnect(statusRef).set("waiting");
+
+      const spectatorRef = ref(rtdb, `rooms/${roomId}/spectators/${uid}`);
+      onDisconnect(spectatorRef).remove();
+    }
+  },
+
+  cancelDisconnectHandlers: (roomId: string, isHost: boolean) => {
+    const roomRef = ref(rtdb, `rooms/${roomId}`);
+    if (isHost) {
+      onDisconnect(roomRef).cancel();
+    }
   },
 };
