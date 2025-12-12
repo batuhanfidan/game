@@ -1,6 +1,16 @@
 export type Player = "p1" | "p2";
-export type GameState = "idle" | "countdown" | "playing" | "finished";
-export type GameMode = "classic" | "bot" | "survival" | "time_attack";
+export type GameState =
+  | "idle"
+  | "countdown"
+  | "playing"
+  | "finished"
+  | "waiting";
+export type GameMode =
+  | "classic"
+  | "bot"
+  | "survival"
+  | "time_attack"
+  | "multiplayer";
 import type { ElementType } from "react";
 
 export interface ActionMessage {
