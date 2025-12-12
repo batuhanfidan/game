@@ -138,6 +138,8 @@ const MainMenu = () => {
         </div>
       </div>
 
+      
+
       {/* --- KARTLAR GRID --- */}
       <div className="w-full max-w-6xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 z-10 pb-24">
         {[
@@ -274,6 +276,19 @@ const MainMenu = () => {
         </div>
       </div>
 
+      <div className="w-full px-4 z-30 flex justify-center mb-8 relative bottom-15">
+        <div className="max-w-5xl text-center cursor-help group">
+          <p className="text-[10px] md:text-[12px] text-white leading-relaxed opacity-60 group-hover:opacity-100 transition-opacity duration-300 bg-black/40 p-3 rounded-lg backdrop-blur-sm border border-white/5 group-hover:border-white/10">
+            <span className="flex items-center justify-center gap-1.5 text-yellow-500/80 font-bold mb-1">
+              <AlertTriangle size={12} /> {t("menu.care")}
+            </span>
+            {t("menu.demo")} <span className="text-red-400 font-bold">{t("menu.reset")}</span>
+          </p>
+        </div>
+      </div>
+
+      
+
       {/* --- ALT BAR --- */}
       <div className="fixed bottom-10 z-20 flex gap-4">
         {/* Tutorial Butonu */}
@@ -308,6 +323,8 @@ const MainMenu = () => {
           <span>{t("leaderboard.title")}</span>
         </button>
       </div>
+
+      
 
       {/* --- ADMIN BUTONU (Gizli) --- */}
       {isAdmin && (
