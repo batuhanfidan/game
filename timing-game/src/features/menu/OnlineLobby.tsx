@@ -24,6 +24,7 @@ import { secureStorage } from "../../shared/utils/secureStorage";
 import { VARIANTS } from "../../shared/constants/game";
 import VariantIcon from "../../components/game/VariantIcon";
 import toast from "react-hot-toast";
+import ChatBox from "../../components/common/ChatBox";
 
 const OnlineLobby = () => {
   const navigate = useNavigate();
@@ -441,6 +442,7 @@ const OnlineLobby = () => {
               </div>
             </div>
           </div>
+          <ChatBox roomId={roomData.id} variant="lobby" />
         </div>
       </div>
     );

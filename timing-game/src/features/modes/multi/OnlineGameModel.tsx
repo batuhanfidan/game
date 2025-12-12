@@ -22,11 +22,13 @@ import {
   LogOut,
   CheckCircle,
   XCircle,
+  MessageSquare,
 } from "lucide-react";
 import { secureStorage } from "../../../shared/utils/secureStorage";
 import { roomService } from "../../../services/roomService";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
+import ChatBox from "../../../components/common/ChatBox";
 
 const OnlineGameMode = () => {
   const { roomId } = useParams();
@@ -60,6 +62,22 @@ const OnlineGameMode = () => {
   const [amIHost, setAmIHost] = useState(false);
   const [isSpectator, setIsSpectator] = useState(false);
   const [myRole, setMyRole] = useState<"p1" | "p2" | null>(null);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [hasUnread, setHasUnread] = useState(false);
+
+  const toggleChat = () => {
+    setIsChatOpen((prev) => !prev);
+    if (!isChatOpen) {
+      setHasUnread(false); // Açarken okunmamışı temizle
+    }
+  };
+
+  // Yeni mesaj gelince çalışacak fonksiyon
+  const handleNewMessage = () => {
+    if (!isChatOpen) {
+      setHasUnread(true);
+    }
+  };
 
   // Rol Belirleme
   useEffect(() => {
@@ -237,6 +255,32 @@ const OnlineGameMode = () => {
             <span className="text-xs font-bold">ÇIKIŞ</span>
           </button>
         )}
+        <button
+          onClick={toggleChat}
+          className={` absolute bottom-10 right-10 z-50 p-3 rounded-full shadow-lg transition-all active:scale-95 border border-white/10 
+            ${
+              isChatOpen
+                ? "bg-blue-600 text-white"
+                : "bg-neutral-800/80 hover:bg-blue-600 text-white"
+            }`}
+          title="Sohbet"
+        >
+          <MessageSquare size={30} />
+
+          {/* KIRMIZI NOKTA (BİLDİRİM) */}
+          {hasUnread && !isChatOpen && (
+            <span className="absolute -top-1 -right-1 w-5.5 h-5.5 bg-red-500 rounded-full border-2 border-[#111] animate-bounce"></span>
+          )}
+        </button>
+
+        {/* --- CHAT PENCERESİ --- */}
+        <ChatBox
+          roomId={roomId || ""}
+          variant="ingame"
+          isOpen={isChatOpen}
+          onClose={() => setIsChatOpen(false)}
+          onNewMessage={handleNewMessage} // Callback bağlandı
+        />
 
         <div className="absolute top-24 md:top-32 w-full px-4 md:px-20 flex justify-between text-gray-300 pointer-events-none">
           <PlayerTimer

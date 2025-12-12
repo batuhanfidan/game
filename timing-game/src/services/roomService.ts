@@ -12,6 +12,8 @@ import {
   equalTo,
   serverTimestamp,
   onDisconnect,
+  push,
+  limitToLast,
 } from "firebase/database";
 
 const generateRoomCode = () => {
@@ -51,6 +53,14 @@ export interface GameRoom {
   };
   spectators?: Record<string, { name: string }>;
   createdAt: number;
+}
+
+export interface ChatMessage {
+  id: string;
+  sender: string;
+  senderUid: string;
+  text: string;
+  timestamp: number;
 }
 
 export const roomService = {
@@ -128,6 +138,53 @@ export const roomService = {
     });
 
     return { success: true, message: "İzleyici olarak katıldınız." };
+  },
+
+  sendMessage: async (
+    roomId: string,
+    player: { uid: string; username: string },
+    text: string
+  ) => {
+    const messagesRef = ref(rtdb, `rooms/${roomId}/messages`);
+    const newMessageRef = push(messagesRef);
+    await set(newMessageRef, {
+      sender: player.username,
+      senderUid: player.uid,
+      text: text,
+      timestamp: serverTimestamp(),
+    });
+  },
+
+  subscribeToChat: (
+    roomId: string,
+    callback: (messages: ChatMessage[]) => void
+  ) => {
+    const messagesRef = query(
+      ref(rtdb, `rooms/${roomId}/messages`),
+      orderByChild("timestamp"),
+      limitToLast(50)
+    );
+
+    const unsubscribe = onValue(messagesRef, (snapshot) => {
+      const data = snapshot.val();
+      if (!data) {
+        callback([]);
+        return;
+      }
+
+      const parsedMessages = Object.entries(
+        data as Record<string, Omit<ChatMessage, "id">>
+      )
+        .map(([key, val]) => ({
+          id: key,
+          ...val,
+        }))
+        .sort((a, b) => a.timestamp - b.timestamp);
+
+      callback(parsedMessages);
+    });
+
+    return () => off(messagesRef, "value", unsubscribe);
   },
 
   leaveRoom: async (roomId: string, uid: string, isHost: boolean) => {
